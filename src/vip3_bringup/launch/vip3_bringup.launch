@@ -1,0 +1,30 @@
+<launch>
+  <!-- VIP3 기본 기동. rosbridge 와 MORAI 가 먼저 연결돼 있어야 한다.
+         ./scripts/rosbridge.sh   (컨테이너 터미널 A, 포그라운드 유지)
+         MORAI  Network/Sensor Import -> Connect -> Play
+         ./scripts/wait_morai_topic.sh /Ego_topic 120
+
+       이 런치는 "센서가 붙어 있다"를 전제로 좌표계와 차량 상태만 세운다.
+       인지·BEV 는 별도 런치다 (drivable_bev/launch/four_view_bev.launch). -->
+
+  <arg name="static_tf" default="true"/>
+  <arg name="vehicle_state" default="true"/>
+  <arg name="gear_node" default="true"/>
+  <arg name="publish_map_tf" default="false"/>   <!-- MORAI 가 /tf 를 이미 쏜다 -->
+  <arg name="hd_map" default="false"/>
+  <arg name="rviz" default="false"/>
+
+  <include if="$(arg static_tf)"
+           file="$(find vip3_bringup)/launch/static_tf.launch"/>
+
+  <include if="$(arg vehicle_state)"
+           file="$(find vip3_vehicle_state)/launch/vehicle_state.launch">
+    <arg name="publish_map_tf" value="$(arg publish_map_tf)"/>
+    <arg name="start_gear_node" value="$(arg gear_node)"/>
+  </include>
+
+  <include if="$(arg hd_map)"
+           file="$(find vip3_hd_map)/launch/katri_map_viz.launch">
+    <arg name="rviz" value="$(arg rviz)"/>
+  </include>
+</launch>

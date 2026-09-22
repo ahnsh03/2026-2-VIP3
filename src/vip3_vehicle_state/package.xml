@@ -1,18 +1,25 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>vehicle_state</name>
+  <name>vip3_vehicle_state</name>
   <version>0.1.0</version>
-  <description>GPS/IMU and development EgoVehicleStatus vehicle-state estimation, published as /vehicle/state.</description>
+  <description>
+    MORAI 26.R1 /Ego_topic 을 팀 내부 차량 상태(/vehicle/state, /vehicle/odom)로 정규화하고,
+    /Service_MoraiEventCmd 기어·제어모드의 유일한 소유자 노드를 제공한다.
+  </description>
 
-  <maintainer email="autonav@todo.todo">autonav</maintainer>
+  <maintainer email="AIM2026.003@gmail.com">2026-2-VIP3</maintainer>
   <license>MIT</license>
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <depend>asmc_msgs</depend>
+  <depend>geometry_msgs</depend>
   <depend>morai_msgs</depend>
-  <depend>roscpp</depend>
-  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>vip3_msgs</depend>
 
-  <export/>
+  <exec_depend>tf2_ros</exec_depend>
+
+  <test_depend>python3-nose</test_depend>
 </package>

@@ -1,0 +1,37 @@
+<launch>
+  <!-- 센서 static TF. 값은 config/VIP3_sensor_set_v1_ros.json 에서 유도했다.
+       재생성:  python3 tools/dump_static_tf.py
+       args 순서는 static_transform_publisher 규약대로 x y z **yaw pitch roll** [rad] 이다.
+       (센서셋의 rot 은 roll pitch yaw [deg] 라 순서가 반대다 — 여기서 자주 틀린다)
+
+       MORAI pitch 양수 = 렌즈 아래로 해석했다. 첫 연동에서 RViz 로 확인한다:
+       Fixed Frame=base_link, LiDAR 지면 반환과 카메라 지면 투영이 맞물려야 한다. -->
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tf_cam_front"
+        args="1.900 0.000 1.200 0.000000 0.034907 0.000000 base_link cam_front"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tf_cam_left"
+        args="1.150 0.650 1.200 1.221730 0.174533 0.000000 base_link cam_left"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tf_cam_right"
+        args="1.150 -0.650 1.200 -1.221730 0.174533 0.000000 base_link cam_right"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tf_cam_rear"
+        args="-0.100 0.000 1.200 -3.141593 0.034907 0.000000 base_link cam_rear"/>
+
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tf_velodyne"
+        args="0.800 0.000 1.450 0.000000 0.000000 0.000000 base_link velodyne"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tf_gps"
+        args="0.350 0.000 1.250 0.000000 0.000000 0.000000 base_link gps"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tf_imu"
+        args="0.000 0.000 0.000 0.000000 0.000000 0.000000 base_link imu"/>
+
+  <!-- 카메라 광학 프레임 (REP-103 body -> REP-145 optical: z 전방, x 우, y 하).
+       RViz 의 Camera/Image 디스플레이와 image_geometry 가 이 규약을 쓴다.
+       회전은 (yaw, pitch, roll) = (-pi/2, 0, -pi/2). -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tf_cam_front_optical"
+        args="0 0 0 -1.570796 0.000000 -1.570796 cam_front cam_front_optical"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tf_cam_left_optical"
+        args="0 0 0 -1.570796 0.000000 -1.570796 cam_left cam_left_optical"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tf_cam_right_optical"
+        args="0 0 0 -1.570796 0.000000 -1.570796 cam_right cam_right_optical"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="tf_cam_rear_optical"
+        args="0 0 0 -1.570796 0.000000 -1.570796 cam_rear cam_rear_optical"/>
+</launch>

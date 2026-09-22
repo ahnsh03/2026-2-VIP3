@@ -1,0 +1,28 @@
+<launch>
+  <!-- /Ego_topic -> /vehicle/state + /vehicle/odom, 그리고 기어 소유자 노드. -->
+  <arg name="ego_topic" default="/Ego_topic"/>
+  <arg name="frame_id" default="map"/>
+  <arg name="child_frame_id" default="base_link"/>
+  <!-- MORAI 가 /tf 로 map->base_link 를 이미 쏜다. 중복 방지를 위해 기본 false. -->
+  <arg name="publish_map_tf" default="false"/>
+  <arg name="velocity_is_body_frame" default="true"/>
+  <arg name="stamp_mode" default="source"/>   <!-- source | receive -->
+  <arg name="start_gear_node" default="true"/>
+  <arg name="initial_gear" default="0"/>       <!-- 0=변경없음, 1 P / 2 R / 3 N / 4 D -->
+
+  <node pkg="vip3_vehicle_state" type="vip3_ego_state_node.py"
+        name="vip3_ego_state" output="screen" required="true">
+    <param name="ego_topic" value="$(arg ego_topic)"/>
+    <param name="frame_id" value="$(arg frame_id)"/>
+    <param name="child_frame_id" value="$(arg child_frame_id)"/>
+    <param name="publish_map_tf" value="$(arg publish_map_tf)"/>
+    <param name="velocity_is_body_frame" value="$(arg velocity_is_body_frame)"/>
+    <param name="stamp_mode" value="$(arg stamp_mode)"/>
+  </node>
+
+  <node if="$(arg start_gear_node)"
+        pkg="vip3_vehicle_state" type="vip3_gear_node.py"
+        name="vip3_gear" output="screen" required="true">
+    <param name="initial_gear" value="$(arg initial_gear)"/>
+  </node>
+</launch>
