@@ -6,90 +6,92 @@ MORAI 시뮬레이터 기반 **자율주차 시스템**을 개발한다.
 | 항목 | 값 |
 |------|-----|
 | 교과목 | 알파프로젝트 3 — 001분반, 화 19~20교시, 1학점 **Pass/Fail** |
-| 학기 | 2026-2 정규학기 |
 | 지도교수 | 원종훈 (전기전자공학부) · 협력업체 교원 (주)모라이 |
-| 주제 | MORAI 시뮬레이터 기반 **자율주차 시스템** |
-| 시뮬 | MORAI SIM (버전 미정) · 맵 KATRI (`R_KR_PG_KATRI`) |
-| 협업 | `main` 직접 push/pull + 경로 오너십 — [docs/collaboration.md](docs/collaboration.md) |
-| GitHub | https://github.com/ahnsh03/2026-2-VIP3 |
-
-> **개발은 지금부터 시작한다.** 이론 강의는 녹화 영상 자율 수강이라 개발을 막지 않는다.
-> 개강 08/31 기준, 시험 기간을 빼면 쓸 수 있는 주는 **3·4·5 / 9 / 11·12·13 — 흩어진 7주**
-> (09/14~11/29)다. 중간고사 **11/03**, 계획서 발표 **11/10**, 점검 11/17·11/24,
-> 최종 발표·시연 **12/08**. 자세한 것은 [docs/course.md](docs/course.md) §3.
-
-> 알파프로젝트 1·2는 **자율주행** 주제였다. 이번 학기는 **자율주차**로 주제가 다르므로
-> 이전 학기 코드·파라미터를 그대로 가져오지 않는다. 참고는 구조와 환경 수준에서만 한다.
+| 주제 | MORAI 시뮬레이터 기반 **자율주차** |
+| 맵 | KATRI (`R_KR_PG_KATRI`) |
+| 시뮬 연결 | **rosbridge** `ws://127.0.0.1:9090` (UDP 안 씀) |
+| 메시지 | `morai_msgs` **26.R1** @ `4c9be6f` |
+| 협업 | `main` 직접 push + 경로 오너십 — [docs/collaboration.md](docs/collaboration.md) |
 
 ## 먼저 읽을 문서
 
 | 문서 | 내용 |
-|------|------|
-| [docs/course.md](docs/course.md) | **교과목 일정·평가·중간고사** — 제일 먼저 |
-| [docs/setup.md](docs/setup.md) | 개발 환경 기준 (WSL2 · Docker · MORAI) |
-| [docs/architecture.md](docs/architecture.md) | 디렉터리·모듈 경계와 담당 경로 |
-| [docs/collaboration.md](docs/collaboration.md) | `main` 푸시 규약, 커밋 메시지 |
-| [docs/notes/](docs/notes/) | 작업 기록 — 점검·최종보고서 재료 |
+|---|---|
+| [docs/setup.md](docs/setup.md) | **환경 구성 — 여기부터** |
+| [docs/simulator.md](docs/simulator.md) | MORAI 연결·토픽·진단 |
+| [docs/roadmap.md](docs/roadmap.md) | **역할 분담과 작업 순서** |
+| [docs/README.md](docs/README.md) | 전체 문서 목록 |
 
 ## 빠른 시작
 
 ```bash
-git clone https://github.com/ahnsh03/2026-2-VIP3.git
-cd 2026-2-VIP3
-git checkout main && git pull
+git clone https://github.com/ahnsh03/2026-2-VIP3.git && cd 2026-2-VIP3
+git submodule update --init --recursive
+
+./scripts/docker_ros_up.sh build && ./scripts/docker_ros_up.sh up
+docker exec -it vip3-ros-noetic bash
+cd /root/ws && ./scripts/build_ws.sh && source devel/setup.bash
+./scripts/rosbridge.sh
 ```
 
-실행 환경(Docker 이미지, 빌드 시스템)은 아직 구성 전이다. [docs/setup.md](docs/setup.md) 참고.
+MORAI 설정은 [docs/simulator.md](docs/simulator.md) §2.
+
+**시뮬레이터 없이도 여기까지 된다** — [docs/setup.md](docs/setup.md) §7:
+
+```bash
+python3 tools/analyze_sensor_set_coverage.py --sensor-set config/VIP3_sensor_set_v1_ros.json
+python3 src/vip3_hd_map/scripts/inspect_katri_mgeo.py --map-dir "../data/KATRI 맵 데이터 자료"
+```
+
+## 구조
+
+```
+docs/      팀 문서          docker/   실행 환경        config/  파라미터 (기계 정본)
+scripts/   실행 진입점      tools/    ROS 없이 도는 도구  weights/ 인지 가중치
+src/
+  morai_msgs/              submodule, 26.R1
+  vip3_bringup/            기동 런치 + static TF
+  vip3_vehicle_state/      /Ego_topic 정규화 + 기어 소유자
+  vip3_hd_map/             KATRI MGeo 로더·RViz 시각화
+  data_collection/         수집·bag·학습 데이터셋
+  perception/
+    camera_semantic_perception/   4뷰 TwinLiteNet+ 추론
+    twinlite_morai/               학습 adapter
+    drivable_bev/                 BEV 투영·융합
+```
+
+경로 오너십과 데이터 흐름은 [docs/architecture.md](docs/architecture.md).
 
 ## 현재 상태
 
-**초기 단계 — 기술 스택·기반 논문·백본 모두 미정.** 개발 가능 주차가 세 블록으로 나뉘어
-있으므로([docs/course.md](docs/course.md) §3) 블록별로 목표를 끊는다.
+코드 기반은 [2026-ASMC](https://github.com/INHAautonav/2026-ASMC)(자율주행 대회 레포)에서
+이식했고, rosbridge 단일 전송 · morai_msgs 26.R1 · 4카메라(후방 포함) 기준으로 맞췄다.
+가져온 것과 안 가져온 것은 [docs/porting-from-asmc.md](docs/porting-from-asmc.md).
 
-**1블록 (4·5주차, ~10/04) — 지금.** 3주차는 지났고 약 2주 남았다.
+**ROS·GPU 없이 호스트에서 156개 단위 테스트가 통과한다.** 아직 실기 연동은 안 했다.
 
-- [x] 저장소 생성, 교과목·환경·협업 문서 골격
-- [ ] 팀 구성과 경로 오너십 확정 → [docs/architecture.md](docs/architecture.md)
-- [ ] 접근 방식·기반 논문 선정
-- [ ] 실행 환경 구성 → `docker/`
-- [ ] MORAI 연결 확인
-- [ ] 모듈 경계 확정 → `src/` 구조 생성
+### 지금 막고 있는 것 세 가지
 
-> **10/05~11/01은 시험 기간으로 중단된다.** 10/04 전에 반드시 **돌아가는 상태로 커밋**하고
+1. **`/ctrl_cmd` 가 네트워크 프리셋에 없다.** 차를 움직일 수 없다 →
+   [docs/simulator.md](docs/simulator.md) §4
+2. **rosbridge 로 카메라 4대가 20 Hz 로 오는지 미검증.** 안 나오면 수집 설계가 바뀐다 →
+   [docs/simulator.md](docs/simulator.md) §5
+3. **KATRI 맵에 주차면 기하가 없다.** 원본에는 있었는데 전달이 안 됐다 →
+   [docs/katri-map.md](docs/katri-map.md) §1
+
+셋 다 코드가 아니라 **확인**으로 풀린다. [docs/roadmap.md](docs/roadmap.md) §4 가 그 순서다.
+
+## 일정
+
+개발 가능 주는 **3·4·5 / 9 / 11·12·13 — 흩어진 7주** (09/14~11/29).
+중간고사 **11/03** · 계획서 발표 **11/10** · 기능 동결 **11/29** · 최종 발표 **12/08**.
+자세한 것은 [docs/course.md](docs/course.md) §3.
+
+> **10/05~11/01 은 시험 기간으로 중단된다.** 10/04 전에 반드시 **돌아가는 상태로 커밋**하고
 > [작업 기록](docs/notes/)을 남긴다. 반쯤 고친 채로 두면 복귀에만 한 주가 든다.
 
-**2블록 (9주차, 10/26~11/01) — 1주뿐**
+## 데이터
 
-- [ ] 공백 복귀, 환경·빌드 재확인
-- [ ] 11/10 계획서에 쓸 진행 내용 정리
-- [ ] 11/03 중간고사 (이론 필기 — 개발과 별개로 준비)
-
-**3블록 (11·12·13주차, 11/09~11/29)**
-
-- [ ] **11/10** 설계 프로젝트 계획서 발표 (지금까지 만든 것 + 남은 3주 계획)
-- [ ] 11/17 · 11/24 점검에서 보여줄 주 단위 목표
-- [ ] **11/29 기능 동결** — 이후는 안정화만
-
-**14·15주차 (11/30~12/13) — 신규 개발 없음**
-
-- [ ] **12/08** 최종 발표·시연, 최종보고서
-
-## 저장소 구조
-
-```
-2026-2-VIP3/
-├── docs/          # 교과목·환경·협업·연구노트
-├── docker/        # 실행 환경 (구성 예정)
-├── config/        # 파라미터 (구성 예정)
-├── scripts/       # 실행 진입점 (구성 예정)
-└── src/           # 코드 (모듈 경계 확정 후)
-```
-
-대용량 데이터(맵 원본, bag, 가중치)는 저장소에 넣지 않고 로컬 루트 `../data/`에 둔다.
-
-## 참고 저장소
-
-| 참고 | 경로 | 무엇을 |
-|------|------|--------|
-| 2026-ASMC | `../external/2026-ASMC/` | MORAI UDP/ROS 브리지, Docker Noetic 구성, 문서 체계 |
-| 26-summer-VIP2 | `~/projects/2026-summer-Vertically Integrated Project 2/` | 알파프로젝트 2 (자율주행) — 교과목 운영·환경만 참고 |
+대용량(맵 원본·bag·데이터셋)은 저장소에 넣지 않고 로컬 루트 `../data/`(`$VIP3_DATA`)에 둔다.
+예외는 `weights/` 의 TwinLiteNet+ 체크포인트 두 개다 — 파일당 약 8 MB 라 저장소에 둬야
+팀원이 바로 추론을 돌릴 수 있다.

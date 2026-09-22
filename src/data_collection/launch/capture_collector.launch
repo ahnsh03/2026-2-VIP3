@@ -1,37 +1,35 @@
 <launch>
-  <!-- Safe default based on measured 0.50-0.57 s completion time for 23 files. -->
+  <!-- MORAI Capture Mode 트리거. 학습 GT 수집의 정본 경로다.
+       MORAI 가 Windows 쪽에 카메라마다 Intensity/Semantic/Instance/Depth PNG 를 쓰고,
+       Linux 에는 trigger lineage(meta.json / capture_manifest.jsonl / summary.json)만 남는다.
+
+       주의: ROS 백엔드는 저장 성공 여부를 알 수 없다. /SaveSensorData 는 publish 가
+       리턴하면 무조건 success=true 다. 실제 파일 존재 검증은 반드시 다음 단계에서 한다.
+       README "2) 무결성 검사" 의 sync_capture_data.py dry-run 은 선택이 아니라 필수 게이트다. -->
   <arg name="capture_hz" default="1.0"/>
-  <arg name="max_captures" default="0"/>
-  <arg name="run_id" default=""/>
-  <arg name="data_root" default=""/>
-  <!-- auto: gRPC acknowledgement first, then native ROS /SaveSensorData fallback. -->
-  <arg name="backend" default="auto"/>
-  <arg name="grpc_address" default="127.0.0.1"/>
-  <arg name="grpc_port" default="7789"/>
+  <arg name="max_captures" default="0"/>     <!-- 0 = 무제한 -->
+  <arg name="run_id" default=""/>            <!-- 비우면 자동 생성 -->
+  <arg name="data_root" default=""/>         <!-- 비우면 $VIP3_DATA -->
   <arg name="save_topic" default="/SaveSensorData"/>
-  <!-- Windows path interpreted by MORAI. Empty means MORAI's SensorData default. -->
-  <arg name="morai_file_dir" default=""/>
-  <arg name="only_when_moving" default="false"/>
+  <arg name="morai_file_dir" default=""/>    <!-- MORAI 가 PNG 를 쓸 Windows 경로 -->
+  <arg name="only_when_moving" default="true"/>
   <arg name="min_speed_mps" default="0.2"/>
-  <arg name="require_ego" default="false"/>
+  <arg name="require_ego" default="true"/>
+  <arg name="ego_topic" default="/Ego_topic"/>
   <arg name="dry_run" default="false"/>
 
-  <node pkg="data_collection"
-        type="capture_mode_collector_node.py"
-        name="capture_mode_collector"
-        output="screen">
+  <node pkg="data_collection" type="capture_collector_node.py"
+        name="vip3_capture_collector" output="screen" required="true">
     <param name="capture_hz" value="$(arg capture_hz)"/>
     <param name="max_captures" value="$(arg max_captures)"/>
     <param name="run_id" value="$(arg run_id)"/>
     <param name="data_root" value="$(arg data_root)"/>
-    <param name="backend" value="$(arg backend)"/>
-    <param name="grpc_address" value="$(arg grpc_address)"/>
-    <param name="grpc_port" value="$(arg grpc_port)"/>
     <param name="save_topic" value="$(arg save_topic)"/>
     <param name="morai_file_dir" value="$(arg morai_file_dir)"/>
     <param name="only_when_moving" value="$(arg only_when_moving)"/>
     <param name="min_speed_mps" value="$(arg min_speed_mps)"/>
     <param name="require_ego" value="$(arg require_ego)"/>
+    <param name="ego_topic" value="$(arg ego_topic)"/>
     <param name="dry_run" value="$(arg dry_run)"/>
   </node>
 </launch>

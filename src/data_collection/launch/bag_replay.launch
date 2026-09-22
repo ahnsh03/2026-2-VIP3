@@ -1,18 +1,22 @@
 <launch>
+  <!-- bag 을 /use_sim_time 으로 **일시정지 상태** 준비한다.
+       추론 노드를 다 띄운 뒤 재생을 시작해야 앞부분을 놓치지 않는다:
+           rosservice call /vip3_bag_replay/start
+       종료 시 /use_sim_time 을 원복한다. -->
   <arg name="bag_path"/>
   <arg name="required_profile" default="camera_raw"/>
   <arg name="rate" default="1.0"/>
-  <arg name="allow_privileged_gt" default="false"/>
   <arg name="wait_for_start" default="true"/>
   <arg name="post_roll_sec" default="2.0"/>
+  <arg name="start_delay_sec" default="1.0"/>
 
   <node pkg="data_collection" type="bag_replay_node.py"
-        name="asmc_bag_replay" output="screen" required="true">
+        name="vip3_bag_replay" output="screen" required="true">
     <param name="bag_path" value="$(arg bag_path)"/>
     <param name="required_profile" value="$(arg required_profile)"/>
     <param name="rate" value="$(arg rate)"/>
-    <param name="allow_privileged_gt" value="$(arg allow_privileged_gt)"/>
     <param name="wait_for_start" value="$(arg wait_for_start)"/>
     <param name="post_roll_sec" value="$(arg post_roll_sec)"/>
+    <param name="start_delay_sec" value="$(arg start_delay_sec)"/>
   </node>
 </launch>

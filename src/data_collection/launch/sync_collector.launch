@@ -1,16 +1,23 @@
 <launch>
-  <!-- Default: dry_run (ego only). Override: profile:=perception_core -->
-  <arg name="profile" default="dry_run"/>
+  <!-- ROS 토픽 스냅샷 수집기. 연결 확인과 가벼운 기록용.
+       카메라는 CompressedImage 바이트를 그대로 .jpg 로 저장하므로 손실이 있다.
+       Semantic 라벨 원본으로는 쓰지 않는다 (capture_collector.launch 를 쓴다). -->
+  <arg name="profile" default="dry_run"/>   <!-- dry_run | state_only | parking_core | full -->
   <arg name="run_id" default=""/>
   <arg name="data_root" default=""/>
   <arg name="max_frames" default="0"/>
-  <arg name="collect_hz" default="0"/>
+  <arg name="collect_hz" default="0"/>      <!-- 0 = 프로파일 값 사용 -->
+  <arg name="map" default="R_KR_PG_KATRI"/>
+  <arg name="vehicle" default="2023_Hyundai_ioniq5"/>
 
-  <node pkg="data_collection" type="sync_collector_node.py" name="sync_collector" output="screen">
+  <node pkg="data_collection" type="sync_collector_node.py"
+        name="vip3_sync_collector" output="screen" required="true">
     <param name="profile" value="$(arg profile)"/>
     <param name="run_id" value="$(arg run_id)"/>
     <param name="data_root" value="$(arg data_root)"/>
     <param name="max_frames" value="$(arg max_frames)"/>
     <param name="collect_hz" value="$(arg collect_hz)"/>
+    <param name="map" value="$(arg map)"/>
+    <param name="vehicle" value="$(arg vehicle)"/>
   </node>
 </launch>
