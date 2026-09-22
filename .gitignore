@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ROS / catkin
+build/
+devel/
+install/
+log/
+logs/
+.catkin_workspace
+src/CMakeLists.txt
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+*:Zone.Identifier
+
+# Secrets & local env
+.env
+.env.*
+!.env.example
+*.pem
+*credentials*
+*secret*
+
+# 대용량 산출물 — 저장소 밖(로컬 루트 data/)에 둔다
+*.bag
+*.mcap
+*.pcd
+*.pt
+*.pth
+*.onnx
+*.zip
