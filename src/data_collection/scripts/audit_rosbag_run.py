@@ -216,7 +216,7 @@ def audit(paths):
             checks[name + "_p95"] = value["ok"]
 
     return {
-        "schema_version": "asmc-rosbag-audit-1.2.0",
+        "schema_version": "vip3-rosbag-audit-1.0.0",
         "bag_files": [os.path.basename(path) for path in paths],
         "duration_seconds": round(duration, 3),
         "topics": topics,

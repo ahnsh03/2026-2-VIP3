@@ -1,16 +1,17 @@
-name: full
-description: "알려진 채널 전부 — 짧은 디버그 run 전용 (디스크·I/O 부담)"
-collect_hz: 10
+name: parking_core
+description: "주차 기본 수집 — 4카메라(front/left/right/rear) + lidar + ego + gps/imu"
+collect_hz: 5
 mode: latest_timer
-max_frames: 300
+max_frames: 0
 require_ego: true
 map: R_KR_PG_KATRI
 vehicle: 2023_Hyundai_ioniq5
 bridge_type: rosbridge
 lidar_format: bin_xyzi
 notes: |
-  장시간 세션의 기본값으로 쓰지 않는다. 평소에는 parking_core 를 쓴다.
-  max_frames=300 은 안전용 soft cap 이다 (~max_frames 로 덮어쓸 수 있다).
+  rosbridge 단일 WebSocket 으로 카메라 4대가 흐른다. collect_hz 를 올리기 전에
+  `rostopic hz` 로 카메라별 실제 수신율을 먼저 확인한다 (docs/simulator.md §5).
+  cam_rear 는 후방 카메라다 (1280x720, FOV 90). ASMC 의 하향 cam_extra 가 아니다.
 
 channels:
   ego: true

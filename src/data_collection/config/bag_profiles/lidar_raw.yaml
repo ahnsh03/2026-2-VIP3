@@ -1,0 +1,15 @@
+extends: _base_raw
+description: "LiDAR + 상태 — 주차칸 점유·근거리 기하 전용 경량 bag"
+required_topics:
+  - /velodyne_points
+  - /gps
+  - /imu
+  - /Ego_topic
+optional_topics:
+  - /tf
+  - /tf_static
+expected_types:
+  /velodyne_points: sensor_msgs/PointCloud2
+  /gps: morai_msgs/GPSMessage
+  /imu: sensor_msgs/Imu
+  /Ego_topic: morai_msgs/EgoVehicleStatus

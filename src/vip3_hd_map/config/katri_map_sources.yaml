@@ -1,0 +1,32 @@
+# KATRI MGeo 소스. 맵 원본은 저장소 밖에 있다 (약 50 MB).
+#
+# map_dir 은 런치의 ~map_dir 파라미터로 덮어쓸 수 있다. 디렉터리 이름에 공백과
+# 한글이 있으므로 런치 파일에 리터럴로 박지 말고 파라미터로 넘긴다.
+map_dir: "${VIP3_DATA}/KATRI 맵 데이터 자료"
+
+# 없으면 경고하고 빈 레이어로 계속 간다.
+layers:
+  global_info: global_info.json
+  link_set: link_set.json
+  node_set: node_set.json
+  lane_boundary_set: lane_boundary_set.json
+  lane_node_set: lane_node_set.json
+  surface_marking_set: surface_marking_set.json
+  singlecrosswalk_set: singlecrosswalk_set.json
+  crosswalk_set: crosswalk_set.json
+
+# 있으면 쓰고 없으면 조용히 넘어간다.
+#   parking_space_set  MORAI 원본에는 있었는데 우리가 못 받았다 (docs/katri-map.md §1).
+#                      받는 순간 코드 수정 없이 주차 레이어가 켜진다.
+#   object_set         정적 장애물·주차된 차량 배치일 가능성. 역시 미전달.
+#   lane_marking_set   같은 선을 더 잘게 쪼갠 파일. global_info 매니페스트에는 없다.
+optional_layers:
+  parking_space_set: parking_space_set.json
+  object_set: object_set.json
+  lane_marking_set: lane_marking_set.json
+  traffic_light_set: traffic_light_set.json
+  traffic_sign_set: traffic_sign_set.json
+
+# parking_space_set.json 이 없을 때 쓰는 손으로 적은 주차면. 스키마는 MORAI
+# ParkingSpace 와 같아서 원본이 도착하면 그대로 대체된다.
+manual_parking_spaces: vip3_parking_spaces.json

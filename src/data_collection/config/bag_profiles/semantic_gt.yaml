@@ -1,0 +1,27 @@
+extends: _base_raw
+description: |
+  RGB 4대 + Semantic 카메라 4대. 강도균의 semantic 센서셋(v2)이 준비된 뒤에 쓴다.
+  **시뮬레이터 GT 다.** 라벨 생성 전용이고 추론 평가에 쓰지 않는다.
+  Semantic 은 무손실이어야 한다 — JPEG 가 한 번이라도 끼면 클래스 색 비교가 깨진다.
+simulator_gt: true
+required_topics:
+  - /cam_front/image_jpeg/compressed
+  - /cam_left/image_jpeg/compressed
+  - /cam_right/image_jpeg/compressed
+  - /cam_rear/image_jpeg/compressed
+  - /sem_front/image
+  - /sem_left/image
+  - /sem_right/image
+  - /sem_rear/image
+  - /Ego_topic
+optional_topics:
+  - /gps
+  - /imu
+  - /tf
+  - /Object_topic
+expected_types:
+  /sem_front/image: sensor_msgs/Image
+  /sem_left/image: sensor_msgs/Image
+  /sem_right/image: sensor_msgs/Image
+  /sem_rear/image: sensor_msgs/Image
+  /Ego_topic: morai_msgs/EgoVehicleStatus

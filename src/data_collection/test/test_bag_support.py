@@ -16,18 +16,38 @@ class BagProfileTest(unittest.TestCase):
         with open(os.path.join(root, name + ".yaml"), "w") as stream:
             yaml.safe_dump(value, stream)
 
-    def test_non_gt_profile_rejects_privileged_topics(self):
+    def test_non_gt_profile_rejects_simulator_ground_truth(self):
+        """시뮬만 아는 정보와 실차가 볼 수 있는 정보를 섞으면 평가가 무의미해진다."""
+        for topic in ("/Object_topic", "/CollisionData", "/sem_front/image"):
+            with tempfile.TemporaryDirectory() as root:
+                self.write(
+                    root,
+                    "bad",
+                    {"simulator_gt": False, "required_topics": [topic]},
+                )
+                with self.assertRaisesRegex(BagProfileError, "simulator_gt"):
+                    load_bag_profile(root, "bad")
+
+    def test_gt_profile_may_record_ground_truth(self):
         with tempfile.TemporaryDirectory() as root:
             self.write(
                 root,
-                "bad",
-                {
-                    "privileged_gt": False,
-                    "required_topics": ["/velodyne_points_instance"],
-                },
+                "ok",
+                {"simulator_gt": True, "required_topics": ["/Object_topic"]},
             )
-            with self.assertRaisesRegex(BagProfileError, "privileged"):
-                load_bag_profile(root, "bad")
+            profile = load_bag_profile(root, "ok")
+            self.assertTrue(profile["simulator_gt"])
+
+    def test_udp_transport_is_rejected(self):
+        """VIP3 전송은 rosbridge 하나뿐이다. ASMC 프로파일을 복붙하면 여기서 터진다."""
+        with tempfile.TemporaryDirectory() as root:
+            self.write(
+                root,
+                "legacy",
+                {"transport": "udp", "required_topics": ["/Ego_topic"]},
+            )
+            with self.assertRaisesRegex(BagProfileError, "transport"):
+                load_bag_profile(root, "legacy")
 
     def test_alias_keeps_child_name(self):
         with tempfile.TemporaryDirectory() as root:
@@ -54,10 +74,20 @@ class BagProfileTest(unittest.TestCase):
         for name in names:
             profile = load_bag_profile(root, name)
             listed = set(profile["required_topics"] + profile["optional_topics"])
-            if not profile["privileged_gt"]:
-                self.assertNotIn("/velodyne_points_instance", listed)
+            # rosbridge 외 전송은 존재하지 않는다.
+            self.assertIn(profile["transport"], ("rosbridge", "replay"))
+            if not profile["simulator_gt"]:
                 self.assertNotIn("/Object_topic", listed)
+                self.assertNotIn("/CollisionData", listed)
                 self.assertFalse(any(topic.startswith("/sem_") for topic in listed))
+                self.assertFalse(any(topic.startswith("/inst_") for topic in listed))
+        # 실제로 GT 프로파일이 존재해야 위 분기가 의미가 있다.
+        gt_names = [
+            name
+            for name in names
+            if load_bag_profile(root, name)["simulator_gt"]
+        ]
+        self.assertTrue(gt_names, "simulator_gt 프로파일이 하나도 없다")
 
 
 class BagRunTest(unittest.TestCase):

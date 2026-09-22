@@ -56,7 +56,7 @@ def main():
         os.rename(results_source, os.path.join(target, "results"))
         results_moved = True
     rejection = {
-        "schema_version": "asmc-rosbag-rejection-1.0.0",
+        "schema_version": "vip3-rosbag-rejection-1.0.0",
         "run_id": run_id,
         "reason": args.reason.strip(),
         "rejected_at_utc": datetime.now(timezone.utc).isoformat(timespec="milliseconds"),

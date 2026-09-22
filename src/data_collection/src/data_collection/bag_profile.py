@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 """rosbag 프로파일 로더 (엄격 검증).
 
-ASMC 의 privileged_gt / deployment_allowed 게이트는 대회 규정 장치라 VIP3 에서는
-삭제했다. VIP3 는 /Object_topic 같은 시뮬 GT 를 주차칸 점유 라벨링에 쓸 계획이므로
-"기록 금지" 목록 자체가 없다. (최종 시연에서 GT 사용이 허용되는지는 팀이 확인할 것.)
+ASMC 의 privileged_gt / deployment_allowed 게이트는 대회 규정 장치였다. VIP3 는 대회가
+없으므로 "기록 금지" 규칙은 없지만, **시뮬레이터만 아는 정보와 실제 차가 볼 수 있는 정보를
+섞지 않는 것**은 여전히 중요하다. 섞이면 인지 모델 평가가 무의미해진다.
+
+그래서 `simulator_gt: true|false` 한 줄만 남겼다. false 인 프로파일이 아래 GT 토픽을
+담으면 로드가 실패한다. 라벨링용으로 GT 가 필요하면 `simulator_gt: true` 로 명시한다.
 """
 
 from __future__ import print_function
@@ -73,6 +76,27 @@ def _topic_list(profile, key):
     return topics
 
 
+# 시뮬레이터만 아는 정보. 실제 차량에는 대응하는 센서가 없다.
+SIMULATOR_GT_TOPICS = (
+    "/Object_topic",          # NPC/보행자 GT 위치·속도
+    "/CollisionData",         # 충돌 GT
+)
+SIMULATOR_GT_PREFIXES = (
+    "/sem_",                  # semantic 카메라
+    "/inst_",                 # instance 카메라
+)
+
+
+def _simulator_gt_topics(topics):
+    hits = [topic for topic in topics if topic in SIMULATOR_GT_TOPICS]
+    hits += [
+        topic
+        for topic in topics
+        if any(topic.startswith(prefix) for prefix in SIMULATOR_GT_PREFIXES)
+    ]
+    return sorted(set(hits))
+
+
 def validate_bag_profile(profile):
     required = _topic_list(profile, "required_topics")
     optional = _topic_list(profile, "optional_topics")
@@ -104,6 +128,17 @@ def validate_bag_profile(profile):
             )
         )
 
+    simulator_gt = bool(profile.get("simulator_gt", False))
+    if not simulator_gt:
+        leaked = _simulator_gt_topics(required + optional)
+        if leaked:
+            raise BagProfileError(
+                "profile is not marked simulator_gt but records simulator-only "
+                "ground truth: {}. Set simulator_gt: true if that is intended."
+                .format(leaked)
+            )
+
+    profile["simulator_gt"] = simulator_gt
     profile["required_topics"] = required
     profile["optional_topics"] = optional
     profile["kind"] = kind

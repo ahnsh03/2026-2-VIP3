@@ -1,25 +1,26 @@
 <launch>
-  <!-- Review-only overlay. It never writes src/vip3_hd_map/development/won_tae_link_node or an operational H5. -->
+  <!-- KATRI MGeo 를 RViz MarkerArray 로 띄운다. 커스텀 메시지 없음.
+       맵 원본은 저장소 밖이라 경로를 파라미터로 넘긴다 (한글+공백 경로). -->
   <arg name="rviz" default="true"/>
+  <arg name="map_dir" default="$(optenv VIP3_DATA /data)/KATRI 맵 데이터 자료"/>
   <arg name="ego_topic" default="/Ego_topic"/>
-  <arg name="repo_root" default=""/>
-  <arg name="local_radius_m" default="60.0"/>
-  <arg name="max_publish_hz" default="5.0"/>
-  <arg name="publish_legacy_links" default="false"/>
+  <arg name="pose_source" default="ego_status"/>   <!-- ego_status | gps_imu -->
+  <arg name="local_radius_m" default="30.0"/>
+  <arg name="max_publish_hz" default="10.0"/>
+  <arg name="publish_global" default="true"/>
 
-  <node pkg="vip3_hd_map" type="legacy_origin_overlay_node.py"
-        name="legacy_origin_overlay" output="screen">
-    <!-- Empty means auto-detect from the source config path. Installed-only
-         deployments can pass an explicit repository/data root. -->
-    <param name="repo_root" value="$(arg repo_root)"/>
+  <node pkg="vip3_hd_map" type="katri_map_viz_node.py"
+        name="katri_map_viz" output="screen" required="true">
     <param name="config_path"
-           value="$(find vip3_hd_map)/config/kcity2025_legacy_transfer.yaml"/>
+           value="$(find vip3_hd_map)/config/katri_map_sources.yaml"/>
+    <param name="map_dir" value="$(arg map_dir)"/>
     <param name="ego_topic" value="$(arg ego_topic)"/>
+    <param name="pose_source" value="$(arg pose_source)"/>
     <param name="local_radius_m" value="$(arg local_radius_m)"/>
     <param name="max_publish_hz" value="$(arg max_publish_hz)"/>
-    <param name="publish_legacy_links" value="$(arg publish_legacy_links)"/>
+    <param name="publish_global" value="$(arg publish_global)"/>
   </node>
 
-  <node if="$(arg rviz)" pkg="rviz" type="rviz" name="legacy_origin_overlay_rviz"
-        args="-d $(find vip3_hd_map)/rviz/legacy_origin_overlay.rviz"/>
+  <node if="$(arg rviz)" pkg="rviz" type="rviz" name="katri_map_rviz"
+        args="-d $(find vip3_hd_map)/rviz/katri_map_viz.rviz"/>
 </launch>

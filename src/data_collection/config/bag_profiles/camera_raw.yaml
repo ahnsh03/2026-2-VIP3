@@ -1,0 +1,19 @@
+extends: _base_raw
+description: "카메라 4대 + ego — TwinLite/BEV 오프라인 반복용 경량 bag"
+required_topics:
+  - /cam_front/image_jpeg/compressed
+  - /cam_left/image_jpeg/compressed
+  - /cam_right/image_jpeg/compressed
+  - /cam_rear/image_jpeg/compressed
+  - /Ego_topic
+optional_topics:
+  - /gps
+  - /imu
+  - /tf
+  - /tf_static
+expected_types:
+  /cam_front/image_jpeg/compressed: sensor_msgs/CompressedImage
+  /cam_left/image_jpeg/compressed: sensor_msgs/CompressedImage
+  /cam_right/image_jpeg/compressed: sensor_msgs/CompressedImage
+  /cam_rear/image_jpeg/compressed: sensor_msgs/CompressedImage
+  /Ego_topic: morai_msgs/EgoVehicleStatus

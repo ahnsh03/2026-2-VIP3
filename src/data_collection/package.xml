@@ -2,7 +2,10 @@
 <package format="2">
   <name>data_collection</name>
   <version>0.1.0</version>
-  <description>Sync-mode dataset collector for MORAI (profile-based channels → $ASMC_DATA)</description>
+  <description>
+    MORAI 데이터 수집 — Capture Mode GT, ROS 토픽 스냅샷, rosbag 기록·재생,
+    마스크 굽기와 학습 데이터셋 manifest 생성. 산출물은 $VIP3_DATA 아래에 쌓인다.
+  </description>
   <maintainer email="autonav@todo.todo">autonav</maintainer>
   <license>MIT</license>
 

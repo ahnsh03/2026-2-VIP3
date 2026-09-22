@@ -1,0 +1,27 @@
+name: dry_run
+description: "Ego만 — rosbridge 첫 연동 확인용"
+collect_hz: 10
+mode: latest_timer
+max_frames: 0
+require_ego: true
+map: R_KR_PG_KATRI
+vehicle: 2023_Hyundai_ioniq5
+bridge_type: rosbridge
+notes: |
+  MORAI 를 연결한 직후 가장 먼저 돌린다. /Ego_topic 이 들어오면 연결은 성공이다.
+  카메라가 안 올라오는 문제와 분리해서 볼 수 있다.
+
+channels:
+  ego: true
+  objects: false
+  collision: false
+  lidar: false
+  gps: false
+  imu: false
+  cam_front: false
+  cam_left: false
+  cam_right: false
+  cam_rear: false
+
+topics:
+  ego: /Ego_topic

@@ -1,0 +1,24 @@
+extends: parking_raw
+description: |
+  parking_raw + 시뮬레이터 GT (/Object_topic, /CollisionData).
+  **라벨링·평가 전용이다.** 이 bag 으로 학습하거나 인지 성능을 측정하면
+  "시뮬이 정답을 알려준 것"이라 의미가 없다.
+simulator_gt: true
+optional_topics:
+  - /tf
+  - /tf_static
+  - /ctrl_cmd
+  - /vehicle/gear
+  - /Object_topic
+  - /CollisionData
+expected_types:
+  /cam_front/image_jpeg/compressed: sensor_msgs/CompressedImage
+  /cam_left/image_jpeg/compressed: sensor_msgs/CompressedImage
+  /cam_right/image_jpeg/compressed: sensor_msgs/CompressedImage
+  /cam_rear/image_jpeg/compressed: sensor_msgs/CompressedImage
+  /velodyne_points: sensor_msgs/PointCloud2
+  /gps: morai_msgs/GPSMessage
+  /imu: sensor_msgs/Imu
+  /Ego_topic: morai_msgs/EgoVehicleStatus
+  /Object_topic: morai_msgs/ObjectStatusList
+  /CollisionData: morai_msgs/CollisionData

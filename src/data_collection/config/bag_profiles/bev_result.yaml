@@ -1,0 +1,21 @@
+extends: _base_raw
+description: |
+  인지 결과 bag — BEV/추론 출력만. 원본 영상 없이 결과를 비교·재생할 때 쓴다.
+  kind=result 라 원본 입력의 대체물이 아니다.
+kind: result
+required_topics:
+  - /perception/bev/camera/drivable_probability
+  - /perception/bev/camera/coverage
+  - /Ego_topic
+optional_topics:
+  - /perception/bev/camera/lane_probability
+  - /perception/bev/camera/road_marking/class_id
+  - /perception/bev/camera/source_count
+  - /perception/bev/debug/source_view
+  - /perception/camera/diagnostics
+  - /perception/bev/diagnostics
+  - /tf
+expected_types:
+  /perception/bev/camera/drivable_probability: sensor_msgs/Image
+  /perception/bev/camera/coverage: sensor_msgs/Image
+  /Ego_topic: morai_msgs/EgoVehicleStatus
