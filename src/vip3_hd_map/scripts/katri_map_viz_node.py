@@ -298,10 +298,12 @@ class KatriMapVizNode:
         array.markers.append(self._delete_all(frame, stamp))
         points = []
         for space in spaces:
+            # parking_space_polygon 이 이미 닫힌 폴리곤(N+1)을 주므로 close=False 다.
+            # close=True 를 주면 마지막 변을 두 번 그린다.
             polygon = parking_space_polygon(space)
             if translation is not None:
                 polygon = polygon + np.asarray(translation, dtype=np.float64)
-            points.extend(self._polyline_points(polygon, z=0.06, close=True))
+            points.extend(self._polyline_points(polygon, z=0.06, close=False))
         if points:
             array.markers.append(
                 self._line_marker(

@@ -29,12 +29,11 @@ endif()
 
 catkin_install_python(PROGRAMS
   scripts/sync_collector_node.py
-  scripts/capture_mode_collector_node.py
+  scripts/capture_collector_node.py
   scripts/bag_recorder_node.py
   scripts/bag_replay_node.py
   scripts/audit_rosbag_run.py
   scripts/reject_bag_run.py
-  scripts/monitor_transport_pilot.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
