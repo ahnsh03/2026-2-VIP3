@@ -1,0 +1,12 @@
+publish_hz: 10.0
+jpeg_quality: 80
+panel_width: 640
+# 4열 mosaic. front/rear row tile 480x270, left/right 480x360 -> row 높이 360 -> 정확히 1920x1080.
+# 640 으로 두면 4*640 = 2560 px 이라 1080p 모니터를 넘는다.
+mosaic_view_width: 480
+sync_queue_size: 30
+stale_panel_sec: 1.0   # 이보다 오래된 view 는 mosaic 에서 STALE 검은 칸으로 대체한다.
+
+drivable_threshold: 0.5   # rosparam set 으로 런타임 변경 가능
+lane_threshold: 0.5       # rosparam set 으로 런타임 변경 가능
+condition_label: ""

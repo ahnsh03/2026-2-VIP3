@@ -1,0 +1,8 @@
+<launch>
+  <!-- mosaic 열 순서 = views 인자 순서. left | front | right | rear -->
+  <arg name="secondary_mode" default="lane"/>
+  <include file="$(find camera_semantic_perception)/launch/semantic_visualizer.launch">
+    <arg name="views" value="left, front, right, rear"/>
+    <arg name="secondary_mode" value="$(arg secondary_mode)"/>
+  </include>
+</launch>

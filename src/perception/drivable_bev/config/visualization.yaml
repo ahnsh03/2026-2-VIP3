@@ -1,0 +1,25 @@
+mosaic_max_hz: 5.0
+jpeg_quality: 85
+tile_width: 300
+tile_height: 600
+publish_per_view_mosaic: false
+
+fused_max_hz: 5.0
+fused_width: 672
+fused_height: 1050
+
+camera_grid_max_hz: 5.0
+camera_grid_longitudinal_step_m: 5.0
+camera_grid_lateral_step_m: 2.0
+
+# Display crop is deliberately equal to the provisional compute grid until the
+# post-vectorization native-GT range audit selects a validated rectangle.
+display_x_min_m: -5.0
+display_x_max_m: 20.0
+display_y_min_m: -8.0
+display_y_max_m: 8.0
+display_label: "FUSED PROVISIONAL"
+
+lane_debug_max_hz: 5.0
+lane_debug_width: 672
+lane_debug_height: 1050

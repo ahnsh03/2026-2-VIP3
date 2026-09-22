@@ -1,0 +1,33 @@
+<launch>
+  <!-- VIP3 기본 BEV 파이프라인: 추론 -> 뷰별 투영 -> 융합 -> 시각화.
+       camera_semantic_perception 이 먼저 떠 있어야 한다 (start_inference:=true 로 같이 띄운다). -->
+  <arg name="secondary_head" default="lane"/>
+  <arg name="views" default="front, left, right, rear"/>
+  <arg name="start_inference" default="true"/>
+  <arg name="start_visualizer" default="true"/>
+  <arg name="checkpoint"
+       default="$(optenv VIP3_TWINLITE_CHECKPOINT /root/ws/weights/twinlite/v5_binary_lane/best_mean.pt)"/>
+  <arg name="device" default="cuda"/>
+
+  <include if="$(arg start_inference)"
+           file="$(find camera_semantic_perception)/launch/four_view.launch">
+    <arg name="checkpoint" value="$(arg checkpoint)"/>
+    <arg name="device" value="$(arg device)"/>
+  </include>
+
+  <include file="$(find drivable_bev)/launch/camera_bev.launch">
+    <arg name="views" value="$(arg views)"/>
+    <arg name="secondary_head" value="$(arg secondary_head)"/>
+  </include>
+
+  <include file="$(find drivable_bev)/launch/camera_bev_fusion.launch">
+    <arg name="views" value="$(arg views)"/>
+    <arg name="secondary_head" value="$(arg secondary_head)"/>
+  </include>
+
+  <include if="$(arg start_visualizer)"
+           file="$(find drivable_bev)/launch/camera_bev_visualizer.launch">
+    <arg name="views" value="$(arg views)"/>
+    <arg name="secondary_head" value="$(arg secondary_head)"/>
+  </include>
+</launch>

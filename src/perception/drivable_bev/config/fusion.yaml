@@ -1,0 +1,33 @@
+# 4-뷰 BEV 융합. 후방 카메라를 포함한다.
+views: [front, left, right, rear]
+secondary_head: lane        # lane(기본, v5 binary) | road_marking(v6 4-class)
+
+max_timestamp_skew_ms: 35.0
+sync_queue_size: 12
+max_fused_hz: 10.0
+
+# 겹침 영역 소유권. 기하가 1차 기준이고 모델 confidence 는 보정만 한다.
+edge_taper_fraction: 0.12
+
+# ⚠ ASMC 와 다른 부분.
+# ASMC 는 forward_fade_start_m=15 / lateral_fade_start_m=6 / rear_fade_start_m=-4 로
+# "앞으로 달린다"는 전제를 가중치에 박아뒀다. rear_fade 는 x < -4 m, 즉 후방 카메라가
+# 담당하는 영역 자체를 boundary_weight 까지 깎아서 후방 뷰 평균 quality 가
+# 0.3854 -> 0.2583 (x0.670) 으로 떨어졌다. 주차에서는 앞뒤옆이 대등해야 하므로
+# base_link 로부터의 거리 하나만 보는 등방 prior 로 바꿨다.
+near_full_quality_radius_m: 6.0     # 이 안쪽은 방향 무관 1.0
+max_quality_radius_m: 12.0          # 여기서 boundary_weight 까지 선형 감소
+boundary_weight: 0.20
+
+# front/rear 는 focal 640 px, left/right 는 149 px 라 지면 샘플링 밀도가 ~18배 차이난다.
+# 전역 정규화를 하면 겹치는 셀의 95.8 %를 전방이 가져가 버린다. 주차선을 실제로 보는 것은
+# 측면 카메라이므로 뷰별 정규화를 쓴다. 뷰 간 절대 해상도 비교가 필요할 때만 false.
+per_view_density_normalisation: true
+
+view_ids:
+  front: 1
+  left: 2
+  right: 3
+  rear: 4
+
+diagnostics_interval_sec: 2.0

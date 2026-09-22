@@ -1,0 +1,12 @@
+{
+  "best": {
+    "drivable": 0.9837150288177804,
+    "mean": 0.9394921299367451,
+    "road_marking": 0.8955530611483308
+  },
+  "completed_at_utc": "2026-09-07T17:25:26+00:00",
+  "elapsed_seconds": 6469.995214259005,
+  "epochs_completed": 18,
+  "output_dir": "/root/ws/artifacts/perception_eval/runs/twinlite_medium_morai_v6_road_marking_init_b_b12_e18_20260908",
+  "peak_cuda_memory_bytes": 2649682432
+}

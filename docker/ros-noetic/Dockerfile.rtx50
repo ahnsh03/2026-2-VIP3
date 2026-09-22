@@ -1,0 +1,28 @@
+# RTX 50(sm_120) 시리즈용 파생 이미지 — opt-in.
+# 먼저 같은 디렉터리의 Dockerfile 을 vip3/ros-noetic:dev 로 빌드해야 한다.
+FROM vip3/ros-noetic:dev
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# ROS Noetic 의 시스템 Python 3.8/cu118 은 그대로 둔다. torch 는 2.4.1 이후 Python 3.8
+# 을 버렸고 sm_120 은 cu128 부터 지원되므로, TwinLiteNet+ 추론만 Python 3.9/cu128
+# venv 에서 실행한다. rospy/genpy/sensor_msgs 는 순수 Python 이라 PYTHONPATH 로 공유한다.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.9 python3.9-venv python3.9-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY requirements-infer-rtx50.txt /tmp/requirements-infer-rtx50.txt
+RUN python3.9 -m venv /opt/infer-venv && \
+    /opt/infer-venv/bin/python -m pip install --no-cache-dir \
+      "pip==26.0.1" "setuptools==82.0.1" "wheel==0.48.0" && \
+    /opt/infer-venv/bin/python -m pip install --no-cache-dir \
+      --index-url https://download.pytorch.org/whl/cu128 \
+      torch==2.7.1 torchvision==0.22.1 && \
+    /opt/infer-venv/bin/python -m pip install --no-cache-dir \
+      -r /tmp/requirements-infer-rtx50.txt && \
+    rm -f /tmp/requirements-infer-rtx50.txt && \
+    /opt/infer-venv/bin/python -c \
+      "import torch,torchvision,cv2,numpy,rospkg,netifaces; assert torch.version.cuda.startswith('12.8'); print('RTX50 infer:',torch.__version__,torchvision.__version__)"
+
+# 추론 노드가 이 변수를 보고 인터프리터를 고른다. 없으면 시스템 python3 을 쓴다.
+ENV VIP3_TWINLITE_PYTHON=/opt/infer-venv/bin/python

@@ -1,0 +1,162 @@
+# VIP3 토픽·프레임 정본 (single source of truth)
+#
+# 이 파일이 토픽 이름·타입·프레임·주기의 정본이다. 런치 파일·패키지 config·검증
+# 스크립트는 값을 다시 적지 말고 여기를 읽거나, 여기서 생성한 값을 쓴다.
+#
+# 기계 정본 두 개:
+#   config/VIP3_sensor_set_v1_ros.json   센서 (MORAI Sensor 설정)
+#   config/VIP3_network_v1.json          네트워크 (MORAI Network 설정)
+# 값이 어긋나면 위 두 JSON 이 이긴다. 바꾸면 이 파일도 같이 고친다.
+#
+# 전송은 rosbridge WebSocket ws://127.0.0.1:9090 하나뿐이다. UDP 는 쓰지 않는다.
+# morai_msgs 는 26.R1 (commit 4c9be6f). beta_drive 가 아니다.
+
+bridge:
+  kind: rosbridge
+  url: ws://127.0.0.1:9090
+  host: 127.0.0.1
+  port: 9090
+  ros_master_uri: http://127.0.0.1:11311
+
+morai_msgs:
+  branch: "26.R1"
+  commit: "4c9be6fcd90c4e6071001f4e196eea8443534c46"
+  # 26.R1 과 beta_drive 의 차이 중 VIP3 코드에 직접 걸리는 것
+  ctrl_cmd_fields: [longlCmdType, accel, brake, front_steer, rear_steer, velocity, acceleration]
+  ego_status_steer_fields: [front_steer_angle, rear_steer_angle]
+  # 단위가 비대칭이다. 섞어 쓰면 조용히 틀린다.
+  units:
+    CtrlCmd.front_steer: rad
+    CtrlCmd.rear_steer: rad
+    EgoVehicleStatus.front_steer_angle: deg
+    EgoVehicleStatus.rear_steer_angle: deg
+    EgoVehicleStatus.heading: deg
+    EgoVehicleStatus.angular_velocity: deg/s
+    EgoVehicleStatus.velocity: m/s
+    CtrlCmd.velocity: km/h
+
+frames:
+  world: map
+  base: base_link          # MORAI ego 로컬 원점 = 뒷바퀴축 중심 (실측 확인 필요)
+  ground_z_at_base_m: -0.35  # base_link 기준 노면 높이. KATRI 에서 LiDAR 로 재측정할 것
+
+cameras:
+  # sensor_set 의 cameraList 와 1:1. pos/rot 은 base_link 기준, rot 은 (roll, pitch, yaw) deg.
+  # MORAI 규약상 pitch 양수 = 렌즈 아래 (ASMC 에서 3-view 로 검증된 해석. 첫 연동 때 지면 격자
+  # 오버레이로 재확인한다 — tools/analyze_sensor_set_coverage.py --pitch-sign 참고)
+  front:
+    sensor_id: 1
+    topic: /cam_front/image_jpeg/compressed
+    frame_id: cam_front
+    type: sensor_msgs/CompressedImage
+    width: 1280
+    height: 720
+    horizontal_fov_deg: 90.0
+    translation_m: [1.900, 0.000, 1.200]
+    rotation_deg: [0.0, 2.0, 0.0]
+    period_s: 0.05
+  left:
+    sensor_id: 2
+    topic: /cam_left/image_jpeg/compressed
+    frame_id: cam_left
+    type: sensor_msgs/CompressedImage
+    width: 640
+    height: 480
+    horizontal_fov_deg: 130.0
+    translation_m: [1.150, 0.650, 1.200]
+    rotation_deg: [0.0, 10.0, 70.0]
+    period_s: 0.05
+  right:
+    sensor_id: 3
+    topic: /cam_right/image_jpeg/compressed
+    frame_id: cam_right
+    type: sensor_msgs/CompressedImage
+    width: 640
+    height: 480
+    horizontal_fov_deg: 130.0
+    translation_m: [1.150, -0.650, 1.200]
+    rotation_deg: [0.0, 10.0, -70.0]   # 센서셋의 290 과 같다. 코드에서는 [-180,180) 로 정규화한다
+    period_s: 0.05
+  rear:
+    sensor_id: 4
+    topic: /cam_rear/image_jpeg/compressed
+    frame_id: cam_rear
+    type: sensor_msgs/CompressedImage
+    width: 1280
+    height: 720
+    horizontal_fov_deg: 90.0
+    translation_m: [-0.100, 0.000, 1.200]
+    rotation_deg: [0.0, 2.0, 180.0]
+    period_s: 0.05
+
+sensors:
+  lidar:
+    sensor_id: 5
+    topic: /velodyne_points
+    frame_id: velodyne
+    type: sensor_msgs/PointCloud2
+    translation_m: [0.800, 0.000, 1.450]
+    rotation_deg: [0.0, 0.0, 0.0]
+    period_s: 0.10
+  gps:
+    sensor_id: 6
+    topic: /gps
+    frame_id: gps
+    type: morai_msgs/GPSMessage
+    translation_m: [0.350, 0.000, 1.250]
+    rotation_deg: [0.0, 0.0, 0.0]
+    period_s: 0.20
+  imu:
+    sensor_id: 7
+    topic: /imu
+    frame_id: imu
+    type: sensor_msgs/Imu
+    translation_m: [0.000, 0.000, 0.000]
+    rotation_deg: [0.0, 0.0, 0.0]
+    period_s: 0.02
+
+network:
+  # VIP3_network_v1.json 에 실제로 설정된 것만 적는다.
+  subscribe:      # 시뮬 -> 우리
+    ego: {topic: /Ego_topic, type: morai_msgs/EgoVehicleStatus, hz: 50}
+    objects: {topic: /Object_topic, type: morai_msgs/ObjectStatusList, hz: 50}
+    collision: {topic: /CollisionData, type: morai_msgs/CollisionData, hz: 50}
+    tf: {topic: /tf, type: tf2_msgs/TFMessage, hz: 50}
+  publish:        # 우리 -> 시뮬
+    save_sensor_data: {topic: /SaveSensorData, type: morai_msgs/SaveSensorData}
+    scenario_load: {topic: /ScenarioLoad, type: morai_msgs/ScenarioLoad}
+    lamps: {topic: /lamps, type: morai_msgs/Lamps}
+  services:
+    event_cmd: {name: /Service_MoraiEventCmd, type: morai_msgs/MoraiEventCmdSrv}   # 기어(R/D/P)·제어모드
+    map_spec: {name: /Service_MoraiMapSpec, type: morai_msgs/MoraiMapSpecSrv}
+  # !! 미설정 !! 차량 제어 채널이 아직 없다. 이게 없으면 자율주차 자체가 불가능하다.
+  # MORAI Network Settings -> Ego -> Ego Ctrl Cmd -> ROS / Topic=/ctrl_cmd 로 켠 뒤
+  # 네트워크 프리셋을 다시 export 해서 config/VIP3_network_v1.json 을 갱신한다.
+  missing:
+    ctrl_cmd: {topic: /ctrl_cmd, type: morai_msgs/CtrlCmd, pubsub_type: 771, division_type: 2}
+
+perception_topics:
+  # camera_semantic_perception 출력. {view} = front|left|right|rear
+  drivable_probability: "/perception/camera/{view}/drivable/probability"
+  lane_probability: "/perception/camera/{view}/lane/probability"
+  road_marking_class_id: "/perception/camera/{view}/road_marking/class_id"
+  road_marking_confidence: "/perception/camera/{view}/road_marking/confidence"
+  camera_diagnostics: /perception/camera/diagnostics
+  debug_panel: "/perception/camera/{view}/debug/panel/compressed"
+  debug_mosaic: /perception/camera/debug/mosaic/compressed
+  # drivable_bev 출력
+  bev_view_drivable: "/perception/bev/debug/{view}/drivable_probability"
+  bev_fused_drivable: /perception/bev/camera/drivable_probability
+  bev_fused_marking: /perception/bev/camera/road_marking/class_id
+  bev_diagnostics: /perception/bev/diagnostics
+
+bev_grid:
+  # 주차용 근거리 격자. ASMC 주행용은 x[-5,20] y[-8,8] res 0.10 이었다.
+  frame_id: base_link
+  x_min_m: -10.0
+  x_max_m: 10.0
+  y_min_m: -8.0
+  y_max_m: 8.0
+  resolution_m: 0.05     # 15 cm 주차선이 3 셀. 0.10 이면 선을 못 본다
+  max_ground_range_m: 25.0
+  min_camera_depth_m: 0.10

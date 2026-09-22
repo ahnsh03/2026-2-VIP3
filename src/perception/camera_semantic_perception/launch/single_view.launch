@@ -1,0 +1,12 @@
+<launch>
+  <!-- 카메라 1대만 추론. view:=rear 로 후방 카메라 단독 확인. -->
+  <arg name="view" default="front"/>
+  <arg name="checkpoint"
+       default="$(optenv VIP3_TWINLITE_CHECKPOINT /root/ws/weights/twinlite/v5_binary_lane/best_mean.pt)"/>
+  <arg name="device" default="cuda"/>
+  <include file="$(find camera_semantic_perception)/launch/semantic_inference.launch">
+    <arg name="views" value="$(arg view)"/>
+    <arg name="checkpoint" value="$(arg checkpoint)"/>
+    <arg name="device" value="$(arg device)"/>
+  </include>
+</launch>

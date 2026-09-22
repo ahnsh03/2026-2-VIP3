@@ -1,0 +1,36 @@
+<launch>
+  <!-- 파라미터화된 기반 런치. 직접 쓰지 말고 four_view.launch / single_view.launch 를 쓴다. -->
+  <arg name="views" default="front"/>
+  <!-- 모델 config. v6 4-class 로 바꾸려면 checkpoint 인자 하나만 바꾸면 된다
+       (heads 는 체크포인트에서 읽는다). config 파일째로 바꾸고 싶으면
+       model_config_file:=...twinlite_v6_road_marking.yaml checkpoint:='' 로 준다. -->
+  <arg name="model_config_file"
+       default="$(find camera_semantic_perception)/config/twinlite_medium.yaml"/>
+  <!-- 빈 문자열이면 model_config_file 안의 checkpoint 를 그대로 쓴다. -->
+  <arg name="checkpoint"
+       default="$(optenv VIP3_TWINLITE_CHECKPOINT /root/ws/weights/twinlite/v5_binary_lane/best_mean.pt)"/>
+  <arg name="device" default="cuda"/>
+  <arg name="amp" default="true"/>
+  <arg name="channels_last" default="false"/>
+  <arg name="warmup_iterations" default="1"/>
+  <arg name="batch_wait_ms" default="8.0"/>
+  <!-- binary 체크포인트에서는 무시된다. 4-class 모델일 때만 의미가 있다. -->
+  <arg name="publish_model_grid_road_marking" default="false"/>
+  <arg name="model_grid_max_hz" default="10.0"/>
+
+  <node pkg="camera_semantic_perception" type="semantic_inference_node.py"
+        name="camera_semantic_inference" output="screen" required="true">
+    <rosparam command="load" file="$(find camera_semantic_perception)/config/cameras.yaml"/>
+    <rosparam command="load" file="$(arg model_config_file)"/>
+    <rosparam param="views" subst_value="true">[$(arg views)]</rosparam>
+    <param name="checkpoint" value="$(arg checkpoint)" if="$(eval checkpoint != '')"/>
+    <param name="device" value="$(arg device)"/>
+    <param name="amp" value="$(arg amp)"/>
+    <param name="channels_last" value="$(arg channels_last)"/>
+    <param name="warmup_iterations" value="$(arg warmup_iterations)"/>
+    <param name="batch_wait_ms" value="$(arg batch_wait_ms)"/>
+    <param name="publish_model_grid_road_marking"
+           value="$(arg publish_model_grid_road_marking)"/>
+    <param name="model_grid_max_hz" value="$(arg model_grid_max_hz)"/>
+  </node>
+</launch>

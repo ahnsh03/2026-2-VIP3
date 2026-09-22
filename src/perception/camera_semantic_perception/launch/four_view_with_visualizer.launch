@@ -1,0 +1,14 @@
+<launch>
+  <!-- 추론 + 시각화를 한 번에. 추론 FPS 가 떨어지면 두 개의 roslaunch 로 분리할 것. -->
+  <arg name="checkpoint"
+       default="$(optenv VIP3_TWINLITE_CHECKPOINT /root/ws/weights/twinlite/v5_binary_lane/best_mean.pt)"/>
+  <arg name="device" default="cuda"/>
+  <arg name="secondary_mode" default="lane"/>
+  <include file="$(find camera_semantic_perception)/launch/four_view.launch">
+    <arg name="checkpoint" value="$(arg checkpoint)"/>
+    <arg name="device" value="$(arg device)"/>
+  </include>
+  <include file="$(find camera_semantic_perception)/launch/four_view_visualizer.launch">
+    <arg name="secondary_mode" value="$(arg secondary_mode)"/>
+  </include>
+</launch>

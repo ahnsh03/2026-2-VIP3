@@ -1,0 +1,90 @@
+# VIP3 4-카메라 BEV 캘리브레이션 (front / left / right / REAR)
+#
+# 정본은 config/VIP3_sensor_set_v1_ros.json 과 config/vip3_topics.yaml 이다.
+# source_sha256 이 안 맞으면 노드가 기동 시 거부한다 (validate_sensor_set_snapshot).
+# 센서셋을 바꾸면 여기 값과 해시를 같이 고친다.
+source_sensor_set: VIP3_sensor_set_v1_ros.json
+source_sha256: fdc520b5f4d8bbf99db109127e5e999d5bf3d91d9a28f17e8c6a4cbaeada4e63
+
+# MORAI 장착 위치는 뒷바퀴축 중심(base_link) 기준이고 노면이 아니다. 그 수직 오프셋을
+# 명시적인 평면으로 모델링한다.
+#
+# ⚠ z_at_origin_m = -0.35 은 ASMC 가 K-City 에서 LiDAR 지면 피팅으로 구한 값이다.
+#   차량 모델이 같으면 KATRI 에서도 같을 가능성이 높지만 **실측 전까지는 잠정값**이다.
+#   측정법: 평평한 아스팔트에 정차 → /velodyne_points 에서 3~8 m 반환점에 평면 피팅 →
+#   base_link 기준 z 절편. 5 cm 오차가 2 m 거리 주차선에서 약 10 cm 횡오차가 된다.
+ground_plane:
+  frame_id: base_link
+  model: plane
+  z_at_origin_m: -0.35
+  dz_dx: 0.0
+  dz_dy: 0.0
+  source: provisional_asmc_carryover_20260923
+
+# 내부 파라미터는 해상도와 수평 FOV 에서 유도한다.
+#   fx = fy = (width/2) / tan(fov/2),  cx,cy = 영상 중심
+# 센서셋의 focalLengthpixel(=320) 은 네 카메라 모두 틀렸으므로 쓰지 않는다.
+# 유도값: front/rear fx=640.000, left/right fx=149.219. lensDistortion 은 전부 [0,0,0] 이라
+# 핀홀 모델이 근사가 아니라 정확하다.
+#
+# rotation_deg 는 (roll, pitch, yaw). MORAI 규약상 pitch 양수 = 렌즈 아래.
+# right 의 yaw 는 센서셋의 290 을 [-180,180) 로 정규화한 -70 이다 (검증기가 양쪽을 정규화한다).
+cameras:
+  front:
+    sensor_id: 1
+    width: 1280
+    height: 720
+    horizontal_fov_deg: 90.0
+    translation_m: [1.90, 0.00, 1.20]
+    rotation_deg: [0.0, 2.0, 0.0]
+    topics:
+      image: /cam_front/image_jpeg/compressed
+      drivable: /perception/camera/front/drivable/probability
+      lane: /perception/camera/front/lane/probability
+      road_marking: /perception/camera/front/road_marking/class_id
+      road_marking_confidence: /perception/camera/front/road_marking/confidence
+
+  left:
+    sensor_id: 2
+    width: 640
+    height: 480
+    horizontal_fov_deg: 130.0
+    translation_m: [1.15, 0.65, 1.20]
+    rotation_deg: [0.0, 10.0, 70.0]
+    topics:
+      image: /cam_left/image_jpeg/compressed
+      drivable: /perception/camera/left/drivable/probability
+      lane: /perception/camera/left/lane/probability
+      road_marking: /perception/camera/left/road_marking/class_id
+      road_marking_confidence: /perception/camera/left/road_marking/confidence
+
+  right:
+    sensor_id: 3
+    width: 640
+    height: 480
+    horizontal_fov_deg: 130.0
+    translation_m: [1.15, -0.65, 1.20]
+    rotation_deg: [0.0, 10.0, -70.0]
+    topics:
+      image: /cam_right/image_jpeg/compressed
+      drivable: /perception/camera/right/drivable/probability
+      lane: /perception/camera/right/lane/probability
+      road_marking: /perception/camera/right/road_marking/class_id
+      road_marking_confidence: /perception/camera/right/road_marking/confidence
+
+  # ASMC 에는 없던 뷰다. ASMC cam4 는 (0,0,1.40) pitch 328 의 하향 카메라였고
+  # drivable_bev 에서 한 번도 설정된 적이 없다. 후진 주차의 핵심 뷰이므로
+  # 좌우 카메라와 동등하게 취급한다.
+  rear:
+    sensor_id: 4
+    width: 1280
+    height: 720
+    horizontal_fov_deg: 90.0
+    translation_m: [-0.10, 0.00, 1.20]
+    rotation_deg: [0.0, 2.0, 180.0]
+    topics:
+      image: /cam_rear/image_jpeg/compressed
+      drivable: /perception/camera/rear/drivable/probability
+      lane: /perception/camera/rear/lane/probability
+      road_marking: /perception/camera/rear/road_marking/class_id
+      road_marking_confidence: /perception/camera/rear/road_marking/confidence

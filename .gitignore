@@ -38,3 +38,12 @@ Thumbs.db
 *.pth
 *.onnx
 *.zip
+
+# 예외: 배포 후보 인지 가중치는 저장소에 둔다 (TwinLiteNet+ Medium ≈ 8 MB/파일).
+# 학습 run 전체가 아니라 선택된 checkpoint만 weights/ 아래에 커밋한다.
+!weights/**/*.pt
+
+# 학습 산출물·데이터셋·수집 결과는 $VIP3_DATA(저장소 밖)에 둔다
+artifacts/
+datasets/
+runs/

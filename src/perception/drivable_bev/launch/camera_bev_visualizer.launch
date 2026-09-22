@@ -1,0 +1,21 @@
+<launch>
+  <!-- BEV 모자이크 + 카메라 영상 위 지면 격자 오버레이.
+       지면 격자가 아스팔트에 얹히지 않으면 pitch 부호나 지면 z 가 틀린 것이다. -->
+  <arg name="views" default="front, left, right, rear"/>
+  <arg name="secondary_head" default="lane"/>
+  <arg name="publish_per_view_mosaic" default="true"/>
+  <arg name="bev_grid_config" default="$(find drivable_bev)/config/bev_grid.yaml"/>
+  <arg name="camera_config" default="$(find drivable_bev)/config/cameras_vip3_v1.yaml"/>
+  <arg name="visualization_config"
+       default="$(find drivable_bev)/config/visualization.yaml"/>
+
+  <node pkg="drivable_bev" type="camera_bev_visualizer_node.py"
+        name="camera_bev_visualizer" output="screen" required="true">
+    <rosparam command="load" file="$(arg bev_grid_config)"/>
+    <rosparam command="load" file="$(arg camera_config)"/>
+    <rosparam command="load" file="$(arg visualization_config)"/>
+    <param name="secondary_head" value="$(arg secondary_head)"/>
+    <param name="publish_per_view_mosaic" value="$(arg publish_per_view_mosaic)"/>
+    <rosparam param="enabled_views" subst_value="true">[$(arg views)]</rosparam>
+  </node>
+</launch>

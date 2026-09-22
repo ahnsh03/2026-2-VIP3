@@ -1,0 +1,11 @@
+# RTX 50(sm_120) 오버레이 — opt-in.
+#   docker compose -f docker-compose.yaml -f docker-compose.rtx50.yaml build
+# 또는 ./scripts/docker_ros_up.sh build-rtx50
+services:
+  vip3-ros-noetic:
+    build:
+      context: .
+      dockerfile: Dockerfile.rtx50
+    image: vip3/ros-noetic:rtx50
+    environment:
+      - VIP3_TWINLITE_PYTHON=/opt/infer-venv/bin/python

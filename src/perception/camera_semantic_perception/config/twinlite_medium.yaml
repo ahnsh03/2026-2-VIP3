@@ -1,0 +1,12 @@
+backend: twinlite
+model_config: medium
+# TwinLiteNet+ 공식 소스. 컨테이너에 read-only 로 마운트한다
+# (host: external/baselines/TwinLiteNetPlus, commit 90f1b8695ae311d5123b05f8534b2e11e42499d2).
+twinlite_root: /opt/baselines/TwinLiteNetPlus
+# v5 binary(drivable+lane) 체크포인트. host 의 weights/ 를 /root/ws/weights 로 마운트한다.
+checkpoint: /root/ws/weights/twinlite/v5_binary_lane/best_mean.pt
+weights: auto
+device: cuda
+amp: true
+channels_last: false   # 첫 bring-up 은 false. 4060 Ti + AMP 에서 true 가 10~20% 빠를 수 있으니 A/B 할 것.
+input_hw: [384, 640]   # 학습 letterbox. 재학습 없이 바꾸지 말 것.

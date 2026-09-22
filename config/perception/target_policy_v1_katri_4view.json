@@ -1,0 +1,121 @@
+{
+  "schema_version": "morai-perception-target-policy-2.0.0",
+  "policy_id": "katri_parking_actor_negative_4view_v1",
+  "status": "draft",
+  "frozen_at_utc": null,
+  "derived_from": "ASMC kcity_actor_negative_marking_all_views_v3 (actor-negative A/B 실험의 채택안 B)",
+  "evidence": {
+    "status": "pending_vip3_capture",
+    "note": "KATRI 주차장 semantic 전수 감사 전까지 비워 둔다. ASMC K-City 실측치(10,030 frame / 15.4G pixel)는 VIP3 근거가 아니므로 옮기지 않았다."
+  },
+  "views": [
+    "front",
+    "left",
+    "right",
+    "rear"
+  ],
+  "audit_constraints": {
+    "zero_pixel_classes": [
+      "blue_lane"
+    ]
+  },
+  "targets": {
+    "lane": {
+      "positive_classes": [
+        "white_lane",
+        "yellow_lane"
+      ],
+      "occlusion_policy": "visible_only",
+      "valid_policy": "geometric_valid",
+      "purpose": "v5 binary lane 체크포인트와 호환되는 이진 차선 경계 타깃; stopline 제외"
+    },
+    "road_marking": {
+      "class_values": {
+        "background": 0,
+        "white_lane": 1,
+        "yellow_lane": 2,
+        "stopline": 3
+      },
+      "occlusion_policy": "visible_only",
+      "valid_policy": "geometric_valid",
+      "valid_views": [
+        "front",
+        "left",
+        "right",
+        "rear"
+      ],
+      "derived_outputs": {
+        "lane_boundary_presence": "white_lane OR yellow_lane",
+        "road_marking_presence": "white_lane OR yellow_lane OR stopline"
+      },
+      "open_question": "KATRI 주차칸 선이 MORAI Semantic 에서 White Lane(255,255,255)으로 칠해지는지 확인 필요. White 이면 white_lane 헤드를 그대로 주차선 검출기로 쓴다. 미등록 색이면 클래스 재정의(parking_slot_line)와 mask baker 수정이 필요하다."
+    },
+    "drivable": {
+      "positive_classes": [
+        "asphalt",
+        "white_lane",
+        "yellow_lane",
+        "crosswalk",
+        "stopline",
+        "road_sign"
+      ],
+      "ignore_classes": [],
+      "valid_policy": "geometric_valid",
+      "ab_role": "actor-negative: 보이는 actor 픽셀은 ignore 가 아니라 유효한 non-drivable 음성이다. 주차장에서 주차된 차량은 '들어갈 수 없는 곳'이므로 주차 과제에서 특히 옳다."
+    },
+    "stopline": {
+      "positive_classes": [
+        "stopline"
+      ],
+      "occlusion_policy": "visible_only",
+      "valid_policy": "geometric_valid",
+      "valid_views": [
+        "front",
+        "left",
+        "right",
+        "rear"
+      ],
+      "purpose": "v6 4-class 호환을 위한 이진 보조 타깃. KATRI 주차구역에는 정지선이 거의 없어 대부분 0 픽셀이 될 것으로 예상한다. 주차용 재정의(stopline -> parking_slot_line) 시 함께 정리한다.",
+      "vip3_note": "삭제 후보. 첫 KATRI 감사에서 stopline 픽셀이 0 이면 4-class 를 주차용으로 재정의할 것."
+    },
+    "actor_occupancy_gt": {
+      "positive_classes": [
+        "vehicle",
+        "sedan",
+        "suv",
+        "truck",
+        "bus",
+        "van",
+        "wagon",
+        "mpv",
+        "pedestrian",
+        "obstacle"
+      ],
+      "training_target": false,
+      "purpose": "drivable 평가용 GT. 주차에서는 주차칸 폴리곤과 교차시켜 슬롯 단위 점유(빈 칸/찬 칸)를 후처리로 파생하는 데 재사용한다."
+    }
+  },
+  "explicit_background_classes": [
+    "sidewalk",
+    "standing_object",
+    "building",
+    "road_edge",
+    "sky",
+    "etc",
+    "ego_vehicle"
+  ],
+  "class_notes": {
+    "background": "road_marking 헤드 로컬 배경: white_lane / yellow_lane / stopline 이 아닌 모든 유효 픽셀.",
+    "blue_lane": "ASMC 전수 감사에서 0 픽셀이었다. KATRI 에서 파란 차선이 나오면 bake 를 fail-fast 시키는 게이트로 그대로 유지한다.",
+    "stopline": "주차 과제에서는 의미가 약하다. 4-class 헤드 구조를 유지하되 주차용 재정의 시 parking_slot_line 또는 curb_or_wheelstop 으로 바꾸는 것을 검토한다.",
+    "standing_object": "기둥·벽·표지 지주 등 고정 구조물. 주차장 실내/외 기둥이 여기에 들어갈 가능성이 높다. 비도로 배경으로 둔다.",
+    "obstacle": "콘·장애물 프롭. actor occupancy GT 는 유지하면서 non-drivable 로 학습한다.",
+    "ego_vehicle": "보이는 자차 후드/차체는 비도로 배경이다. 후방 카메라는 트렁크/범퍼가 화면 하단을 크게 가릴 수 있으므로 view 별 ego_vehicle 픽셀 비율을 따로 감사할 것."
+  },
+  "palette_source": "MORAI 26.R1 Semantic camera official RGB palette encoded in data_collection.mask_baker.OFFICIAL_PALETTE_RGB",
+  "vip3_notes": [
+    "views 4개는 config/vip3_topics.yaml 의 cam_front/cam_left/cam_right/cam_rear 와 일치한다.",
+    "rear 카메라는 front 와 1280x720 / FOV 90 / principalPoint 가 동일하므로 letterbox 기하도 front 와 같다(720x1280 -> 360x640, top/bottom 12px pad).",
+    "data_collection 포트에서 mask_baker 모듈 경로가 바뀌면 palette_source 문자열을 함께 갱신할 것."
+  ]
+}

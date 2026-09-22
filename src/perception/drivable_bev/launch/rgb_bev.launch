@@ -1,0 +1,14 @@
+<launch>
+  <!-- 모델 없이 도는 4-카메라 원본 RGB 서라운드 BEV.
+       rqt_image_view /perception/bev/debug/rgb/compressed -->
+  <arg name="views" default="front, left, right, rear"/>
+  <arg name="camera_config" default="$(find drivable_bev)/config/cameras_vip3_v1.yaml"/>
+  <arg name="rgb_bev_config" default="$(find drivable_bev)/config/rgb_bev.yaml"/>
+
+  <node pkg="drivable_bev" type="rgb_bev_node.py"
+        name="rgb_bev" output="screen" required="true">
+    <rosparam command="load" file="$(arg rgb_bev_config)"/>
+    <rosparam command="load" file="$(arg camera_config)"/>
+    <rosparam param="views" subst_value="true">[$(arg views)]</rosparam>
+  </node>
+</launch>

@@ -1,0 +1,8 @@
+# host networking 탈출구 (Docker Desktop 'Enable host networking' 을 이미 켜 둔 사람용).
+# 기본 경로는 브리지 + 9090 퍼블리시다. 이 오버레이는 필요할 때만 겹친다:
+#   docker compose -f docker-compose.yaml -f docker-compose.hostnet.yaml up -d
+# `!reset` 은 Compose v2.24+ 가 필요하다.
+services:
+  vip3-ros-noetic:
+    network_mode: host
+    ports: !reset []

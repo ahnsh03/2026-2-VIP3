@@ -1,0 +1,13 @@
+# 기어 변경 요청. 유일한 기어 writer 인 vip3_gear_node 만 이 서비스를 연다.
+# gear 값은 morai_msgs/EventInfo 와 같은 코드다.
+int32 GEAR_NO_CHANGE=-1
+int32 GEAR_PARKING=1
+int32 GEAR_REVERSE=2
+int32 GEAR_NEUTRAL=3
+int32 GEAR_DRIVE=4
+
+int32 gear
+---
+bool success
+int32 gear      # 요청 후 시뮬레이터가 돌려준 실제 기어
+string message  # 실패 이유 (성공이면 빈 문자열)

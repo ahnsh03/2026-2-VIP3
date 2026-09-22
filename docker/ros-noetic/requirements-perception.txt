@@ -1,0 +1,4 @@
+# 카메라 인지·BEV 공통 의존성 (TwinLiteNet+ 추론 포함)
+numpy>=1.19
+opencv-python-headless>=4.5
+scipy>=1.7

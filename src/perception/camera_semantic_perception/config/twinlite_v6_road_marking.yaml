@@ -1,0 +1,18 @@
+# v6 4-class road_marking 체크포인트용 대체 config.
+#   roslaunch camera_semantic_perception four_view.launch \
+#       model_config_file:=$(rospack find camera_semantic_perception)/config/twinlite_v6_road_marking.yaml
+# 또는 four_view.launch 의 model_config_file 인자만 바꾼다.
+#
+# 이 체크포인트는 heads = drivable + road_marking(4-class: background/white/yellow/stopline)이다.
+# 발행 토픽이 lane/probability 가 아니라 road_marking/{class_id,confidence} 로 바뀌므로
+# visualizer 는 secondary_mode:=road_marking 으로 같이 띄워야 한다.
+# drivable_bev 는 이 4-class 토픽을 요구한다 — BEV 를 돌리려면 이쪽 체크포인트를 쓴다.
+backend: twinlite
+model_config: medium
+twinlite_root: /opt/baselines/TwinLiteNetPlus
+checkpoint: /root/ws/weights/twinlite/v6_road_marking/best_mean.pt
+weights: auto
+device: cuda
+amp: true
+channels_last: false
+input_hw: [384, 640]

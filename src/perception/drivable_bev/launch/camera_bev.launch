@@ -1,0 +1,20 @@
+<launch>
+  <!-- 뷰별 BEV 투영. views:=rear 로 후방만 따로 볼 수 있다. -->
+  <arg name="views" default="front, left, right, rear"/>
+  <arg name="secondary_head" default="lane"/>   <!-- lane | road_marking -->
+  <arg name="bev_grid_config" default="$(find drivable_bev)/config/bev_grid.yaml"/>
+  <arg name="camera_config" default="$(find drivable_bev)/config/cameras_vip3_v1.yaml"/>
+  <arg name="verify_sensor_set" default="true"/>
+  <arg name="sensor_set_path"
+       default="$(find drivable_bev)/../../../config/VIP3_sensor_set_v1_ros.json"/>
+
+  <node pkg="drivable_bev" type="camera_bev_node.py"
+        name="camera_bev" output="screen" required="true">
+    <rosparam command="load" file="$(arg bev_grid_config)"/>
+    <rosparam command="load" file="$(arg camera_config)"/>
+    <param name="secondary_head" value="$(arg secondary_head)"/>
+    <param name="verify_sensor_set" value="$(arg verify_sensor_set)"/>
+    <param name="sensor_set_path" value="$(arg sensor_set_path)"/>
+    <rosparam param="enabled_views" subst_value="true">[$(arg views)]</rosparam>
+  </node>
+</launch>

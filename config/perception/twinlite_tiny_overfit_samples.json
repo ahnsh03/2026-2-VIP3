@@ -1,0 +1,16 @@
+{
+  "schema_version": "twinlite-tiny-selection-1.0.0",
+  "dataset_version": "vip3_twinlite_katri_v1",
+  "split": "train",
+  "purpose": "KATRI 주차장 4-view(front/left/right/rear) tiny-overfit 배관 검증용 소표본",
+  "selection_policy": "(시나리오 x view) 쌍마다 주차선 픽셀이 많은 샘플 1장과 free-space(drivable)가 넓은 샘플 1장을 고른다. view 4개 x 시나리오 3축이면 24장 규모.",
+  "_how_to_fill": [
+    "1) KATRI 수집 -> mask bake -> dataset_versions/vip3_twinlite_katri_v1 생성까지 끝난 뒤에 채운다.",
+    "2) sample_ids 는 train.jsonl 의 sample_id 문자열을 그대로 쓴다. 형식: '<run_id>/<view>/<frame_id 6자리>'.",
+    "3) 뷰 4개(front/left/right/rear)가 모두 들어가야 rear 회귀를 잡는다.",
+    "4) 채운 뒤 scripts/train_twinlite_tiny.py --selection-file config/perception/twinlite_tiny_overfit_samples.json 로 사용."
+  ],
+  "_status": "pending_vip3_capture",
+  "_note_target_pixel_counts": "ASMC K-City 실측 픽셀 수는 VIP3 근거가 아니므로 옮기지 않았다. 첫 감사 후 target_pixel_counts_within_valid_mask 키로 다시 기록할 것.",
+  "sample_ids": []
+}

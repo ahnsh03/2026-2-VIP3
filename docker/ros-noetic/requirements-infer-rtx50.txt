@@ -1,0 +1,21 @@
+# TwinLiteNet+ 추론 전용 Python 3.9 환경(/opt/infer-venv)의 의존성.
+#
+# torch / torchvision 은 CUDA 12.8 wheel 인덱스에서 따로 설치한다(Dockerfile.rtx50).
+# 이 파일은 그 위에 얹는 나머지 의존성만 담는다. 시스템 Python 3.8(ROS Noetic)의
+# numpy/OpenCV/rospy 에는 전혀 영향을 주지 않는다.
+#
+# 아래 버전 조합은 RTX 5070(sm_120)에서 torch 2.7.1+cu128 / torchvision 0.22.1+cu128
+# 과 함께 CUDA 추론까지 실제로 확인한 값이다(ASMC 검증분 승계).
+numpy==1.26.4
+opencv-python==4.10.0.84
+
+# rospy / genpy / sensor_msgs / Msg 는 전부 순수 Python 이라 PYTHONPATH 로
+# ROS 쪽을 그대로 쓴다. 다만 rospkg 와 catkin_pkg 는 apt 가 Python 3.8
+# 경로(/usr/lib/python3/dist-packages)에만 설치하므로 여기서 따로 넣는다.
+rospkg==1.6.2
+catkin_pkg==1.1.1
+PyYAML==6.0.3
+
+# rosgraph 는 netifaces 가 있으면 그것으로 로컬 주소를 찾는다. Python 3.8 용
+# .so 는 3.9 에서 쓸 수 없으므로 3.9 용으로 다시 빌드해 동작을 맞춘다.
+netifaces==0.11.0

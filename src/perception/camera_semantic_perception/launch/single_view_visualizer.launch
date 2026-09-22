@@ -1,0 +1,8 @@
+<launch>
+  <arg name="view" default="front"/>
+  <arg name="secondary_mode" default="lane"/>
+  <include file="$(find camera_semantic_perception)/launch/semantic_visualizer.launch">
+    <arg name="views" value="$(arg view)"/>
+    <arg name="secondary_mode" value="$(arg secondary_mode)"/>
+  </include>
+</launch>

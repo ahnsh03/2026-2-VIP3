@@ -1,0 +1,22 @@
+<launch>
+  <!-- VIP3 기본 추론 진입점. front/left/right/rear 4대를 한 배치로 돌린다. -->
+  <arg name="checkpoint"
+       default="$(optenv VIP3_TWINLITE_CHECKPOINT /root/ws/weights/twinlite/v5_binary_lane/best_mean.pt)"/>
+  <arg name="device" default="cuda"/>
+  <arg name="warmup_iterations" default="1"/>
+  <arg name="batch_wait_ms" default="8.0"/>
+  <arg name="channels_last" default="false"/>
+  <arg name="publish_model_grid_road_marking" default="false"/>
+  <arg name="model_grid_max_hz" default="10.0"/>
+  <include file="$(find camera_semantic_perception)/launch/semantic_inference.launch">
+    <arg name="views" value="front, left, right, rear"/>
+    <arg name="checkpoint" value="$(arg checkpoint)"/>
+    <arg name="device" value="$(arg device)"/>
+    <arg name="warmup_iterations" value="$(arg warmup_iterations)"/>
+    <arg name="batch_wait_ms" value="$(arg batch_wait_ms)"/>
+    <arg name="channels_last" value="$(arg channels_last)"/>
+    <arg name="publish_model_grid_road_marking"
+         value="$(arg publish_model_grid_road_marking)"/>
+    <arg name="model_grid_max_hz" value="$(arg model_grid_max_hz)"/>
+  </include>
+</launch>

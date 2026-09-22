@@ -1,0 +1,17 @@
+# VIP3 카메라 입력. 정본은 config/vip3_topics.yaml 이다. 값이 어긋나면 그쪽이 이긴다.
+#
+# 전송은 rosbridge WebSocket(ws://127.0.0.1:9090) 하나뿐이고 UDP bridge 는 없다.
+# MORAI 센서셋(config/VIP3_sensor_set_v1_ros.json)에서 각 camera 는 cc.commType 3(ROS),
+# cc.rosConfig.Topic 이 아래 문자열, frameID 가 cam_{front,left,right,rear} 로 설정돼 있다.
+camera_topics:
+  front: /cam_front/image_jpeg/compressed   # sensor 1  1280x720  FOV 90   20 Hz  pos( 1.900, 0.000, 1.200) rot(0,  2,   0)
+  left:  /cam_left/image_jpeg/compressed    # sensor 2   640x480  FOV 130  20 Hz  pos( 1.150, 0.650, 1.200) rot(0, 10,  70)
+  right: /cam_right/image_jpeg/compressed   # sensor 3   640x480  FOV 130  20 Hz  pos( 1.150,-0.650, 1.200) rot(0, 10, -70)
+  rear:  /cam_rear/image_jpeg/compressed    # sensor 4  1280x720  FOV 90   20 Hz  pos(-0.100, 0.000, 1.200) rot(0,  2, 180)
+
+subscriber_buffer_bytes: 16777216   # 16 MiB. 4-camera JPEG burst 를 커널에서 버리지 않기 위한 값.
+batch_wait_ms: 8.0                  # 4-view coalescing. diagnostics 의 output_frames/output_batches 가 4.0 에 가까운지 볼 것.
+restore_original: true              # 원본 해상도로 복원해 발행. false 면 384x640 model grid.
+                                    # drivable_bev projector 가 원본 해상도를 전제하므로 true 를 유지한다.
+                                    # 성능이 모자라면 README 의 '튜닝 순서' 를 보고 BEV 와 같이 결정할 것.
+log_interval_sec: 2.0

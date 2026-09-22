@@ -1,0 +1,16 @@
+<launch>
+  <!-- 뷰별 BEV 를 한 장으로 융합한다. camera_bev.launch 가 먼저 떠 있어야 한다. -->
+  <arg name="views" default="front, left, right, rear"/>
+  <arg name="secondary_head" default="lane"/>
+  <arg name="bev_grid_config" default="$(find drivable_bev)/config/bev_grid.yaml"/>
+  <arg name="camera_config" default="$(find drivable_bev)/config/cameras_vip3_v1.yaml"/>
+
+  <node pkg="drivable_bev" type="camera_bev_fusion_node.py"
+        name="camera_bev_fusion" output="screen" required="true">
+    <rosparam command="load" file="$(arg bev_grid_config)"/>
+    <rosparam command="load" file="$(arg camera_config)"/>
+    <rosparam command="load" file="$(find drivable_bev)/config/fusion.yaml"/>
+    <param name="secondary_head" value="$(arg secondary_head)"/>
+    <rosparam param="views" subst_value="true">[$(arg views)]</rosparam>
+  </node>
+</launch>

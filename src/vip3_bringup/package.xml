@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>integration_launch</name>
+  <version>0.0.0</version>
+  <description>
+    ROS를 사용하는 MORAI bridge 모듈의 launch 전용 패키지.
+    Planning/Control은 standalone UDP 스크립트로 실행한다.
+  </description>
+
+  <maintainer email="autonav@todo.todo">autonav</maintainer>
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- 빌드 의존성은 없음(코드가 없음). 아래는 실행 시 필요한 패키지를
+       명시하는 용도(rosdep/문서화) - roslaunch의 $(find)는 이 태그와
+       무관하게 동작하지만, 어떤 패키지들을 함께 띄우는지 명확히 하기 위해 남김. -->
+  <exec_depend>morai_udp_bridge</exec_depend>
+  <exec_depend>morai_sensor_bridge</exec_depend>
+
+  <export>
+    <!-- 이 패키지는 빌드 산출물(실행 파일/라이브러리)이 없는 launch-only 패키지 -->
+  </export>
+</package>

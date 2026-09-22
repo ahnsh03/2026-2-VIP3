@@ -1,0 +1,41 @@
+name: full
+description: "All known channels — short debug runs only (disk/I/O heavy)"
+collect_hz: 10
+mode: latest_timer
+max_frames: 300
+require_ego: true
+map: R_KR_PG_K-City_2025
+vehicle: 2023_Hyundai_ioniq5
+bridge_type: ros_topics
+lidar_format: bin_xyzi
+notes: |
+  Do NOT use as default long sessions. Prefer perception_core.
+  max_frames=300 soft-cap for safety (override with ~max_frames).
+
+channels:
+  ego: true
+  competition_ego: true
+  objects: true
+  collision: true
+  tl_status: true
+  lidar: true
+  gps: true
+  imu: true
+  cam_front: true
+  cam_left: true
+  cam_right: true
+  cam_extra: true
+
+topics:
+  ego: /Ego_topic
+  competition_ego: /Competition_topic
+  objects: /Object_topic
+  collision: /CollisionData
+  tl_status: /GetTrafficLightStatus
+  lidar: /velodyne_points
+  gps: /gps
+  imu: /imu
+  cam_front: /image_jpeg/compressed
+  cam_left: /cam_left/image_jpeg/compressed
+  cam_right: /cam_right/image_jpeg/compressed
+  cam_extra: /cam_extra/image_jpeg/compressed

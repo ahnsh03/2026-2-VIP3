@@ -1,0 +1,25 @@
+<launch>
+  <!-- Review-only overlay. It never writes src/vip3_hd_map/development/won_tae_link_node or an operational H5. -->
+  <arg name="rviz" default="true"/>
+  <arg name="ego_topic" default="/Ego_topic"/>
+  <arg name="repo_root" default=""/>
+  <arg name="local_radius_m" default="60.0"/>
+  <arg name="max_publish_hz" default="5.0"/>
+  <arg name="publish_legacy_links" default="false"/>
+
+  <node pkg="vip3_hd_map" type="legacy_origin_overlay_node.py"
+        name="legacy_origin_overlay" output="screen">
+    <!-- Empty means auto-detect from the source config path. Installed-only
+         deployments can pass an explicit repository/data root. -->
+    <param name="repo_root" value="$(arg repo_root)"/>
+    <param name="config_path"
+           value="$(find vip3_hd_map)/config/kcity2025_legacy_transfer.yaml"/>
+    <param name="ego_topic" value="$(arg ego_topic)"/>
+    <param name="local_radius_m" value="$(arg local_radius_m)"/>
+    <param name="max_publish_hz" value="$(arg max_publish_hz)"/>
+    <param name="publish_legacy_links" value="$(arg publish_legacy_links)"/>
+  </node>
+
+  <node if="$(arg rviz)" pkg="rviz" type="rviz" name="legacy_origin_overlay_rviz"
+        args="-d $(find vip3_hd_map)/rviz/legacy_origin_overlay.rviz"/>
+</launch>

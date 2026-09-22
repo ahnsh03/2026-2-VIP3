@@ -1,0 +1,44 @@
+# VIP3 ROS Noetic 개발 컨테이너.
+# MORAI(Windows) -> rosbridge WebSocket ws://127.0.0.1:9090. UDP 브리지는 없다.
+# 기본은 브리지 네트워크 + 9090/tcp 퍼블리시라 Docker Desktop 의 'Enable host
+# networking' 설정이 필요 없다. host 모드가 필요하면 docker-compose.hostnet.yaml 을 겹친다.
+services:
+  vip3-ros-noetic:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: vip3/ros-noetic:dev
+    container_name: vip3-ros-noetic
+    gpus: all
+    ports:
+      - "9090:9090"   # MORAI rosbridge WebSocket (외부로 여는 유일한 포트)
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute
+      # 호스트 $VIP3_DATA 가 여기에 마운트된다. 수집기는 컨테이너 로컬 폴백 대신
+      # 항상 이 경로를 써서 컨테이너를 다시 만들어도 manifest 가 살아남게 한다.
+      - VIP3_DATA=/data
+      - TWINLITE_ROOT=/opt/baselines/TwinLiteNetPlus
+      - DISPLAY=${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - __NV_PRIME_RENDER_OFFLOAD=1
+      - __GLX_VENDOR_LIBRARY_NAME=nvidia
+      - __VK_LAYER_NV_optimus=NVIDIA_only
+      # 호스트 /run/user/<uid> 는 이 root 컨테이너에 없다. 이미지가 만든 0700
+      # 디렉터리를 써서 Qt/rqt/RViz 기동 실패를 막는다.
+      - XDG_RUNTIME_DIR=/tmp/vip3-xdg-runtime
+      - ROS_MASTER_URI=http://127.0.0.1:11311
+      - ROS_IP=127.0.0.1
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - ../..:/root/ws:rw
+      - /etc/localtime:/etc/localtime:ro
+      # 기본값은 저장소와 나란한 로컬 루트의 data/. ROS 쪽이 수집·기록 프로세스를
+      # 가지고 있으므로 이 마운트는 쓰기 가능해야 한다.
+      - ${VIP3_DATA:-../../../data}:/data:rw
+      # TwinLiteNet+ upstream. 학습뿐 아니라 런타임 추론도 이 코드를 import 한다.
+      - ${TWINLITE_SOURCE:-../../../external/baselines/TwinLiteNetPlus}:/opt/baselines/TwinLiteNetPlus:ro
+    shm_size: "2gb"
+    stdin_open: true
+    tty: true
+    command: ["tail", "-f", "/dev/null"]
