@@ -2,11 +2,11 @@
 
 | 문서 | 역할 |
 |---|---|
-| [course.md](course.md) | 알파프로젝트 교과목 개요·평가·일정 |
+| [course.md](course.md) | 교과목 일정·평가·중간고사·산출물 |
 | [setup.md](setup.md) | 개발 환경 기준 (WSL2 · Docker · MORAI) |
 | [architecture.md](architecture.md) | 디렉터리·모듈 경계와 담당 경로 |
 | [collaboration.md](collaboration.md) | `main` 푸시 규약, 커밋 메시지 |
-| [notes/](notes/) | 연구노트 (교과목 필수 평가도구) |
+| [notes/](notes/) | 작업 기록 — 점검·보고서 재료 |
 
 ## 추가 예정
 
@@ -14,7 +14,7 @@
 
 | 문서 | 언제 |
 |---|---|
-| `related-work.md` | 관련연구 조사 발표(4주차 전후) 정리 |
+| `related-work.md` | 관련연구 조사 — 11주차 계획서 발표 재료 |
 | `contracts/` | 모듈 입출력 계약 — 모듈 경계 확정 후 |
 | `troubleshooting.md` | 시뮬 연동 중 반복되는 문제가 쌓이면 |
 
