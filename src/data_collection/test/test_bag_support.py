@@ -3,11 +3,16 @@
 import os
 import tempfile
 import unittest
+from pathlib import Path
 from datetime import datetime, timezone
 
 import yaml
 
-from data_collection.bag_profile import BagProfileError, load_bag_profile
+from data_collection.bag_profile import (
+    BagProfileError,
+    load_bag_profile,
+    simulator_gt_topics,
+)
 from data_collection.bag_run import build_rosbag_command, make_bag_run_id
 
 
@@ -110,6 +115,36 @@ class BagRunTest(unittest.TestCase):
         self.assertIn("--buffsize=1024", command)
         self.assertIn("--lz4", command)
         self.assertEqual(command[-1], "/result")
+
+
+class SimulatorGtGateTest(unittest.TestCase):
+    """`bag_replay_node` 가 이 함수 이름에 의존한다.
+
+    ASMC 의 대회 게이트(`privileged_gt`)를 VIP3 게이트(`simulator_gt`)로 바꿀 때
+    라이브러리만 고치고 재생 노드의 import 를 안 고쳐서, **bag 재생 노드가 기동 즉시
+    ImportError 로 죽는** 상태가 한동안 있었다. 노드는 rospy 없이 import 할 수 없어
+    테스트 190개가 전부 통과하는 동안에도 아무도 몰랐다. 이름을 여기서 고정한다.
+    (`tools/check_node_imports.py` 가 같은 사고를 정적으로도 잡는다.)
+    """
+
+    def test_detects_simulator_only_topics(self):
+        found = simulator_gt_topics(
+            ["/Ego_topic", "/Object_topic", "/sem_rear/image", "/velodyne_points"]
+        )
+        self.assertEqual(["/Object_topic", "/sem_rear/image"], found)
+
+    def test_plain_sensor_topics_are_not_ground_truth(self):
+        self.assertEqual(
+            [], simulator_gt_topics(["/cam_front/image_jpeg/compressed", "/gps", "/imu"])
+        )
+
+    def test_replay_node_gates_on_this_name(self):
+        node = (
+            Path(__file__).resolve().parents[1] / "scripts" / "bag_replay_node.py"
+        ).read_text(encoding="utf-8")
+        self.assertIn("simulator_gt_topics", node)
+        self.assertIn("allow_simulator_gt", node)
+        self.assertNotIn("privileged", node, "ASMC 대회 게이트 이름이 남아 있다")
 
 
 if __name__ == "__main__":

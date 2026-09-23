@@ -27,8 +27,10 @@ MODEL_CACHE_V2_SCHEMA_VERSION = "twinlite-mask-cache-2.0.0"
 NATIVE_V3_SCHEMA_VERSION = "perception-targets-native-3.0.0"
 MODEL_CACHE_V3_SCHEMA_VERSION = "twinlite-mask-cache-3.0.0"
 BAKE_SCHEMA_VERSION = MODEL_CACHE_SCHEMA_VERSION  # Backward-compatible import.
-DEFAULT_NATIVE_OUTPUT_NAME = "perception_targets_native_v1"
-DEFAULT_OUTPUT_NAME = "twinlite_384x640_v2"
+DEFAULT_NATIVE_OUTPUT_NAME = "vip3_targets_native_v1"
+# 모델 입력 cache 디렉터리 이름. **이 이름을 만드는 쪽이 여기**이므로 정본이다.
+# perception_dataset.DEFAULT_CACHE_NAME 이 이 값을 import 한다 — 따로 적지 말 것.
+DEFAULT_OUTPUT_NAME = "vip3_twinlite_384x640_v1"
 TARGET_HW = (384, 640)
 # 정본은 capture_sync.CAMERAS 다. 여기서 따로 정의하지 않는다.
 from .capture_sync import VIEWS as TWINLITE_VIEWS

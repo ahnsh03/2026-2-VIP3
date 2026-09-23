@@ -8,6 +8,10 @@
   <arg name="rate" default="1.0"/>
   <arg name="wait_for_start" default="true"/>
   <arg name="post_roll_sec" default="2.0"/>
+  <!-- 시뮬만 아는 GT(/Object_topic, /CollisionData, /sem_*)가 든 bag 은 기본 차단.
+       인지 성능을 잴 때 섞이면 "시뮬이 정답을 알려준 것"이 된다.
+       라벨링·오프라인 분석용으로만 true 로 연다. -->
+  <arg name="allow_simulator_gt" default="false"/>
 
   <node pkg="data_collection" type="bag_replay_node.py"
         name="vip3_bag_replay" output="screen" required="true">
@@ -16,5 +20,6 @@
     <param name="rate" value="$(arg rate)"/>
     <param name="wait_for_start" value="$(arg wait_for_start)"/>
     <param name="post_roll_sec" value="$(arg post_roll_sec)"/>
+    <param name="allow_simulator_gt" value="$(arg allow_simulator_gt)"/>
   </node>
 </launch>

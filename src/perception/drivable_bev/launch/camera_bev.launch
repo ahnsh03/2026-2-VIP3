@@ -13,6 +13,8 @@
     <rosparam command="load" file="$(arg bev_grid_config)"/>
     <rosparam command="load" file="$(arg camera_config)"/>
     <param name="secondary_head" value="$(arg secondary_head)"/>
+    <!-- source_sensor_set / source_sha256 은 camera_config(yaml)에서 온다.
+         여기서 param 으로 덮어쓰면 드리프트 검사가 무력해지므로 넘기지 않는다. -->
     <param name="verify_sensor_set" value="$(arg verify_sensor_set)"/>
     <param name="sensor_set_path" value="$(arg sensor_set_path)"/>
     <rosparam param="enabled_views" subst_value="true">[$(arg views)]</rosparam>

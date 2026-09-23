@@ -6,6 +6,9 @@
        주의: ROS 백엔드는 저장 성공 여부를 알 수 없다. /SaveSensorData 는 publish 가
        리턴하면 무조건 success=true 다. 실제 파일 존재 검증은 반드시 다음 단계에서 한다.
        README "2) 무결성 검사" 의 sync_capture_data.py dry-run 은 선택이 아니라 필수 게이트다. -->
+  <!-- rosbridge 는 VIP3 의 유일한 MORAI 전송 경로다. 포트는 한 곳에서만
+       정한다 — config/morai_rosbridge.env 의 MORAI_BRIDGE_URL. -->
+  <arg name="bridge_url" default="$(optenv MORAI_BRIDGE_URL ws://127.0.0.1:9090)"/>
   <arg name="capture_hz" default="1.0"/>
   <arg name="start_delay_sec" default="2.0"/>   <!-- 첫 캡처까지 대기. 센서 워밍업 -->
   <arg name="max_captures" default="0"/>     <!-- 0 = 무제한 -->
@@ -21,6 +24,7 @@
 
   <node pkg="data_collection" type="capture_collector_node.py"
         name="vip3_capture_collector" output="screen" required="true">
+    <param name="bridge_url" value="$(arg bridge_url)"/>
     <param name="capture_hz" value="$(arg capture_hz)"/>
     <param name="start_delay_sec" value="$(arg start_delay_sec)"/>
     <param name="max_captures" value="$(arg max_captures)"/>

@@ -130,13 +130,35 @@ class CameraCalibrationTest(unittest.TestCase):
             np.testing.assert_allclose(recovered, points[visible], atol=1e-6)
 
     def test_changed_sensor_set_is_rejected(self):
+        """센서셋 내용이 바뀌면 기동을 막는다 (파일 이름은 같게 둬서 해시 경로를 탄다)."""
         document = json.loads(SENSOR_SET.read_text(encoding="utf-8"))
         document["cameraList"][0]["rot"]["pitch"] = "3.000"
         with tempfile.TemporaryDirectory() as temporary:
-            changed = Path(temporary) / "sensor_set.json"
+            changed = Path(temporary) / SENSOR_SET.name
             changed.write_text(json.dumps(document), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "SHA-256 mismatch"):
                 validate_sensor_set_snapshot(self.snapshot, self.cameras, changed)
+
+    def test_wrong_sensor_set_file_is_rejected_by_name(self):
+        """런치가 다른 센서셋(예: SVM v2)을 가리키면 해시만으로는 원인을 알기 어렵다.
+
+        센서셋을 바꾸면서 cameras_*.yaml 을 안 고치는 것이 가장 흔한 실수라
+        파일 이름을 먼저 본다.
+        """
+        with tempfile.TemporaryDirectory() as temporary:
+            other = Path(temporary) / "VIP3_sensor_set_v2_svm.json"
+            other.write_text(SENSOR_SET.read_text(encoding="utf-8"), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "sensor-set file mismatch"):
+                validate_sensor_set_snapshot(self.snapshot, self.cameras, other)
+
+    def test_snapshot_without_a_name_skips_the_name_check(self):
+        """source_sensor_set 이 없는 옛 스냅샷은 해시 검사만 한다 (하위 호환)."""
+        snapshot = dict(self.snapshot)
+        snapshot.pop("source_sensor_set", None)
+        with tempfile.TemporaryDirectory() as temporary:
+            other = Path(temporary) / "anything.json"
+            other.write_text(SENSOR_SET.read_text(encoding="utf-8"), encoding="utf-8")
+            validate_sensor_set_snapshot(snapshot, self.cameras, other)
 
 
 if __name__ == "__main__":

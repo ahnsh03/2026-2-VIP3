@@ -98,11 +98,18 @@ asmc/ros-noetic:dev  -> vip3/ros-noetic:dev
    `/CollisionData`, `/sem_*`)를 담으려면 프로파일이 명시해야 한다. 섞이면 인지 평가가
    무의미해진다.
 
-### 고친 버그 2건
+### 고친 버그 4건
 
 - `smoke_twinlite_data_loss.py` — `valid_masks` dict 를 device 로 안 옮겨 `--device cuda` 에서
   device mismatch
 - `evaluate_twinlite.py` — binary 하드코딩 때문에 **v6 4-class 체크포인트를 평가할 수 없었다**
+- **파이프라인 단계별로 뷰가 어긋나 후방 카메라 데이터가 조용히 버려졌다.** 수집은 4뷰,
+  curation/bake/dataset 은 각자 `("front","left","right")` 를 들고 있었다. 이제 뷰 이름의
+  정본은 `capture_sync.CAMERAS` 하나고 `test_view_contract.py` 가 지킨다
+- **`katri_map_viz_node` 의 `pose_source:=gps_imu` 가 아무것도 발행하지 않았다.** 파라미터
+  검증도 하고 `/gps`·`/imu` 구독도 하는데 콜백이 최신 메시지를 저장만 하고 `_update()` 를
+  부르지 않았다. 로그는 정상이고 마커만 안 뜨는, 눈으로는 원인을 못 찾는 형태였다.
+  이식된 `live_pose.py` + `gps_transform.py` 를 실제로 연결해 고쳤다
 
 ## 4. 안 가져온 것
 
@@ -119,6 +126,20 @@ asmc/ros-noetic:dev  -> vip3/ros-noetic:dev
 | gRPC (`tools/grpc_inha_univ`, `environment_grpc.py`) | Capture 는 ROS `/SaveSensorData` 로 충분하다 |
 | 문서 `structure/` D1~D5 이전 보고서, `governance/`, `competition/` | 문서 12개인 팀에 순수 비용 |
 | ultralytics/YOLO, open3d, wandb, grpcio | 위 항목들과 함께 빠졌다 |
+
+### 가져왔다가 도로 지운 것
+
+이식 직후 감사에서 **생산 호출자가 0 인 모듈**을 찾아 지웠다. 되살릴 때는 이 커밋의
+부모에서 꺼내면 된다 — 파일과 테스트가 같이 들어 있다.
+
+| 모듈 | 왜 지웠나 |
+|---|---|
+| `vip3_hd_map/spatial.py` | 호출자 0, 테스트 0 |
+| `vip3_hd_map/local_crop.py` | 호출자 0. `nav_msgs/OccupancyGrid` 를 자르는데 저장소에 OccupancyGrid 를 내는 노드가 없다. 기본값도 K-City 주행 규모(120 m 사각, 0.2 m/셀)라 주차 BEV 격자(20×16 m, 0.05 m/셀)와 두 자릿수 차이다 |
+
+반대로 **살려서 배선한 것**도 있다. `live_pose.py` + `gps_transform.py` 는 호출자가
+0 이었는데, 지울 게 아니라 `katri_map_viz_node` 의 `pose_source:=gps_imu` 경로가
+**절반만 이식돼 있던** 것이었다 (§3 '기능이 바뀐 곳' 참조).
 
 ### gRPC 를 버려서 잃은 것
 
@@ -141,11 +162,14 @@ asmc/ros-noetic:dev  -> vip3/ros-noetic:dev
 ```bash
 # 전 패키지 테스트 (ROS·GPU 없이 호스트에서)
 cd /root/ws
-for p in src/perception/drivable_bev src/perception/camera_semantic_perception \
-         src/data_collection src/vip3_hd_map src/vip3_vehicle_state; do
-  PYTHONPATH="$p/src:src/perception/camera_semantic_perception/src" \
-    python3 -m unittest discover -s "$p/test" -p 'test_*.py'
+PKGS="src/perception/drivable_bev src/perception/camera_semantic_perception \
+      src/data_collection src/vip3_hd_map src/vip3_vehicle_state"
+# 패키지 간 import 가 있어서(vip3_hd_map -> vip3_vehicle_state) 전부 경로에 올린다.
+ALL=$(for p in $PKGS; do printf "%s/src:" "$p"; done | sed 's/:$//')
+for p in $PKGS; do
+  echo "== $p"
+  PYTHONPATH="$ALL" python3 -m unittest discover -s "$p/test" -p 'test_*.py' 2>&1 | tail -3
 done
 ```
 
-2026-09-23 기준 **156개 통과.**
+2026-09-23 기준 **193개 통과.**

@@ -37,7 +37,11 @@ from drivable_bev.performance_monitor import (
 )
 from drivable_bev.projector import CameraBevProjector
 
-SECONDARY_HEADS = ("lane", "road_marking")
+# secondary head 별 클래스 ID 상한. 모델이 이보다 큰 ID 를 내면 projector 가 거부한다.
+#   lane         : {0=배경, 1=차선}          v5 binary 체크포인트
+#   road_marking : {0..3}                    v6 4-class 체크포인트
+SECONDARY_HEAD_MAX_CLASS_ID = {"lane": 1, "road_marking": 3}
+SECONDARY_HEADS = tuple(SECONDARY_HEAD_MAX_CLASS_ID)
 
 
 def _enabled_views(value):
@@ -78,7 +82,13 @@ class CameraBevNode:
         self.minimum_period_ns = int(round(1e9 / self.max_publish_hz))
         max_ground_range = float(rospy.get_param("~max_ground_range_m", 25.0))
         min_camera_depth = float(rospy.get_param("~min_camera_depth_m", 0.1))
-        max_class_id = int(rospy.get_param("~max_class_id", 3))
+        # 기본값은 secondary_head 에서 끌어온다. binary 체크포인트를 돌리는데
+        # 상한만 4-class 로 열려 있으면, 잘못된 모델을 물려도 조용히 통과한다.
+        max_class_id = int(
+            rospy.get_param(
+                "~max_class_id", SECONDARY_HEAD_MAX_CLASS_ID[self.secondary_head]
+            )
+        )
 
         camera_values = rospy.get_param("~cameras")
         if not isinstance(camera_values, dict):
@@ -101,6 +111,7 @@ class CameraBevNode:
         if bool(rospy.get_param("~verify_sensor_set", True)):
             sensor_set_path = Path(str(rospy.get_param("~sensor_set_path")))
             snapshot = {
+                "source_sensor_set": rospy.get_param("~source_sensor_set", ""),
                 "source_sha256": self.source_sha256,
                 "ground_plane": ground_plane_values,
                 "cameras": camera_values,

@@ -19,7 +19,7 @@ from .mask_baker import OFFICIAL_PALETTE_RGB
 
 
 CURATION_SCHEMA_VERSION = "perception-curation-1.0.0"
-DEFAULT_CURATION_NAME = "curation_v2"
+DEFAULT_CURATION_NAME = "curation_v1"
 # 정본은 capture_sync.CAMERAS 다.
 from .capture_sync import VIEWS  # noqa: F401  (재export)
 FOCUS_CLASSES = (

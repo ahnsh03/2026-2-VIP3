@@ -58,6 +58,55 @@ class ViewContractTest(unittest.TestCase):
                     unknown, "target {} 의 valid_views 에 모르는 뷰: {}".format(name, unknown)
                 )
 
+    def test_pipeline_names_are_defined_once(self):
+        """cache 이름이 두 곳에 따로 적혀 있으면 build 가 만든 걸 train 이 못 찾는다.
+
+        실제로 그랬다 — 코드 기본값(twinlite_morai_v1 / twinlite_384x640_v2),
+        학습 스크립트(vip3_twinlite_katri_v1), README(vip3_katri_parking_v1) 가
+        전부 달라서 기본값만 쓰면 파이프라인이 끊겼다.
+        """
+        from data_collection.mask_baker import DEFAULT_OUTPUT_NAME
+        from data_collection.perception_dataset import (
+            DEFAULT_CACHE_NAME, DEFAULT_DATASET_VERSION,
+        )
+
+        # cache 를 만드는 쪽과 읽는 쪽이 같은 이름이어야 한다.
+        self.assertIs(DEFAULT_OUTPUT_NAME, DEFAULT_CACHE_NAME)
+        # 학습 adapter 가 기대하는 dataset 이름과 build 가 만드는 이름이 같아야 한다.
+        twinlite = REPO_ROOT / "src" / "perception" / "twinlite_morai" / "dataset.py"
+        text = twinlite.read_text(encoding="utf-8")
+        self.assertIn(
+            'DEFAULT_DATASET_VERSION = "{}"'.format(DEFAULT_DATASET_VERSION), text,
+            "twinlite_morai 와 data_collection 의 기본 dataset 이름이 다르다",
+        )
+        # 학습 테스트의 fixture 경로도 같은 cache 이름을 쓴다. 여기가 어긋나면
+        # 테스트를 보고 경로를 따라 만드는 사람이 bake 결과를 못 찾는다.
+        fixture = (
+            REPO_ROOT / "src" / "perception" / "twinlite_morai"
+            / "test" / "test_dataset_loss.py"
+        )
+        self.assertIn(
+            'CACHE_NAME = "{}"'.format(DEFAULT_OUTPUT_NAME),
+            fixture.read_text(encoding="utf-8"),
+            "twinlite_morai 학습 테스트의 fixture cache 이름이 파이프라인과 다르다",
+        )
+
+    def test_training_scripts_use_the_same_dataset_default(self):
+        from data_collection.perception_dataset import DEFAULT_DATASET_VERSION
+
+        for name in ("train_twinlite.py", "train_twinlite_tiny.py",
+                     "smoke_twinlite_data_loss.py", "render_twinlite_predictions.py"):
+            path = REPO_ROOT / "scripts" / name
+            if not path.is_file():
+                continue
+            text = path.read_text(encoding="utf-8")
+            if "--dataset-version" not in text:
+                continue
+            self.assertIn(
+                'default="{}"'.format(DEFAULT_DATASET_VERSION), text,
+                "{} 의 --dataset-version 기본값이 파이프라인과 다르다".format(name),
+            )
+
     def test_collector_profiles_cover_every_camera_view(self):
         """수집 프로파일의 카메라 채널이 뷰 전체를 덮는지."""
         from data_collection.profile_loader import CAMERA_CHANNELS

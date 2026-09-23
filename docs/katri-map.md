@@ -114,6 +114,10 @@ workspace_origin          = [168.0, 1461.0, -72.0]     ← 쓰지 말 것
 2. **UTM ↔ map**: `map_xy = utm52n_xy − (302459.942, 4122635.537)`
 3. **`workspace_origin` 은 MORAI 에디터의 뷰포트 상태다.** 좌표 변환 파라미터가 아니다.
 4. GPS lever arm: 센서셋 GPS(id 6) 가 x = 0.350 m 이므로 `base_link` 로 옮길 때 그만큼 뺀다.
+5. **원점의 WGS84 위경도 = 37.2293241 N, 126.7732979 E.** `gps_transform.gps_to_utm52n` 을
+   수치로 역산한 값이고 `test_live_pose.py::test_katri_origin_round_trips` 가 1 cm 이내로
+   검증한다. `rostopic echo -n1 /gps` 값이 이 근처(±3 km)가 아니면 맵이나 차량 스폰 위치가
+   KATRI 가 아니다 — 원점 오프셋을 의심하기 전에 이걸 먼저 본다.
 
 실측 범위: x [−534.6, 379.7], y [−249.1, 2130.4], z [−6.1, 5.8]. 약 0.9 km × 2.4 km.
 
@@ -121,6 +125,11 @@ workspace_origin          = [168.0, 1461.0, -72.0]     ← 쓰지 말 것
 `rostopic echo -n1 /Ego_topic` 의 position 으로 가장 가까운 link 까지 거리를 재면 된다. 1 m 이내면
 일치, 수백 m 면 오프셋이 있는 것이고 그때 `~map_origin_offset_xy` 를 쓴다. 시각화 노드가 이걸
 자동으로 경고한다(`~pose_distance_warning_m`).
+
+GT 없이 교차검증하려면 `pose_source:=gps_imu` 로 띄운다. `/gps` 를 UTM52N 으로 올린 뒤
+위 원점을 빼고 `/imu` yaw 로 lever arm 을 제거해 `base_link` 를 만든다. 이때 MORAI 가
+`GPSMessage.eastOffset/northOffset` 에 실어 보내는 원점을 위 값과 한 번 비교해서 1 m 넘게
+다르면 `logerr` 를 낸다 — **맵과 차량이 서로 다른 원점을 쓰는 경우를 잡는 유일한 자동 검사다.**
 
 ## 4. K-City 구간
 

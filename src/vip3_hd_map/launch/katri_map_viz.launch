@@ -4,7 +4,14 @@
   <arg name="rviz" default="true"/>
   <arg name="map_dir" default="$(optenv VIP3_DATA /data)/KATRI 맵 데이터 자료"/>
   <arg name="ego_topic" default="/Ego_topic"/>
-  <arg name="pose_source" default="ego_status"/>   <!-- ego_status | gps_imu -->
+  <!-- ego_status : /Ego_topic 의 시뮬 GT pose. 기본값.
+       gps_imu    : /gps + /imu 로 직접 추정. GT 없이 좌표계를 교차검증할 때 쓴다. -->
+  <arg name="pose_source" default="ego_status"/>
+  <arg name="gps_topic" default="/gps"/>
+  <arg name="imu_topic" default="/imu"/>
+  <!-- GPS 안테나의 base_link 기준 위치. VIP3_sensor_set_v1_ros.json 의 GPS pos. -->
+  <arg name="gps_lever_arm_x_m" default="0.350"/>
+  <arg name="gps_lever_arm_y_m" default="0.000"/>
   <arg name="local_radius_m" default="30.0"/>
   <arg name="max_publish_hz" default="10.0"/>
   <arg name="publish_global" default="true"/>
@@ -16,6 +23,10 @@
     <param name="map_dir" value="$(arg map_dir)"/>
     <param name="ego_topic" value="$(arg ego_topic)"/>
     <param name="pose_source" value="$(arg pose_source)"/>
+    <param name="gps_topic" value="$(arg gps_topic)"/>
+    <param name="imu_topic" value="$(arg imu_topic)"/>
+    <param name="gps_lever_arm_x_m" value="$(arg gps_lever_arm_x_m)"/>
+    <param name="gps_lever_arm_y_m" value="$(arg gps_lever_arm_y_m)"/>
     <param name="local_radius_m" value="$(arg local_radius_m)"/>
     <param name="max_publish_hz" value="$(arg max_publish_hz)"/>
     <param name="publish_global" value="$(arg publish_global)"/>

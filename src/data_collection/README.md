@@ -33,16 +33,15 @@ roslaunch data_collection capture_collector.launch \
 python3 scripts/sync_capture_data.py --run-id <run_id> --dry-run
 python3 scripts/sync_capture_data.py --run-id <run_id> --jobs 4
 
-# 3) 정차 중복 프레임 선별
-python3 scripts/curate_perception_frames.py --run-id <run_id> --output-name curation_v1
+# 3) 정차 중복 프레임 선별  (--output-name 기본값 curation_v1)
+python3 scripts/curate_perception_frames.py --run-id <run_id>
 
 # 4) 마스크 굽기 (원본 해상도 → 모델 입력 cache)
 python3 scripts/bake_perception_masks.py --run-id <run_id> --stage all \
-  --policy config/perception/target_policy_v1_katri_4view.json \
-  --curation-name curation_v1
+  --policy config/perception/target_policy_v1_katri_4view.json
 
-# 5) 학습용 split manifest 게시
-python3 scripts/build_perception_dataset.py --dataset-name vip3_katri_parking_v1 \
+# 5) 학습용 split manifest 게시  (--dataset-name 기본값 vip3_katri_parking_v1)
+python3 scripts/build_perception_dataset.py \
   --train-run <run_a> --train-run <run_b> --val-run <run_c>
 ```
 
@@ -134,6 +133,9 @@ run 중복을 검사해서 거부한다.
 roslaunch data_collection bag_recorder.launch profile:=parking_raw weather:=sunny sim_hour:=11
 roslaunch data_collection bag_replay.launch bag_path:=/data/bags/<run>/<run>.bag
 rosservice call /vip3_bag_replay/start     # 추론 노드를 다 띄운 뒤에 시작한다
+
+# GT 가 든 bag 은 기본 차단된다. 라벨링·오프라인 분석용으로만 연다.
+roslaunch data_collection bag_replay.launch bag_path:=... allow_simulator_gt:=true
 ```
 
 `bag_replay` 는 **일시정지 상태로 준비**한다. 그래야 추론 노드가 뜨기 전 프레임을
@@ -180,6 +182,11 @@ ASMC 의 4번 카메라는 하향 카메라였고 **학습에서 제외**돼 있
 gRPC 클라이언트 · UDP/oracle/shadow/competition bag 프로파일 · 대회 규정용
 privileged/deployment 게이트 · 신호등 채널 · streaming GT 실험 · `monitor_transport_pilot.py`.
 
+대회 게이트(`privileged_gt`)는 위 `simulator_gt` 로 **대체**한 것이지 그냥 지운 게 아니다.
+다만 이식할 때 라이브러리만 고치고 `bag_replay_node.py` 의 import 를 안 고쳐서 재생
+노드가 기동 즉시 `ImportError` 로 죽는 상태가 한동안 있었다 — `tools/check_node_imports.py`
+와 `test_bag_support.py::SimulatorGtGateTest` 가 그 회귀를 막는다.
+
 gRPC 를 버려서 잃은 것: 저장 완료 응답(위 `--dry-run` 으로 대체), `morai_sim_time`
 (항상 `null`), 날씨·시각 자동 기록(런치 인자로 대체).
 
@@ -191,7 +198,9 @@ PYTHONPATH=src/data_collection/src \
   python3 -m unittest discover -s src/data_collection/test -p 'test_*.py'
 ```
 
-33개 통과 (2026-09-23, ROS·시뮬 불필요).
+44개 통과 (2026-09-23, ROS·시뮬 불필요). 그중 `test_view_contract.py` 8개가
+파이프라인 계약을 지킨다 — 뷰 이름이 단계 간에 어긋나 **후방 데이터가 조용히 버려지던**
+버그와, 단계마다 데이터셋/캐시 이름이 달라 **build 결과를 train 이 못 찾던** 버그의 회귀 가드다.
 
 ## 확인해야 할 것
 

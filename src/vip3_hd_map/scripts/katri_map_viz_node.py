@@ -26,6 +26,11 @@ from sensor_msgs.msg import Imu
 from std_msgs.msg import ColorRGBA
 from visualization_msgs.msg import Marker, MarkerArray
 
+from vip3_hd_map.live_pose import (
+    projected_gps_to_base_link,
+    quaternion_yaw_rad,
+    valid_wgs84_position,
+)
 from vip3_hd_map.map_overlay import SegmentLayer, grouped_lane_layers_by_type
 from vip3_hd_map.mgeo_layers import (
     KatriMGeo,
@@ -33,6 +38,7 @@ from vip3_hd_map.mgeo_layers import (
     lane_type_label,
     parking_space_polygon,
 )
+from vip3_vehicle_state.gps_transform import gps_to_utm52n
 
 # lane_type -> (r, g, b, a, 선 굵기 m)
 LANE_STYLE = {
@@ -101,6 +107,13 @@ class KatriMapVizNode:
         if self.pose_source not in ("ego_status", "gps_imu"):
             raise ValueError("pose_source must be ego_status or gps_imu")
         self.pose_warn_m = float(rospy.get_param("~pose_distance_warning_m", 20.0))
+        # GPS 안테나는 base_link 앞쪽에 있다. VIP3_sensor_set_v1_ros.json 의 GPS pos.
+        self.gps_lever_arm = (
+            float(rospy.get_param("~gps_lever_arm_x_m", 0.350)),
+            float(rospy.get_param("~gps_lever_arm_y_m", 0.000)),
+        )
+        # MGeo 가 선언한 로컬 원점. GPS 를 쓸 때 UTM52N 을 이 원점으로 내린다.
+        self.map_origin_xy = tuple(self.mgeo.frame().origin_xyz[:2])
         self.ego_length = float(rospy.get_param("~ego_length_m", 4.635))
         self.ego_width = float(rospy.get_param("~ego_width_m", 1.892))
         self.ego_rear_overhang = float(rospy.get_param("~ego_rear_overhang_m", 0.790))
@@ -149,6 +162,7 @@ class KatriMapVizNode:
         self.pose_checked = False
         self.gps_latest = None
         self.imu_latest = None
+        self.gps_offset_checked = False
 
         if self.publish_global:
             self._publish_global()
@@ -322,7 +336,86 @@ class KatriMapVizNode:
         self._update((position.x, position.y), float(message.heading), message.header.stamp)
 
     def _gps_callback(self, message: GPSMessage) -> None:
+        """GPS 를 pose 로 바꾼다. **위치가 갱신될 때만** 발행한다.
+
+        yaw 는 IMU 에서 온다. IMU 가 GPS 보다 빠른 게 보통이라 IMU 쪽에서 발행하면
+        같은 위치를 여러 번 내보내게 된다.
+        """
+
         self.gps_latest = message
+        if not valid_wgs84_position(message.latitude, message.longitude):
+            rospy.logwarn_throttle(
+                5.0,
+                "/gps 가 유효하지 않다 (lat=%.7f lon=%.7f). MORAI 는 수신 불가일 때 "
+                "(0, 0) 을 보낸다.",
+                message.latitude,
+                message.longitude,
+            )
+            return
+        if self.imu_latest is None:
+            rospy.logwarn_throttle(5.0, "/imu 를 아직 못 받았다. yaw 가 없어 pose 를 못 만든다.")
+            return
+
+        easting, northing = gps_to_utm52n(message.latitude, message.longitude)
+        self._check_gps_offsets(message, easting, northing)
+
+        orientation = self.imu_latest.orientation
+        try:
+            yaw_rad = quaternion_yaw_rad(
+                orientation.x, orientation.y, orientation.z, orientation.w
+            )
+        except ValueError:
+            rospy.logwarn_throttle(5.0, "/imu orientation 쿼터니언이 0 이다")
+            return
+
+        ego_xy = projected_gps_to_base_link(
+            (easting, northing), self.map_origin_xy, yaw_rad, self.gps_lever_arm
+        )
+        self._update(
+            (float(ego_xy[0]), float(ego_xy[1])),
+            float(np.degrees(yaw_rad)),
+            message.header.stamp,
+        )
+
+    def _check_gps_offsets(self, message, easting, northing) -> None:
+        """MORAI 가 보내는 east/northOffset 이 MGeo 원점과 같은지 한 번 확인한다.
+
+        둘이 다르면 맵과 GPS 가 서로 다른 원점을 쓰고 있다는 뜻이고, 마커는 멀쩡히
+        뜨는데 차량만 엉뚱한 데 찍힌다 — 눈으로는 원인을 못 찾는 종류의 오차다.
+        """
+
+        if self.gps_offset_checked:
+            return
+        self.gps_offset_checked = True
+        offsets = (float(message.eastOffset), float(message.northOffset))
+        if offsets == (0.0, 0.0):
+            rospy.logwarn(
+                "/gps 의 east/northOffset 이 0 이다. MGeo 원점 (%.3f, %.3f) 을 대신 쓴다.",
+                self.map_origin_xy[0],
+                self.map_origin_xy[1],
+            )
+            return
+        delta = max(
+            abs(offsets[0] - self.map_origin_xy[0]),
+            abs(offsets[1] - self.map_origin_xy[1]),
+        )
+        if delta > 1.0:
+            rospy.logerr(
+                "GPS 원점과 MGeo 원점이 %.1f m 다르다. GPS (%.3f, %.3f) vs MGeo "
+                "(%.3f, %.3f). 맵과 차량이 다른 좌표계에 있다 (docs/katri-map.md §3).",
+                delta,
+                offsets[0],
+                offsets[1],
+                self.map_origin_xy[0],
+                self.map_origin_xy[1],
+            )
+        else:
+            rospy.loginfo(
+                "GPS 원점이 MGeo 원점과 %.3f m 이내로 일치한다 (UTM52N %.1f, %.1f)",
+                delta,
+                easting,
+                northing,
+            )
 
     def _imu_callback(self, message: Imu) -> None:
         self.imu_latest = message

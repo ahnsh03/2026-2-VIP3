@@ -53,7 +53,7 @@ def _default_run_name() -> str:
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-root", default=os.environ.get("VIP3_DATA", "/data"))
-    parser.add_argument("--dataset-version", default="vip3_twinlite_katri_v1")
+    parser.add_argument("--dataset-version", default="vip3_katri_parking_v1")
     parser.add_argument("--twinlite-root", default=os.environ.get("TWINLITE_ROOT"))
     parser.add_argument("--config", default="medium", choices=("nano", "small", "medium", "large"))
     parser.add_argument("--epochs", type=int, default=30)

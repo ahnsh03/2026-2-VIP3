@@ -43,7 +43,7 @@ class SmokeTwin(torch.nn.Module):
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-root", default=os.environ.get("VIP3_DATA", "/data"))
-    parser.add_argument("--dataset-version", default="vip3_twinlite_katri_v1")
+    parser.add_argument("--dataset-version", default="vip3_katri_parking_v1")
     parser.add_argument("--split", default="train", choices=("train", "val"))
     parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--device", default="cuda" if torch.cuda.is_available() else "cpu")

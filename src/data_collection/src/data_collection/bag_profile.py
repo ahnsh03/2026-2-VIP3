@@ -87,7 +87,9 @@ SIMULATOR_GT_PREFIXES = (
 )
 
 
-def _simulator_gt_topics(topics):
+def simulator_gt_topics(topics):
+    """`topics` 중 시뮬레이터만 알 수 있는 것들. 프로파일 검증과 bag 재생이 같이 쓴다."""
+
     hits = [topic for topic in topics if topic in SIMULATOR_GT_TOPICS]
     hits += [
         topic
@@ -130,7 +132,7 @@ def validate_bag_profile(profile):
 
     simulator_gt = bool(profile.get("simulator_gt", False))
     if not simulator_gt:
-        leaked = _simulator_gt_topics(required + optional)
+        leaked = simulator_gt_topics(required + optional)
         if leaked:
             raise BagProfileError(
                 "profile is not marked simulator_gt but records simulator-only "

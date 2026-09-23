@@ -17,8 +17,9 @@ import numpy as np
 
 DATASET_SCHEMA_VERSION = "morai-perception-dataset-1.1.0"
 SAMPLE_SCHEMA_VERSION = "morai-perception-sample-1.1.0"
-DEFAULT_DATASET_VERSION = "twinlite_morai_v1"
-DEFAULT_CACHE_NAME = "twinlite_384x640_v2"
+DEFAULT_DATASET_VERSION = "vip3_katri_parking_v1"
+# cache 를 만드는 쪽(mask_baker)이 이름의 정본이다. 두 곳에 적으면 어긋난다.
+from .mask_baker import DEFAULT_OUTPUT_NAME as DEFAULT_CACHE_NAME
 DEFAULT_TRAINING_HEADS = ("lane", "drivable")
 # 정본은 capture_sync.CAMERAS 다.
 from .capture_sync import VIEWS as EXPECTED_VIEWS

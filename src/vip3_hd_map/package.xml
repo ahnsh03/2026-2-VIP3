@@ -17,6 +17,9 @@
   <depend>rospy</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
+  <!-- gps_imu pose 경로가 gps_transform.gps_to_utm52n 을 쓴다. UTM 구현을 두 벌
+       두지 않으려고 패키지를 넘어 재사용한다. -->
+  <depend>vip3_vehicle_state</depend>
   <depend>visualization_msgs</depend>
 
   <exec_depend>python3-numpy</exec_depend>

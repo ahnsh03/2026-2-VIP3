@@ -8,10 +8,17 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from twinlite_morai.dataset import MoraiTwinLiteDataset
+from twinlite_morai.dataset import DEFAULT_DATASET_VERSION, MoraiTwinLiteDataset
 from twinlite_morai.losses import MaskedTwinLiteLoss, adapt_twinlite_outputs
 from twinlite_morai.tasks import ROAD_MARKING_TASK
 from twinlite_morai.training import twinlite_training_step
+
+
+# fixture 경로 이름. dataset 이름은 코드 기본값에서 끌어오고, cache 이름은
+# data_collection 파이프라인(mask_baker.DEFAULT_OUTPUT_NAME)과 같은 문자열을 쓴다.
+# 여기에 다른 이름을 적어 두면 테스트를 보고 따라 하는 사람이 엉뚱한 경로를 만든다.
+DATASET_NAME = DEFAULT_DATASET_VERSION
+CACHE_NAME = "vip3_twinlite_384x640_v1"
 
 
 def write_png(path, image):
@@ -43,7 +50,7 @@ class TinyRoadMarkingTwin(torch.nn.Module):
 class DatasetAndLossTest(unittest.TestCase):
     def make_dataset(self, root, view="front"):
         data_root = root / "data"
-        version_root = data_root / "dataset_versions/twinlite_morai_v1"
+        version_root = data_root / "dataset_versions" / DATASET_NAME
         image_rel = f"datasets/run_001/frames/intensity/{view}/000000.png"
         image = np.zeros((6, 10, 4), dtype=np.uint8)
         image[:, :, :3] = (10, 20, 30)
@@ -54,7 +61,7 @@ class DatasetAndLossTest(unittest.TestCase):
         target_paths = {}
         for name in ("lane", "drivable"):
             relative = (
-                f"datasets/run_001/derived/twinlite_384x640_v2/"
+                f"datasets/run_001/derived/{CACHE_NAME}/"
                 f"{name}_masks/{view}/000000.png"
             )
             mask = np.zeros(target_hw, dtype=np.uint8)
@@ -62,14 +69,14 @@ class DatasetAndLossTest(unittest.TestCase):
             write_png(data_root / relative, mask)
             target_paths[name] = relative
         valid_rel = (
-            f"datasets/run_001/derived/twinlite_384x640_v2/"
+            f"datasets/run_001/derived/{CACHE_NAME}/"
             f"valid_masks/{view}/000000.png"
         )
         valid = np.zeros(target_hw, dtype=np.uint8)
         valid[1:7] = 1
         write_png(data_root / valid_rel, valid)
         drivable_valid_rel = (
-            f"datasets/run_001/derived/twinlite_384x640_v2/"
+            f"datasets/run_001/derived/{CACHE_NAME}/"
             f"valid_masks/drivable/{view}/000000.png"
         )
         drivable_valid = valid.copy()
@@ -87,7 +94,7 @@ class DatasetAndLossTest(unittest.TestCase):
         }
         row = {
             "schema_version": "morai-perception-sample-1.0.0",
-            "dataset_version": "twinlite_morai_v1",
+            "dataset_version": DATASET_NAME,
             "split": "train",
             "sample_id": f"run_001/{view}/000000",
             "run_id": "run_001",
@@ -167,11 +174,11 @@ class DatasetAndLossTest(unittest.TestCase):
     def test_v11_manifest_ignores_stored_future_road_marking_for_two_head_training(self):
         with tempfile.TemporaryDirectory() as tmp:
             data_root = self.make_dataset(Path(tmp))
-            version_root = data_root / "dataset_versions/twinlite_morai_v1"
+            version_root = data_root / "dataset_versions" / DATASET_NAME
             manifest_path = version_root / "train.jsonl"
             row = json.loads(manifest_path.read_text(encoding="utf-8"))
             marking_rel = (
-                "datasets/run_001/derived/twinlite_384x640_v2/"
+                "datasets/run_001/derived/{CACHE_NAME}/"
                 "road_marking_masks/front/000000.png"
             )
             marking = np.zeros((8, 10), dtype=np.uint8)
@@ -205,11 +212,11 @@ class DatasetAndLossTest(unittest.TestCase):
 
     def make_road_marking_dataset(self, root, view="front"):
         data_root = self.make_dataset(root, view=view)
-        version_root = data_root / "dataset_versions/twinlite_morai_v1"
+        version_root = data_root / "dataset_versions" / DATASET_NAME
         manifest_path = version_root / "train.jsonl"
         row = json.loads(manifest_path.read_text(encoding="utf-8"))
         marking_rel = (
-            f"datasets/run_001/derived/twinlite_384x640_v2/"
+            f"datasets/run_001/derived/{CACHE_NAME}/"
             f"road_marking_masks/{view}/000000.png"
         )
         marking = np.zeros((8, 10), dtype=np.uint8)

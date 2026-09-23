@@ -8,7 +8,9 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+from data_collection.perception_dataset import DEFAULT_CACHE_NAME
 from data_collection.mask_baker import (
+    DEFAULT_NATIVE_OUTPUT_NAME,
     MaskBakeError,
     bake_native_run,
     build_model_cache,
@@ -91,7 +93,7 @@ class MaskBakerTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             run_root = self.make_run(Path(tmp))
             native_summary = bake_native_run(run_root, write_previews=True)
-            native = run_root / "derived/perception_targets_native_v1"
+            native = run_root / "derived" / DEFAULT_NATIVE_OUTPUT_NAME
             self.assertTrue((native / "_SUCCESS").is_file())
             self.assertEqual(native_summary["sample_count"], len(VIEW_HW))
             native_lane = cv2.imread(
@@ -102,7 +104,7 @@ class MaskBakerTest(unittest.TestCase):
             self.assertTrue((native / "qa_overlays/right/000000.png").is_file())
 
             summary = build_model_cache(run_root, write_previews=True)
-            output = run_root / "derived/twinlite_384x640_v2"
+            output = run_root / "derived" / DEFAULT_CACHE_NAME
             self.assertTrue((output / "_SUCCESS").is_file())
             self.assertEqual(summary["sample_count"], len(VIEW_HW))
 
@@ -151,7 +153,7 @@ class MaskBakerTest(unittest.TestCase):
             with self.assertRaises(MaskBakeError):
                 bake_native_run(run_root)
             self.assertFalse(
-                (run_root / "derived/perception_targets_native_v1").exists()
+                (run_root / "derived" / DEFAULT_NATIVE_OUTPUT_NAME).exists()
             )
 
     def test_unknown_semantic_color_is_rejected(self):

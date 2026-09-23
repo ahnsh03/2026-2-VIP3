@@ -30,7 +30,7 @@ from twinlite_morai import (  # noqa: E402
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data-root", default=os.environ.get("VIP3_DATA", "/data"))
-    parser.add_argument("--dataset-version", default="vip3_twinlite_katri_v1")
+    parser.add_argument("--dataset-version", default="vip3_katri_parking_v1")
     parser.add_argument("--split", default="train", choices=("train", "val", "test"))
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--output-dir", required=True)

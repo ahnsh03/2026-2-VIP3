@@ -283,8 +283,20 @@ def _as_float(value: object) -> float:
 def validate_sensor_set_snapshot(
     snapshot: Mapping[str, object], cameras: Mapping[str, CameraCalibration], sensor_set_path: Path
 ) -> None:
-    """Fail when the checked-in runtime snapshot drifts from sensor-set v2."""
+    """설정 스냅샷이 실제 센서셋 파일과 어긋나면 기동을 막는다.
+
+    센서셋을 바꿨는데 cameras_*.yaml 을 안 고치면 BEV 가 **조용히** 틀린 기하로
+    돈다. 그래서 파일 이름과 sha256 을 둘 다 본다. 이름까지 보는 이유는, 런치가
+    다른 센서셋을 가리키면 해시 불일치 메시지만으로는 원인을 찾기 어렵기 때문이다.
+    """
     path = Path(sensor_set_path)
+    expected_name = str(snapshot.get("source_sensor_set", "")).strip()
+    if expected_name and path.name != expected_name:
+        raise ValueError(
+            "sensor-set file mismatch: calibration expects {} but launch passed {}. "
+            "cameras_*.yaml 의 source_sensor_set 과 런치의 sensor_set_path 를 맞춰라"
+            .format(expected_name, path.name)
+        )
     payload = path.read_bytes()
     expected_hash = str(snapshot.get("source_sha256", ""))
     actual_hash = hashlib.sha256(payload).hexdigest()

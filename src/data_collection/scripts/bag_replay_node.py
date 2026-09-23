@@ -20,7 +20,7 @@ from std_srvs.srv import Trigger, TriggerResponse
 from data_collection.bag_profile import (
     BagProfileError,
     load_bag_profile,
-    privileged_topics_present,
+    simulator_gt_topics,
 )
 
 
@@ -28,8 +28,11 @@ class BagReplayNode(object):
     def __init__(self):
         value = os.path.abspath(os.path.expanduser(str(rospy.get_param("~bag_path"))))
         self.bag_files, self.run_root = self._resolve_bags(value)
-        self.allow_privileged_gt = bool(
-            rospy.get_param("~allow_privileged_gt", False)
+        # 시뮬만 아는 GT(/Object_topic, /CollisionData, /sem_*)가 든 bag 은 기본
+        # 차단한다. 인지 평가에 섞이면 "시뮬이 정답을 알려준 것"이 되기 때문이다.
+        # 라벨링·오프라인 분석에는 명시적으로 켜고 쓴다.
+        self.allow_simulator_gt = bool(
+            rospy.get_param("~allow_simulator_gt", False)
         )
         self.rate = float(rospy.get_param("~rate", 1.0))
         if self.rate <= 0:
@@ -88,18 +91,19 @@ class BagReplayNode(object):
                     self.input_profile["name"], sorted(missing)
                 )
             )
-        present_gt = privileged_topics_present(topics)
+        present_gt = simulator_gt_topics(topics)
         metadata_path = os.path.join(self.run_root, "metadata.yaml")
-        privileged_metadata = False
+        metadata_gt = False
         if os.path.isfile(metadata_path):
             with open(metadata_path, "r") as stream:
-                privileged_metadata = bool(
-                    (yaml.safe_load(stream) or {}).get("privileged_gt", False)
+                metadata_gt = bool(
+                    (yaml.safe_load(stream) or {}).get("simulator_gt", False)
                 )
-        if (present_gt or privileged_metadata) and not self.allow_privileged_gt:
+        if (present_gt or metadata_gt) and not self.allow_simulator_gt:
             raise BagProfileError(
-                "privileged GT bag replay is blocked; set allow_privileged_gt:=true "
-                "only for offline oracle analysis"
+                "simulator-only GT is present in this bag ({}); set "
+                "allow_simulator_gt:=true only for labelling or offline analysis, "
+                "never when measuring perception".format(present_gt or "metadata")
             )
         self.bag_topics = topics
 
@@ -172,7 +176,7 @@ class BagReplayNode(object):
 
 
 def main():
-    rospy.init_node("asmc_bag_replay")
+    rospy.init_node("vip3_bag_replay")
     try:
         BagReplayNode().run()
     except (BagProfileError, OSError, RuntimeError, ValueError) as exc:

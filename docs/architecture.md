@@ -124,7 +124,25 @@ PYTHONPATH="src/perception/drivable_bev/src:src/perception/camera_semantic_perce
   python3 -m unittest discover -s src/perception/drivable_bev/test -p 'test_rear*.py'
 ```
 
-## 6. 아직 없는 것
+## 6. 정합성 검사기 3개
+
+시뮬레이터를 켜기 전에, **조용히 틀리는 종류의 오류**를 잡는다. 셋 다 ROS·GPU 없이 돈다.
+
+```bash
+python3 tools/check_topic_contract.py      # 토픽 이름이 config/vip3_topics.yaml 과 맞는가
+python3 tools/check_node_imports.py        # 노드가 없는 이름을 import 하는가
+python3 tools/check_launch_params.py --all # 런치가 노드 파라미터를 설정할 수 있는가
+```
+
+왜 셋 다 필요한가 — 단위 테스트가 못 보는 영역이 서로 다르다.
+
+| 검사기 | 못 잡던 사고 |
+|---|---|
+| `check_topic_contract` | 이름이 한 글자 다른 토픽. 노드는 멀쩡히 뜨고 구독만 안 된다 |
+| `check_node_imports` | 노드 스크립트는 `rospy` 가 있어야 import 되므로 호스트 테스트가 못 건드린다. 실제로 `bag_replay_node.py` 가 삭제된 이름을 import 한 채 **기동 즉시 죽는** 상태였고, 테스트 190개는 전부 통과 중이었다 |
+| `check_launch_params` | `<rosparam file>` 이 없는 파일을 가리키면 `roslaunch` 가 즉사한다. `--all` 은 "런치 인자로 문서화됐는데 실제로는 못 켜지는" 기능도 보여준다 |
+
+## 7. 아직 없는 것
 
 - `src/parking/` — 주차칸 검출·경로 생성·제어. 기반 논문 확정 후
 - `src/vip3_eval/` — 주차 성공 판정. [roadmap.md](roadmap.md) §2

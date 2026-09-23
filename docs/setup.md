@@ -123,12 +123,14 @@ Python 3.8 을 버렸고 sm_120 은 cu128 부터 지원되는데 ROS Noetic 이 
 **실기 없이도 여기까지 확인할 수 있다.** 새로 합류했으면 이것부터 돌려 본다.
 
 ```bash
-# 전 패키지 단위 테스트 (156개, ROS·GPU 불필요)
-for p in src/perception/drivable_bev src/perception/camera_semantic_perception \
-         src/data_collection src/vip3_hd_map src/vip3_vehicle_state; do
+# 전 패키지 단위 테스트 (193개, ROS·GPU 불필요)
+PKGS="src/perception/drivable_bev src/perception/camera_semantic_perception \
+      src/data_collection src/vip3_hd_map src/vip3_vehicle_state"
+# 패키지 간 import 가 있어서(vip3_hd_map -> vip3_vehicle_state) 전부 경로에 올린다.
+ALL=$(for p in $PKGS; do printf "%s/src:" "$p"; done | sed 's/:$//')
+for p in $PKGS; do
   echo "== $p"
-  PYTHONPATH="$p/src:src/perception/camera_semantic_perception/src" \
-    python3 -m unittest discover -s "$p/test" -p 'test_*.py' 2>&1 | tail -3
+  PYTHONPATH="$ALL" python3 -m unittest discover -s "$p/test" -p 'test_*.py' 2>&1 | tail -3
 done
 
 # 센서셋 지면 가시영역 — 차 주변 어디가 사각인지

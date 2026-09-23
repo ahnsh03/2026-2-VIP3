@@ -7,8 +7,15 @@
   <arg name="publish_map_tf" default="false"/>
   <arg name="velocity_is_body_frame" default="true"/>
   <arg name="stamp_mode" default="source"/>   <!-- source | receive -->
+  <!-- 후진 주차에서는 속도 부호가 있어야 한다. MORAI 는 스칼라 속력만 주므로
+       기어·종방향 속도로 부호를 복원한다. 끄면 후진이 전진처럼 보인다. -->
+  <arg name="signed_speed" default="true"/>
+  <arg name="stale_timeout_sec" default="0.5"/>
   <arg name="start_gear_node" default="true"/>
   <arg name="initial_gear" default="0"/>       <!-- 0=변경없음, 1 P / 2 R / 3 N / 4 D -->
+  <!-- 기동 시 ctrl_mode 를 3(External)로 바꾼다. false 면 MORAI 가 키보드/휠
+       입력을 계속 쥐고 있어서 /ctrl_cmd 가 무시된다. 수동주행 수집 때만 끈다. -->
+  <arg name="set_external_on_start" default="true"/>
 
   <node pkg="vip3_vehicle_state" type="vip3_ego_state_node.py"
         name="vip3_ego_state" output="screen" required="true">
@@ -18,11 +25,14 @@
     <param name="publish_map_tf" value="$(arg publish_map_tf)"/>
     <param name="velocity_is_body_frame" value="$(arg velocity_is_body_frame)"/>
     <param name="stamp_mode" value="$(arg stamp_mode)"/>
+    <param name="signed_speed" value="$(arg signed_speed)"/>
+    <param name="stale_timeout_sec" value="$(arg stale_timeout_sec)"/>
   </node>
 
   <node if="$(arg start_gear_node)"
         pkg="vip3_vehicle_state" type="vip3_gear_node.py"
         name="vip3_gear" output="screen" required="true">
     <param name="initial_gear" value="$(arg initial_gear)"/>
+    <param name="set_external_on_start" value="$(arg set_external_on_start)"/>
   </node>
 </launch>

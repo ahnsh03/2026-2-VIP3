@@ -9,6 +9,7 @@ import cv2
 import numpy as np
 
 from data_collection.capture_sync import VIEWS
+from data_collection.perception_dataset import DEFAULT_CACHE_NAME  # noqa: F401
 from data_collection.perception_dataset import (
     PerceptionDatasetError,
     build_dataset_version,
@@ -25,7 +26,7 @@ class PerceptionDatasetTest(unittest.TestCase):
     def make_cache(self, data_root, run_id, v2=False, v3=False):
         v2 = v2 or v3
         run_root = data_root / "datasets" / run_id
-        cache_root = run_root / "derived/twinlite_384x640_v2"
+        cache_root = run_root / "derived" / DEFAULT_CACHE_NAME
         rows = []
         for index, view in enumerate(VIEWS):
             image_rel = "frames/intensity/{}/000000.png".format(view)

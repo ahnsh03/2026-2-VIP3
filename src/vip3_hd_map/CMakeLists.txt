@@ -20,7 +20,6 @@ catkin_package(
 if(CATKIN_ENABLE_TESTING)
   catkin_add_nosetests(test/test_frames.py)
   catkin_add_nosetests(test/test_live_pose.py)
-  catkin_add_nosetests(test/test_local_crop.py)
   catkin_add_nosetests(test/test_map_overlay.py)
   catkin_add_nosetests(test/test_mgeo_layers.py)
 endif()

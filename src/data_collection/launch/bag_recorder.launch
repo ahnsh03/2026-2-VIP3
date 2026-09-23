@@ -2,6 +2,9 @@
   <!-- allowlist 프로파일로 rosbag 을 기록한다. 자동 run_id, 디스크 가드,
        토픽별 rate 통계, bag sha256, git 상태를 metadata.yaml 에 남긴다.
        날씨·시각은 gRPC 자동 수집을 걷어냈으므로 런치 인자로 직접 준다. -->
+  <!-- rosbridge 는 VIP3 의 유일한 MORAI 전송 경로다. 포트는 한 곳에서만
+       정한다 — config/morai_rosbridge.env 의 MORAI_BRIDGE_URL. -->
+  <arg name="bridge_url" default="$(optenv MORAI_BRIDGE_URL ws://127.0.0.1:9090)"/>
   <arg name="profile" default="parking_raw"/>
   <arg name="run_id" default=""/>
   <arg name="rosbag_root" default=""/>      <!-- 비우면 $VIP3_DATA/bags -->
@@ -17,6 +20,7 @@
 
   <node pkg="data_collection" type="bag_recorder_node.py"
         name="vip3_bag_recorder" output="screen" required="true">
+    <param name="bridge_url" value="$(arg bridge_url)"/>
     <param name="profile" value="$(arg profile)"/>
     <param name="run_id" value="$(arg run_id)"/>
     <param name="rosbag_root" value="$(arg rosbag_root)"/>

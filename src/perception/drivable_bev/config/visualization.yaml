@@ -1,25 +1,30 @@
+# BEV 시각화. 값은 전부 디버깅 화면 전용이고 인지 결과에는 영향이 없다.
+
+# 뷰별 모자이크 (drivable / secondary / coverage 3행 x 뷰 수 열)
 mosaic_max_hz: 5.0
-jpeg_quality: 85
+publish_per_view_mosaic: true
 tile_width: 300
 tile_height: 600
-publish_per_view_mosaic: false
+jpeg_quality: 85
 
+# 융합 결과 한 장
 fused_max_hz: 5.0
 fused_width: 672
 fused_height: 1050
 
+# 원본 카메라 영상 위에 지면 격자를 겹쳐 그린다. **캘리브레이션 게이트의 핵심 화면**이다.
+# 격자가 아스팔트에 얹히지 않으면 pitch 부호나 ground_plane.z_at_origin_m 가 틀린 것이다.
 camera_grid_max_hz: 5.0
-camera_grid_longitudinal_step_m: 5.0
-camera_grid_lateral_step_m: 2.0
+# ASMC 는 전방 60 m 를 봤기 때문에 5 m / 2 m 간격이었다. 주차는 ±10 m 라
+# 그 간격이면 격자가 서너 줄밖에 안 보여서 어긋남을 눈으로 못 잡는다.
+camera_grid_longitudinal_step_m: 2.0
+camera_grid_lateral_step_m: 1.0
 
-# Display crop is deliberately equal to the provisional compute grid until the
-# post-vectorization native-GT range audit selects a validated rectangle.
-display_x_min_m: -5.0
-display_x_max_m: 20.0
+# 표시 crop. 비워 두면 bev_grid.yaml 의 격자 전체를 그대로 쓴다.
+# 주차 격자(x[-10,10] y[-8,8])와 **같게** 둔다 — ASMC 의 x[-5,20] 을 그대로 두면
+# 화면이 격자와 어긋나 있는데도 맞는 것처럼 보인다.
+display_x_min_m: -10.0
+display_x_max_m: 10.0
 display_y_min_m: -8.0
 display_y_max_m: 8.0
-display_label: "FUSED PROVISIONAL"
-
-lane_debug_max_hz: 5.0
-lane_debug_width: 672
-lane_debug_height: 1050
+display_label: "VIP3 PARKING BEV"

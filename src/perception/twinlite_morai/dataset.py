@@ -27,7 +27,7 @@ SUPPORTED_SAMPLE_SCHEMAS = {
     "morai-perception-sample-1.0.0",
     "morai-perception-sample-1.1.0",
 }
-DEFAULT_DATASET_VERSION = "vip3_twinlite_katri_v1"
+DEFAULT_DATASET_VERSION = "vip3_katri_parking_v1"
 
 
 class MoraiDatasetError(RuntimeError):

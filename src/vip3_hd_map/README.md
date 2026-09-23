@@ -38,6 +38,21 @@ roslaunch vip3_hd_map katri_map_viz.launch publish_global:=true rviz:=false
 roslaunch vip3_hd_map katri_map_viz.launch pose_source:=gps_imu   # /Ego_topic 이 (0,0) 일 때
 ```
 
+### `pose_source` 두 가지
+
+| | `ego_status` (기본) | `gps_imu` |
+|---|---|---|
+| 입력 | `/Ego_topic` | `/gps` + `/imu` |
+| 성격 | 시뮬레이터 GT. 정확하고 항상 있다 | 센서만으로 추정. 실차와 같은 조건 |
+| 쓸 때 | 평소 | `/Ego_topic` 이 (0,0,0) 이거나, 맵·차량 좌표계가 맞는지 GT 없이 볼 때 |
+
+`gps_imu` 는 `/gps` 를 UTM52N 으로 올리고 MGeo 원점을 뺀 뒤 `/imu` yaw 로 GPS 안테나
+lever arm(`~gps_lever_arm_x_m`, 기본 0.350 m = 센서셋 GPS pos.x)을 제거한다. 첫 프레임에서
+MORAI 가 보내는 `GPSMessage.eastOffset/northOffset` 을 MGeo 원점과 비교해, 1 m 넘게 다르면
+`logerr` 로 알린다 — **맵과 차량이 다른 원점을 쓰는 상황을 잡는 유일한 자동 검사다.**
+위치 갱신은 GPS 콜백에서만 한다 (IMU 가 보통 더 빨라서, IMU 쪽에서 내면 같은 위치를
+중복 발행하게 된다).
+
 | 토픽 | frame | latch | 내용 |
 |---|---|---|---|
 | `/vip3_hd_map/global/links` | `map` | ○ | 링크 중심선 667 |
@@ -106,7 +121,7 @@ map_xy = utm52n_xy − (302459.942, 4122635.537)      EPSG:32652
 
 ```bash
 cd /root/ws
-PYTHONPATH=src/vip3_hd_map/src \
+PYTHONPATH="src/vip3_hd_map/src:src/vip3_vehicle_state/src" \
   python3 -m unittest discover -s src/vip3_hd_map/test -p 'test_*.py'
 ```
 
