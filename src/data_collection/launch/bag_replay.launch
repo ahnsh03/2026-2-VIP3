@@ -8,7 +8,6 @@
   <arg name="rate" default="1.0"/>
   <arg name="wait_for_start" default="true"/>
   <arg name="post_roll_sec" default="2.0"/>
-  <arg name="start_delay_sec" default="1.0"/>
 
   <node pkg="data_collection" type="bag_replay_node.py"
         name="vip3_bag_replay" output="screen" required="true">
@@ -17,6 +16,5 @@
     <param name="rate" value="$(arg rate)"/>
     <param name="wait_for_start" value="$(arg wait_for_start)"/>
     <param name="post_roll_sec" value="$(arg post_roll_sec)"/>
-    <param name="start_delay_sec" value="$(arg start_delay_sec)"/>
   </node>
 </launch>

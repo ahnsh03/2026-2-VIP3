@@ -35,6 +35,12 @@ CAMERAS = (
     ("CAMERA_3", "right", (480, 640)),
     ("CAMERA_4", "rear", (720, 1280)),
 )
+# **뷰 이름의 정본.** curation / mask_baker / perception_dataset 이 전부 여기를 import 한다.
+# 예전에는 네 곳이 각자 ("front","left","right") 를 들고 있었고, 수집은 4뷰인데
+# 이후 단계가 3뷰라 후방 데이터가 조용히 버려졌다. 같은 실수를 막으려고 하나로 묶었다.
+# 카메라를 추가하면 위 CAMERAS 만 고치면 전 단계가 따라온다.
+VIEWS = tuple(view for _, view, _ in CAMERAS)
+
 MODALITIES = (
     ("Intensity", "intensity"),
     ("Semantic", "semantic"),

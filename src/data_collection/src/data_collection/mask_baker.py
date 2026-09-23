@@ -30,7 +30,8 @@ BAKE_SCHEMA_VERSION = MODEL_CACHE_SCHEMA_VERSION  # Backward-compatible import.
 DEFAULT_NATIVE_OUTPUT_NAME = "perception_targets_native_v1"
 DEFAULT_OUTPUT_NAME = "twinlite_384x640_v2"
 TARGET_HW = (384, 640)
-TWINLITE_VIEWS = ("front", "left", "right")
+# 정본은 capture_sync.CAMERAS 다. 여기서 따로 정의하지 않는다.
+from .capture_sync import VIEWS as TWINLITE_VIEWS
 
 # Complete MORAI 26.R1 Semantic camera RGB palette. OpenCV loads PNG as
 # BGR(A), so exact comparisons reverse these tuples at the boundary.

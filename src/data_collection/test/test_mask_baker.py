@@ -16,11 +16,10 @@ from data_collection.mask_baker import (
 )
 
 
-VIEW_HW = {
-    "front": (720, 1280),
-    "left": (480, 640),
-    "right": (480, 640),
-}
+# 픽스처 해상도도 정본에서 유도한다. 카메라가 늘면 테스트가 자동으로 따라온다.
+from data_collection.capture_sync import CAMERAS
+
+VIEW_HW = {view: hw for _, view, hw in CAMERAS}
 
 
 def write_png(path, image):
@@ -94,7 +93,7 @@ class MaskBakerTest(unittest.TestCase):
             native_summary = bake_native_run(run_root, write_previews=True)
             native = run_root / "derived/perception_targets_native_v1"
             self.assertTrue((native / "_SUCCESS").is_file())
-            self.assertEqual(native_summary["sample_count"], 3)
+            self.assertEqual(native_summary["sample_count"], len(VIEW_HW))
             native_lane = cv2.imread(
                 str(native / "lane_masks/front/000000.png"),
                 cv2.IMREAD_UNCHANGED,
@@ -105,7 +104,7 @@ class MaskBakerTest(unittest.TestCase):
             summary = build_model_cache(run_root, write_previews=True)
             output = run_root / "derived/twinlite_384x640_v2"
             self.assertTrue((output / "_SUCCESS").is_file())
-            self.assertEqual(summary["sample_count"], 3)
+            self.assertEqual(summary["sample_count"], len(VIEW_HW))
 
             stopline = cv2.imread(
                 str(output / "stopline_masks/front/000000.png"),
@@ -131,7 +130,7 @@ class MaskBakerTest(unittest.TestCase):
                     encoding="utf-8"
                 ).splitlines()
             ]
-            self.assertEqual(len(geometry_rows), 3)
+            self.assertEqual(len(geometry_rows), len(VIEW_HW))
             by_view = {row["view"]: row for row in geometry_rows}
             self.assertTrue(by_view["front"]["task_valid"]["stopline"])
             self.assertFalse(by_view["left"]["task_valid"]["stopline"])
@@ -260,7 +259,7 @@ class MaskBakerTest(unittest.TestCase):
                     },
                     "stopline": {
                         "positive_classes": ["stopline"],
-                        "valid_views": ["front", "left", "right"],
+                        "valid_views": list(VIEW_HW),
                     },
                     "road_marking": {
                         "class_values": {
@@ -269,7 +268,7 @@ class MaskBakerTest(unittest.TestCase):
                             "yellow_lane": 2,
                             "stopline": 3,
                         },
-                        "valid_views": ["front", "left", "right"],
+                        "valid_views": list(VIEW_HW),
                     },
                     "actor_occupancy_gt": {"positive_classes": ["obstacle"]},
                 },
@@ -385,7 +384,7 @@ class MaskBakerTest(unittest.TestCase):
                     },
                     "stopline": {
                         "positive_classes": ["stopline"],
-                        "valid_views": ["front", "left", "right"],
+                        "valid_views": list(VIEW_HW),
                     },
                     "road_marking": {
                         "class_values": {
@@ -394,7 +393,7 @@ class MaskBakerTest(unittest.TestCase):
                             "yellow_lane": 2,
                             "stopline": 3,
                         },
-                        "valid_views": ["front", "left", "right"],
+                        "valid_views": list(VIEW_HW),
                     },
                     "actor_occupancy_gt": {"positive_classes": ["obstacle"]},
                 },

@@ -20,7 +20,8 @@ SAMPLE_SCHEMA_VERSION = "morai-perception-sample-1.1.0"
 DEFAULT_DATASET_VERSION = "twinlite_morai_v1"
 DEFAULT_CACHE_NAME = "twinlite_384x640_v2"
 DEFAULT_TRAINING_HEADS = ("lane", "drivable")
-EXPECTED_VIEWS = ("front", "left", "right")
+# 정본은 capture_sync.CAMERAS 다.
+from .capture_sync import VIEWS as EXPECTED_VIEWS
 ROAD_MARKING_CLASS_VALUES = {
     "background": 0,
     "white_lane": 1,

@@ -20,11 +20,12 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 PACKAGE_SRC = REPO_ROOT / "src" / "data_collection" / "src"
 sys.path.insert(0, str(PACKAGE_SRC))
 
+from data_collection.capture_sync import VIEWS as DEFAULT_VIEWS  # noqa: E402
 from data_collection.mask_baker import OFFICIAL_PALETTE_RGB  # noqa: E402
 
 
-SCHEMA_VERSION = "morai-semantic-audit-1.1.0"
-DEFAULT_VIEWS = ("front", "left", "right")
+SCHEMA_VERSION = "vip3-semantic-audit-1.0.0"
+# 뷰 정본은 data_collection.capture_sync.CAMERAS 다 (위에서 import).
 ROAD_MARKING_CLASSES = ("white_lane", "yellow_lane", "blue_lane", "stopline")
 ACTOR_CLASSES = (
     "vehicle",

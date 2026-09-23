@@ -8,6 +8,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+from data_collection.capture_sync import VIEWS
 from data_collection.perception_curation import curate_run, stationary_groups
 
 
@@ -31,7 +32,7 @@ class PerceptionCurationTest(unittest.TestCase):
                 row["run_id"] = "run_001"
                 row["valid"] = True
                 row["paths"] = {"semantic": {}}
-                for view in ("front", "left", "right"):
+                for view in VIEWS:
                     relative = "frames/semantic/{}/{:06d}.png".format(
                         view, row["frame_id"]
                     )

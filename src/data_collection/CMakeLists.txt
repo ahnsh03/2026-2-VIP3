@@ -25,6 +25,7 @@ if(CATKIN_ENABLE_TESTING)
   catkin_add_nosetests(test/test_perception_curation.py)
   catkin_add_nosetests(test/test_perception_dataset.py)
   catkin_add_nosetests(test/test_bag_support.py)
+  catkin_add_nosetests(test/test_view_contract.py)
 endif()
 
 catkin_install_python(PROGRAMS

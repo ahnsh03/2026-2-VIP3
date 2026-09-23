@@ -8,6 +8,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+from data_collection.capture_sync import VIEWS
 from data_collection.perception_dataset import (
     PerceptionDatasetError,
     build_dataset_version,
@@ -26,7 +27,7 @@ class PerceptionDatasetTest(unittest.TestCase):
         run_root = data_root / "datasets" / run_id
         cache_root = run_root / "derived/twinlite_384x640_v2"
         rows = []
-        for index, view in enumerate(("front", "left", "right")):
+        for index, view in enumerate(VIEWS):
             image_rel = "frames/intensity/{}/000000.png".format(view)
             write_png(run_root / image_rel, np.zeros((8, 12, 3), dtype=np.uint8))
             outputs = {}
@@ -104,7 +105,7 @@ class PerceptionDatasetTest(unittest.TestCase):
         (cache_root / "_SUCCESS").write_text(
             json.dumps(
                 {
-                    "sample_count": 3,
+                    "sample_count": len(VIEWS),
                     "transform_sha256": "test-transform",
                     "policy_id": "test_v2" if v2 else None,
                 }
@@ -131,10 +132,10 @@ class PerceptionDatasetTest(unittest.TestCase):
                     encoding="utf-8"
                 ).splitlines()
             ]
-            self.assertEqual(len(train_rows), 3)
+            self.assertEqual(len(train_rows), len(VIEWS))
             self.assertEqual(train_rows[0]["run_id"], "train_run")
             self.assertTrue(train_rows[0]["image"].startswith("datasets/train_run/"))
-            self.assertEqual(result["splits"]["val"]["sample_count"], 3)
+            self.assertEqual(result["splits"]["val"]["sample_count"], len(VIEWS))
             self.assertEqual(result["splits"]["test"]["sample_count"], 0)
             self.assertEqual(result["training_heads"], ["lane", "drivable"])
 
@@ -255,7 +256,7 @@ class PerceptionDatasetTest(unittest.TestCase):
                 row for row in result["runs"] if row["run_id"] == "val_run"
             )
             self.assertEqual(val_summary["excluded_frame_ids"], [0])
-            self.assertEqual(val_summary["excluded_sample_count"], 3)
+            self.assertEqual(val_summary["excluded_sample_count"], len(VIEWS))
             self.assertEqual((output / "val.jsonl").read_text(encoding="utf-8"), "")
 
     def test_rejects_exclusion_for_unassigned_run(self):

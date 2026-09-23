@@ -19,6 +19,7 @@ catkin_package(
 if(CATKIN_ENABLE_TESTING)
   catkin_add_nosetests(test/test_ego_state.py)
   catkin_add_nosetests(test/test_freshness.py)
+  catkin_add_nosetests(test/test_gps_transform.py)
 endif()
 
 catkin_install_python(PROGRAMS

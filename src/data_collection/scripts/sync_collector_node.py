@@ -188,6 +188,21 @@ class SyncCollector(object):
         collect_hz = float(rospy.get_param("~collect_hz", 0))
         if collect_hz > 0:
             self.profile["collect_hz"] = collect_hz
+        # 프로파일 YAML 이 map/vehicle 의 기본값을 갖지만, 다른 맵·차량으로 한 번
+        # 돌릴 때 YAML 을 고치지 않고 런치에서 덮어쓸 수 있어야 한다. 이 값은 run
+        # 메타데이터에 그대로 기록되므로 틀리면 나중에 run 출처를 못 믿는다.
+        overrides = {
+            "map": str(rospy.get_param("~map", "")).strip(),
+            "vehicle": str(rospy.get_param("~vehicle", "")).strip(),
+        }
+        for key, override in overrides.items():
+            if override and override != self.profile.get(key):
+                rospy.loginfo(
+                    "profile %s: %s -> %s (launch override)",
+                    key, self.profile.get(key), override,
+                )
+                self.profile[key] = override
+
         run_id = rospy.get_param("~run_id", "") or None
         data_root = rospy.get_param("~data_root", "") or default_vip3_data_root()
         repo_root = os.environ.get("VIP3") or os.path.dirname(os.path.dirname(pkg))

@@ -7,6 +7,7 @@
        리턴하면 무조건 success=true 다. 실제 파일 존재 검증은 반드시 다음 단계에서 한다.
        README "2) 무결성 검사" 의 sync_capture_data.py dry-run 은 선택이 아니라 필수 게이트다. -->
   <arg name="capture_hz" default="1.0"/>
+  <arg name="start_delay_sec" default="2.0"/>   <!-- 첫 캡처까지 대기. 센서 워밍업 -->
   <arg name="max_captures" default="0"/>     <!-- 0 = 무제한 -->
   <arg name="run_id" default=""/>            <!-- 비우면 자동 생성 -->
   <arg name="data_root" default=""/>         <!-- 비우면 $VIP3_DATA -->
@@ -21,6 +22,7 @@
   <node pkg="data_collection" type="capture_collector_node.py"
         name="vip3_capture_collector" output="screen" required="true">
     <param name="capture_hz" value="$(arg capture_hz)"/>
+    <param name="start_delay_sec" value="$(arg start_delay_sec)"/>
     <param name="max_captures" value="$(arg max_captures)"/>
     <param name="run_id" value="$(arg run_id)"/>
     <param name="data_root" value="$(arg data_root)"/>
