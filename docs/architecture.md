@@ -90,17 +90,18 @@ MORAI (Windows)
 
 | 담당 | 경로 |
 |---|---|
-| **안승현** | `src/perception/drivable_bev/`, `src/vip3_hd_map/`, `src/perception/camera_semantic_perception/`, `tools/` |
-| **장원태** | `docker/`, `scripts/`, `src/vip3_bringup/`, `src/vip3_vehicle_state/`, `src/vip3_control/`(예정) |
-| **강도균** | `src/perception/slot_detector/`(예정), `src/vip3_hd_map/config/vip3_parking_spaces.json`, `config/VIP3_sensor_set_*.json` |
-| **김동현** | `src/data_collection/`, `scripts/{sync_capture_data,curate_perception_frames,bake_perception_masks,build_perception_dataset,audit_semantic_capture}.py`, `src/vip3_eval/`(예정) |
-| **하수영** | `src/perception/twinlite_morai/`, `scripts/{train,evaluate,render,smoke}_twinlite*.py`, `weights/` |
+| **안승현** | `src/perception/drivable_bev/`, `src/vip3_hd_map/`, `src/perception/camera_semantic_perception/`, `src/vip3_control/`(예정), `tools/` |
+| **장원태** | `docker/`, `scripts/`, `config/`, `src/vip3_bringup/`, `src/vip3_vehicle_state/` |
+| **하수영** | `src/perception/slot_detector/`(예정), `weights/`, `src/perception/twinlite_morai/`, `scripts/*twinlite*` |
+| **강도균** | `src/perception/slot_geometry/`(예정), `src/vip3_hd_map/config/vip3_parking_spaces.json`, `config/VIP3_sensor_set_*.json` |
+| **김동현** | `src/vip3_eval/`(예정), `src/data_collection/`, `scripts/{sync_capture_data,curate_perception_frames,bake_perception_masks,build_perception_dataset,audit_semantic_capture}.py` |
 | 공동 (합의 후 변경) | `config/vip3_topics.yaml`, `config/VIP3_network_v1.json`, `src/vip3_msgs/`, `src/morai_msgs`(submodule) |
 | 전원 | `docs/` (연구노트는 각자 파일) |
 
 **자기 경로 밖을 고칠 때만** 사전에 합의한다. 그 외에는 바로 `main` 에 push 한다.
 
-역할 배분의 근거와 조정 제안은 [roadmap.md](roadmap.md) §1~§3.
+역할 배분의 근거는 [roadmap.md](roadmap.md) §4~§5, 각자의 첫 과제는 §7.
+**판단·제어는 1챕터 후에 재배분한다** — 경로 생성기의 입력이 인지에서 나오기 때문이다.
 
 ### 센서셋을 바꿀 때 같이 고칠 파일 (강도균)
 
@@ -145,7 +146,8 @@ python3 tools/check_launch_params.py --all # 런치가 노드 파라미터를 �
 ## 7. 아직 없는 것
 
 - `src/vip3_eval/` — 주차 성공 판정 (김동현). **1블록 과제**. [roadmap.md](roadmap.md) §7
-- `src/vip3_control/` — 후진 pure-pursuit + 경유점 추종 (장원태). **1블록 과제 — M1**
-- `src/perception/slot_detector/` — DMPR-PS 기반 슬롯 코너 검출 (강도균). 3블록
+- `src/vip3_control/` — 후진 pure-pursuit + 경유점 추종 (안승현). **1블록 과제 — M1**
+- `src/perception/slot_detector/` — 슬롯 인식 모델 (하수영). **모델 선정 후**
+- `src/perception/slot_geometry/` — 코너 점 → 주차 목표 자세 (강도균). **1블록 과제**
 - `vip3_msgs` 확장 — 지금은 `VehicleState` + `SetGear` 뿐이다. stock 메시지로 되는 것은
   커스텀 타입을 만들지 않는다

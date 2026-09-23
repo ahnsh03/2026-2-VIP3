@@ -2,6 +2,9 @@
 
 > **문서 역할:** 패키지 가이드 — 학습·평가 절차
 > **담당:** 하수영
+> **⚠ 이 모델은 주차용 기본이 아니다.** 주차에는 BEV 입력 + 슬롯 엔티티 출력 모델이
+> 맞다 ([roadmap.md](../../../docs/roadmap.md) §2). 여기 남긴 이유는 **학습·평가 배관이
+> 통째로 돌아가는 상태**라 새 모델을 얹을 자리이고, 기하 비교군의 마스크 공급원이기 때문이다.
 > **데이터 계약:** [src/data_collection/README.md](../../data_collection/README.md)
 > **추론 패키지:** [camera_semantic_perception](../camera_semantic_perception/README.md)
 

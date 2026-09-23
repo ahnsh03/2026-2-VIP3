@@ -1,7 +1,7 @@
 # data_collection — 수집·rosbag·학습 데이터셋
 
 > **문서 역할:** 패키지 가이드 — 실행 절차
-> **담당:** 김동현
+> **담당:** 김동현 — 다만 **재학습이 결정된 뒤에 착수**한다 ([roadmap.md](../../docs/roadmap.md) §3)
 > **토픽 정본:** [config/vip3_topics.yaml](../../config/vip3_topics.yaml) · [docs/simulator.md](../../docs/simulator.md)
 
 MORAI 에서 데이터를 받아 TwinLiteNet+ 학습에 바로 쓸 수 있는 형태까지 만든다.
