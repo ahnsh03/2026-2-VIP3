@@ -71,6 +71,7 @@ RUN pip3 install --no-cache-dir -r /tmp/requirements-perception.txt && \
 
 RUN echo "source /opt/ros/noetic/setup.bash" >> /root/.bashrc && \
     echo "[ -f /root/ws/devel/setup.bash ] && source /root/ws/devel/setup.bash" >> /root/.bashrc && \
+    echo "[ -f /root/ws/scripts/vip3_env.sh ] && source /root/ws/scripts/vip3_env.sh" >> /root/.bashrc && \
     echo "export LANG=en_US.UTF-8" >> /root/.bashrc && \
     echo "export LC_ALL=en_US.UTF-8" >> /root/.bashrc
 
