@@ -19,7 +19,7 @@ MORAI 시뮬레이터 기반 **자율주차 시스템**을 개발한다.
 |---|---|
 | [docs/setup.md](docs/setup.md) | **환경 구성 — 여기부터** |
 | [docs/simulator.md](docs/simulator.md) | MORAI 연결·토픽·진단 |
-| [docs/roadmap.md](docs/roadmap.md) | **역할 분담과 작업 순서** |
+| [docs/roadmap.md](docs/roadmap.md) | **역할 분담과 작업 계획** — 자기 이름과 첫 과제는 여기 |
 | [docs/README.md](docs/README.md) | 전체 문서 목록 |
 
 ## 빠른 시작
@@ -79,7 +79,7 @@ src/
 3. **KATRI 맵에 주차면 기하가 없다.** 원본에는 있었는데 전달이 안 됐다 →
    [docs/katri-map.md](docs/katri-map.md) §1
 
-셋 다 코드가 아니라 **확인**으로 풀린다. [docs/roadmap.md](docs/roadmap.md) §4 가 그 순서다.
+셋 다 코드가 아니라 **확인**으로 풀린다. [docs/roadmap.md](docs/roadmap.md) §9 가 그 표다.
 
 ## 일정
 

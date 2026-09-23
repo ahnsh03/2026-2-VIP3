@@ -91,8 +91,8 @@ MORAI (Windows)
 | 담당 | 경로 |
 |---|---|
 | **안승현** | `src/perception/drivable_bev/`, `src/vip3_hd_map/`, `src/perception/camera_semantic_perception/`, `tools/` |
-| **장원태** | `docker/`, `scripts/`, `src/vip3_bringup/`, `src/vip3_vehicle_state/` |
-| **강도균** | `config/VIP3_sensor_set_*.json`, `src/vip3_hd_map/config/vip3_parking_spaces.json` |
+| **장원태** | `docker/`, `scripts/`, `src/vip3_bringup/`, `src/vip3_vehicle_state/`, `src/vip3_control/`(예정) |
+| **강도균** | `src/perception/slot_detector/`(예정), `src/vip3_hd_map/config/vip3_parking_spaces.json`, `config/VIP3_sensor_set_*.json` |
 | **김동현** | `src/data_collection/`, `scripts/{sync_capture_data,curate_perception_frames,bake_perception_masks,build_perception_dataset,audit_semantic_capture}.py`, `src/vip3_eval/`(예정) |
 | **하수영** | `src/perception/twinlite_morai/`, `scripts/{train,evaluate,render,smoke}_twinlite*.py`, `weights/` |
 | 공동 (합의 후 변경) | `config/vip3_topics.yaml`, `config/VIP3_network_v1.json`, `src/vip3_msgs/`, `src/morai_msgs`(submodule) |
@@ -144,7 +144,8 @@ python3 tools/check_launch_params.py --all # 런치가 노드 파라미터를 �
 
 ## 7. 아직 없는 것
 
-- `src/parking/` — 주차칸 검출·경로 생성·제어. 기반 논문 확정 후
-- `src/vip3_eval/` — 주차 성공 판정. [roadmap.md](roadmap.md) §2
+- `src/vip3_eval/` — 주차 성공 판정 (김동현). **1블록 과제**. [roadmap.md](roadmap.md) §7
+- `src/vip3_control/` — 후진 pure-pursuit + 경유점 추종 (장원태). **1블록 과제 — M1**
+- `src/perception/slot_detector/` — DMPR-PS 기반 슬롯 코너 검출 (강도균). 3블록
 - `vip3_msgs` 확장 — 지금은 `VehicleState` + `SetGear` 뿐이다. stock 메시지로 되는 것은
   커스텀 타입을 만들지 않는다
