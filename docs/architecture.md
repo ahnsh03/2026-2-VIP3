@@ -115,7 +115,11 @@ MORAI (Windows)
 바꾼 뒤 확인:
 
 ```bash
+# 지면 가시영역 (빠른 확인)
 python3 tools/analyze_sensor_set_coverage.py --sensor-set config/VIP3_sensor_set_v1_ros.json
+# SVM 기준 정밀 평가 — 사각 폭·중복률·주차선 해상도까지 (drivable_bev 와 같은 코드)
+python3 tools/design_svm_sensor_set.py --sensor-set config/VIP3_sensor_set_v1_ros.json
+# 후방 카메라 기하 회귀
 PYTHONPATH="src/perception/drivable_bev/src:src/perception/camera_semantic_perception/src" \
   python3 -m unittest discover -s src/perception/drivable_bev/test -p 'test_rear*.py'
 ```
