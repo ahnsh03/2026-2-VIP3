@@ -39,6 +39,7 @@ git -C src/morai_msgs rev-parse HEAD         # 4c9be6f... 이어야 한다
 │   └── VIP3_network_v1.json
 └── external/
     ├── baselines/TwinLiteNetPlus/   ← 추론·학습이 import 한다 (pinned 90f1b86)
+    ├── parking/                     ← (선택) 자율주차 논문 코드. 각자 필요한 것만
     └── 2026-ASMC/                   ← 참조용 clone (읽기 전용)
 ```
 
@@ -53,6 +54,9 @@ git -C ../external/baselines/TwinLiteNetPlus checkout 90f1b8695ae311d5123b05f853
 ```
 
 **커밋을 정확히 이 값으로 맞춰야 한다.** 가중치 로더가 검사하고 다르면 거부한다.
+
+자율주차 논문 코드는 **필요한 사람이 각자** 저장소 밖에 받는다. 목록과 링크는
+[related-work.md](related-work.md).
 
 ## 4. Docker Desktop (Windows 최초 1회)
 

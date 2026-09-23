@@ -293,8 +293,8 @@ AVM 기반 주차 슬롯 검출 논문(DMPR-PS, PSDet 계열)은 **front/rear/le
 
 ### 외부 검증 — 논문 두 편의 실제 구성과 대조
 
-`../external/parking/` 에 clone 한 코드에서 실제 카메라 설정을 확인했다
-([README](../../external/parking/README.md) §2).
+저장소 밖에 clone 한 논문 코드에서 실제 카메라 설정을 확인했다
+(저장소 목록: [related-work.md](related-work.md) §1).
 
 **① 장착 위치는 맞다.** ParkingE2E(IROS 2024, 실차)의 설정이
 front (3.67, 0.04, 0.71) / left (2.09, 0.98, 1.02) yaw 89.91 / rear (−0.90, −0.05, 0.65) 로

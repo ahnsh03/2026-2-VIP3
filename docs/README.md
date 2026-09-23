@@ -14,6 +14,7 @@
 | [katri-map.md](katri-map.md) | **KATRI 맵에 무엇이 있고 없나** | 안승현 |
 | [roadmap.md](roadmap.md) | **역할 분담과 작업 계획** — 마일스톤·각자의 첫 과제 | 안승현 |
 | [presentations.md](presentations.md) | **발표 슬라이드 설계** — 대본 쓸 때 참고 | 안승현 |
+| [related-work.md](related-work.md) | **자율주차 참고 목록** — 논문·코드·가중치·데이터셋 | 하수영 |
 | [porting-from-asmc.md](porting-from-asmc.md) | ASMC에서 가져온 것/안 가져온 것 | 안승현·장원태 |
 | [architecture.md](architecture.md) | 디렉터리·경로 오너십 | 안승현 |
 | [collaboration.md](collaboration.md) | `main` 푸시 규약 | 전원 |
@@ -65,7 +66,6 @@
 
 | 문서 | 언제 |
 |---|---|
-| `related-work.md` | 기반 논문 조사 — 하수영·김동현, 2블록 착수 (11/10 발표 재료) |
 | `contracts.md` | 모듈 입출력 계약 — 모듈 경계 확정 후 |
 | `experiments.md` | 학습·수집 결과 append-only 기록 |
 | `troubleshooting.md` | 막히는 것이 쌓이면. 당분간은 [simulator.md](simulator.md) §6 |
