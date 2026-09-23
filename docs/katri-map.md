@@ -164,7 +164,7 @@ roslaunch vip3_hd_map katri_map_viz.launch publish_global:=true rviz:=false
 
 ## 6. 남은 확인 사항
 
-- [ ] **`parking_space_set.json` 요청 → 수령** (최우선)
+- [ ] **`parking_space_set.json` 요청 → 수령** — 안승현이 추석 연휴 이후 문의
 - [ ] MORAI SIM 에서 R_KR_PG_KATRI 를 열었을 때 **3D 씬에 주차장이 실제로 렌더링되는가.**
       MGeo 는 도로망 레이어일 뿐이라 벡터가 없어도 씬에는 있을 수 있다. 있다면 그 위치를 RViz 에서
       좌표로 찍어 `config/vip3_parking_spaces.json` 의 출발점으로 삼는다.

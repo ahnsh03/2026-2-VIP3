@@ -127,7 +127,7 @@ PYTHONPATH="src/vip3_hd_map/src:src/vip3_vehicle_state/src" \
 
 ## 확인해야 할 것
 
-- [ ] **`parking_space_set.json` 수령** (최우선 — 팀에서 1인이 메일 한 통)
+- [ ] **`parking_space_set.json` 수령** — 안승현이 추석 연휴 이후 문의. 그 전까지는 손으로 찍은 칸 1개로 간다
 - [ ] MORAI SIM 3D 씬에 주차장이 실제로 렌더링되는가. MGeo 는 도로망 레이어일 뿐이라
       벡터가 없어도 씬에는 있을 수 있다
 - [ ] `/Ego_topic.position` 원점이 MGeo local frame 과 같은가 (노드가 자동 경고)
