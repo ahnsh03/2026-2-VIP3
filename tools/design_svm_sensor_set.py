@@ -111,6 +111,51 @@ PRESETS = {
         "rear": dict(width=640, height=480, fov=150.0,
                      t=(-0.750, 0.000, 0.950), rot=(0.0, 42.0, 180.0)),
     },
+    # [사용자 제안] 후방을 양쪽 상단 코너 2대 + 번호판 fisheye 로 나눈 6대 구성.
+    # 후방 코너: 테일게이트 상단 모서리 (루프라인 근처). 뒤-바깥 대각을 본다.
+    # 번호판: 실제 AVM 후방 카메라 위치. 낮고 가파르게 숙여 근접 지면을 본다.
+    "svm_v3_rear6": {
+        "front": dict(width=1280, height=960, fov=150.0,
+                      t=(3.700, 0.000, 0.650), rot=(0.0, 38.0, 0.0)),
+        "left": dict(width=1280, height=960, fov=150.0,
+                     t=(2.400, 1.000, 1.000), rot=(0.0, 55.0, 90.0)),
+        "right": dict(width=1280, height=960, fov=150.0,
+                      t=(2.400, -1.000, 1.000), rot=(0.0, 55.0, -90.0)),
+        "rear_left": dict(width=1280, height=960, fov=150.0,
+                          t=(-0.700, 0.900, 1.450), rot=(0.0, 40.0, 135.0)),
+        "rear_right": dict(width=1280, height=960, fov=150.0,
+                           t=(-0.700, -0.900, 1.450), rot=(0.0, 40.0, -135.0)),
+        "rear_plate": dict(width=1280, height=960, fov=150.0,
+                           t=(-0.790, 0.000, 0.550), rot=(0.0, 50.0, 180.0)),
+    },
+    # 위에서 번호판 fisheye 만 뺀 5대. 코너 2대가 정후방을 대신할 수 있는지 본다.
+    "svm_v3_rear5": {
+        "front": dict(width=1280, height=960, fov=150.0,
+                      t=(3.700, 0.000, 0.650), rot=(0.0, 38.0, 0.0)),
+        "left": dict(width=1280, height=960, fov=150.0,
+                     t=(2.400, 1.000, 1.000), rot=(0.0, 55.0, 90.0)),
+        "right": dict(width=1280, height=960, fov=150.0,
+                      t=(2.400, -1.000, 1.000), rot=(0.0, 55.0, -90.0)),
+        "rear_left": dict(width=1280, height=960, fov=150.0,
+                          t=(-0.700, 0.900, 1.450), rot=(0.0, 40.0, 135.0)),
+        "rear_right": dict(width=1280, height=960, fov=150.0,
+                           t=(-0.700, -0.900, 1.450), rot=(0.0, 40.0, -135.0)),
+    },
+    # 기존 v1 을 유지한 채 후방만 보강하는 최소 변경안 (전/좌/우는 손대지 않는다).
+    "v1_plus_rear3": {
+        "front": dict(width=1280, height=720, fov=90.0,
+                      t=(1.900, 0.000, 1.200), rot=(0.0, 2.0, 0.0)),
+        "left": dict(width=640, height=480, fov=130.0,
+                     t=(1.150, 0.650, 1.200), rot=(0.0, 10.0, 70.0)),
+        "right": dict(width=640, height=480, fov=130.0,
+                      t=(1.150, -0.650, 1.200), rot=(0.0, 10.0, -70.0)),
+        "rear_left": dict(width=1280, height=960, fov=150.0,
+                          t=(-0.700, 0.900, 1.450), rot=(0.0, 40.0, 135.0)),
+        "rear_right": dict(width=1280, height=960, fov=150.0,
+                           t=(-0.700, -0.900, 1.450), rot=(0.0, 40.0, -135.0)),
+        "rear_plate": dict(width=1280, height=960, fov=150.0,
+                           t=(-0.790, 0.000, 0.550), rot=(0.0, 50.0, 180.0)),
+    },
     # MORAI UI 가 FOV 를 130 deg 로 제한하는 경우의 대안.
     # 화각이 좁아진 만큼 pitch 를 더 눕히고 카메라를 낮춘다.
     "svm_v2_fov130": {
@@ -126,7 +171,16 @@ PRESETS = {
     },
 }
 
-VIEW_ORDER = ("front", "left", "right", "rear")
+# 표시 순서. 프리셋에 없는 이름은 건너뛰고, 여기 없는 이름은 뒤에 붙는다.
+VIEW_ORDER = (
+    "front", "left", "right", "rear",
+    "rear_left", "rear_right", "rear_plate",
+)
+
+
+def ordered_views(preset_or_cameras) -> list:
+    known = [n for n in VIEW_ORDER if n in preset_or_cameras]
+    return known + [n for n in preset_or_cameras if n not in VIEW_ORDER]
 
 
 def make_camera(name: str, spec: dict, sensor_id: int) -> CameraCalibration:
@@ -151,8 +205,7 @@ def make_camera(name: str, spec: dict, sensor_id: int) -> CameraCalibration:
 def cameras_from_preset(preset: dict) -> dict:
     return {
         name: make_camera(name, preset[name], index + 1)
-        for index, name in enumerate(VIEW_ORDER)
-        if name in preset
+        for index, name in enumerate(ordered_views(preset))
     }
 
 
@@ -273,16 +326,14 @@ def report(title: str, cameras: dict, verbose: bool = True) -> dict:
     print("=" * 78)
     print(title)
     print("=" * 78)
-    print(f"{'view':<8}{'FOV':>6}{'vFOV/2':>8}{'해상도':>12}{'pos(x,y,z)':>24}"
+    print(f"{'view':<11}{'FOV':>6}{'vFOV/2':>8}{'해상도':>12}{'pos(x,y,z)':>24}"
           f"{'pitch':>7}{'yaw':>7}{'cover':>8}")
     print("-" * 78)
-    for name in VIEW_ORDER:
-        if name not in cameras:
-            continue
+    for name in ordered_views(cameras):
         camera = cameras[name]
         share = result["coverage"][name][outside].mean() * 100.0
         pose = "({:.2f},{:.2f},{:.2f})".format(*camera.translation_m)
-        print(f"{name:<8}{camera.horizontal_fov_deg:>6.0f}"
+        print(f"{name:<11}{camera.horizontal_fov_deg:>6.0f}"
               f"{vertical_half_fov_deg(camera):>8.1f}"
               f"{f'{camera.width}x{camera.height}':>12}{pose:>24}"
               f"{camera.rotation_deg[1]:>7.1f}{camera.rotation_deg[2]:>7.1f}"
@@ -368,6 +419,8 @@ def render(result: dict, cameras: dict, path: Path) -> None:
     colours = {
         "front": (60, 220, 60), "left": (220, 160, 40),
         "right": (60, 160, 240), "rear": (200, 80, 220),
+        "rear_left": (90, 220, 220), "rear_right": (150, 120, 255),
+        "rear_plate": (255, 210, 120),
     }
     for name, mask in result["coverage"].items():
         colour = np.asarray(colours.get(name, (180, 180, 180)), np.uint8)
