@@ -13,6 +13,7 @@
 | [msgs-26r1.md](msgs-26r1.md) | **morai_msgs 26.R1 필드·단위** | 안승현 |
 | [katri-map.md](katri-map.md) | **KATRI 맵에 무엇이 있고 없나** | 안승현 |
 | [roadmap.md](roadmap.md) | **역할 분담과 작업 계획** — 마일스톤·각자의 첫 과제 | 안승현 |
+| [presentations.md](presentations.md) | **발표 슬라이드 설계** — 대본 쓸 때 참고 | 안승현 |
 | [porting-from-asmc.md](porting-from-asmc.md) | ASMC에서 가져온 것/안 가져온 것 | 안승현·장원태 |
 | [architecture.md](architecture.md) | 디렉터리·경로 오너십 | 안승현 |
 | [collaboration.md](collaboration.md) | `main` 푸시 규약 | 전원 |
