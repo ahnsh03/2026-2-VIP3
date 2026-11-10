@@ -12,4 +12,8 @@
   <exec_depend>tf2_ros</exec_depend>
   <exec_depend>vip3_vehicle_state</exec_depend>
   <exec_depend>vip3_hd_map</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>rosbridge_server</exec_depend>
+  <exec_depend>rosbridge_msgs</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
 </package>

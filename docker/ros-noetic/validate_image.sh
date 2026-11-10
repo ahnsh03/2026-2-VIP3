@@ -17,6 +17,7 @@ for package in rosbridge_server rqt_image_view rviz compressed_image_transport; 
 done
 python3 -m unittest discover -s src/perception/drivable_bev/test -p test_fisheye_svm.py -v
 python3 -m unittest discover -s src/data_collection/test -p 'test_bag*.py' -v
+python3 -m unittest discover -s src/vip3_bringup/test -p 'test_topic_monitor.py' -v
 python3 tools/check_sensor_preset.py
 python3 tools/check_topic_contract.py
 python3 tools/check_node_imports.py

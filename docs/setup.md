@@ -1,6 +1,6 @@
 # VIP3 실행 환경
 
-> 담당: 장원태 · 갱신: 2026-11-10
+> 담당: 장원태 · 갱신: 2026-11-11
 
 기본 이미지는 **`vip3/parking-ros:noetic`**이다. 공식 ROS Noetic ros-core에서 시작해 rosbridge, OpenCV·NumPy·SciPy, rosbag, rqt_image_view, RViz와 catkin 개발 도구를 설치한다. MORAI 연결·4어안 SVM·수집·차량 상태·GT 지도 확인용이다. SS-PSD 모델 추론·학습을 위한 PyTorch/CUDA 환경은 별도 추가 대상이며 이 이미지의 실행 범위에 포함하지 않는다.
 
@@ -64,25 +64,53 @@ python3 tools/export_local_morai_presets.py --port 19090 --output-dir ../data/lo
 
 ## 4. 직접 노드 실행
 
-호스트 터미널 세 개에서 각각 실행한다. 스크립트가 컨테이너 안의 ROS 환경을 로드한다.
+컨테이너가 실행 중이면 **호스트의 현재 디렉토리와 관계없이** 터미널 세 개에서 각각 접속한다. 접속 위치는 `/root/ws`이다.
+
+```bash
+docker exec -it vip3-parking-ros bash
+```
 
 ```bash
 # 터미널 A: 계속 유지
-./scripts/docker_ros_up.sh bridge
+./scripts/rosbridge.sh
 ```
 
 MORAI에서 두 프리셋을 Import한 뒤 센서·네트워크 **ROS Connect / Play**를 누른다.
 
 ```bash
 # 터미널 B: 실제 수신 확인 후 SVM 실행
-./scripts/docker_ros_up.sh verify 15
-./scripts/docker_ros_up.sh svm
+source devel/setup.bash
+python3 scripts/verify_morai_topics.py --duration 15
+roslaunch drivable_bev fisheye_svm.launch
 ```
 
 ```bash
 # 터미널 C: 원본 4뷰 + SVM 패널
-./scripts/docker_ros_up.sh view
+vip3-ros-gui rqt-image /perception/svm/panel
 ```
+
+호스트의 저장소 루트에서는 기존 `./scripts/docker_ros_up.sh bridge`, `svm`, `view` 명령도 동일하게 사용할 수 있다.
+
+### bridge 터미널의 센서 상태 로그
+
+`./scripts/rosbridge.sh`는 진단 노드를 함께 실행해 **5초마다** WebSocket 클라이언트 수와 필수 토픽(현재 Ego + 카메라 4개)의 수신 Hz / 설정 Hz, 마지막 수신 후 경과 시간, 구간 메시지 수를 출력한다. 토픽과 설정 Hz는 `config/vip3_topics.yaml`에서 읽는다. 이미지는 디코딩하지 않고 수신 횟수만 센다.
+
+- `OK`: 최근 수신 중이며 설정 Hz의 60% 이상.
+- `MISSING`: 실행 후 한 번도 수신하지 않음. 연결·Play 전에는 정상적으로 나타난다.
+- `STALE`: 마지막 수신 후 기본 2초 이상 경과. 저주기 센서는 설정 주기의 3배까지 허용한다.
+- `SLOW`: 최근 수신은 있지만 구간 평균 Hz가 설정값의 60% 미만. 시작 직후 부분 구간에도 나타날 수 있다.
+
+Hz는 ROS 구독자가 실제로 받은 메시지 수를 **실제 경과 시간**으로 나눈 값이다. `last`는 소스 타임스탬프 지연이나 네트워크 지연이 아니다. 시뮬레이션 시간이 멈춰도 계속 출력하며, `clients`는 센서 수가 아닌 rosbridge에 연결된 WebSocket 클라이언트 수이다. `unknown`은 연결 상태 메시지를 아직 받지 못했다는 뜻이다. 미수신/저속 로그만으로 센서 고장이나 패킷 손실을 단정하지 않는다.
+
+컨테이너 안에서 다음처럼 주기를 조절하거나 끌 수 있다:
+
+```bash
+MORAI_TOPIC_LOG_INTERVAL=10 ./scripts/rosbridge.sh  # 10초마다
+MORAI_TOPIC_MONITOR=false ./scripts/rosbridge.sh   # 센서 요약 로그 끄기
+# 필요하면 MORAI_TOPIC_STALE_AFTER=3 으로 오래된 수신의 기준을 조정
+```
+
+이미 실행 중인 bridge에는 자동 적용되지 않는다. 해당 터미널에서 `Ctrl+C` 후 다시 실행하고 MORAI를 재연결한다. 새 실행에서는 bridge와 진단 노드를 하나의 roslaunch가 관리해 함께 종료한다. 기존 외부 roscore는 유지하고, 이 roslaunch가 새로 시작한 master는 함께 종료한다. 소스가 마운트되어 있으므로 이 변경을 적용하기 위해 Docker 이미지를 다시 빌드할 필요는 없다.
 
 SVM은 아직 미보정 미리보기다. 최신 위치·해상도·실기 결과와 남은 캘리브레이션은 [sensors.md](sensors.md)를 따른다. 현재 이미지는 1280×960 입력을 처리하되 SVM 출력은 512×512다.
 
