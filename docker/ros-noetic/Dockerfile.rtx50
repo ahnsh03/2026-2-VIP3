@@ -1,5 +1,5 @@
 # RTX 50(sm_120) 시리즈용 파생 이미지 — opt-in.
-# 먼저 같은 디렉터리의 Dockerfile 을 vip3/ros-noetic:dev 로 빌드해야 한다.
+# 먼저 같은 디렉터리의 Dockerfile.legacy-twinlite 를 vip3/ros-noetic:dev 로 빌드해야 한다.
 FROM vip3/ros-noetic:dev
 
 ENV DEBIAN_FRONTEND=noninteractive

@@ -56,7 +56,7 @@ xhost +local:docker                 # RViz/rqt 쓸 때만
 ./scripts/docker_ros_up.sh up
 
 # 컨테이너 터미널 A — 계속 띄워 둔다
-docker exec -it vip3-ros-noetic bash
+./scripts/docker_ros_up.sh shell
 cd /root/ws && ./scripts/build_ws.sh && source devel/setup.bash
 ./scripts/rosbridge.sh
 ```

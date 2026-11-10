@@ -33,7 +33,7 @@
 2026-2-VIP3/
 ├── docs/            팀 공유 문서·연구노트
 ├── docker/          실행 환경
-│   ├── ros-noetic/      런타임 + 추론 (rosbridge, RViz, torch cu118)
+│   ├── ros-noetic/      ROS/SVM 실행 (rosbridge, RViz, OpenCV; 모델 환경은 별도)
 │   └── perception-train/ 학습 전용 (ROS 없음)
 ├── config/          파라미터 — 기계 정본
 │   ├── vip3_topics.yaml            토픽·프레임·단위 계약

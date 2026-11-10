@@ -1,164 +1,111 @@
-# 개발 환경
+# VIP3 실행 환경
 
-> **문서 역할:** 가이드 — 처음부터 돌리기까지
-> **담당:** 장원태
-> **최종 수정:** 2026-09-23
+> 담당: 장원태 · 갱신: 2026-11-10
 
-## 1. 한 줄 요약
+기본 이미지는 **`vip3/parking-ros:noetic`**이다. 공식 ROS Noetic ros-core에서 시작해 rosbridge, OpenCV·NumPy·SciPy, rosbag, rqt_image_view, RViz와 catkin 개발 도구를 설치한다. MORAI 연결·4어안 SVM·수집·차량 상태·GT 지도 확인용이다. SS-PSD 모델 추론·학습을 위한 PyTorch/CUDA 환경은 별도 추가 대상이며 이 이미지의 실행 범위에 포함하지 않는다.
 
-| 구성 | 기준 |
-|---|---|
-| 코드 편집·Git | **WSL2 Ubuntu** (또는 native Linux) 의 리눅스 파일시스템 |
-| 실행 | **Docker** — 호스트에 ROS 를 직접 설치하지 않는다 |
-| ROS | **Noetic** (Python 3.8) |
-| MORAI SIM | **Windows** 에서 실행, **rosbridge** 로 연결 |
-| 메시지 | `morai_msgs` **26.R1** @ `4c9be6f` (`beta_drive` 아님) |
+컨테이너 이름 제안은 **`vip3-parking-ros`**이고 compose의 기본 이름도 이 값이다. `VIP3_CONTAINER_NAME`으로 바꿀 수 있다. **이미지 빌드와 실행 컨테이너 생성은 별개다.** `build`/`rebuild`는 이미지만 만들고, `up`을 직접 실행할 때 컨테이너·네트워크·빌드 볼륨이 생성된다. 인자 없이 스크립트를 호출하면 도움말만 출력한다.
 
-호스트가 Ubuntu 22.04 이상이면 ROS Noetic apt 패키지가 **없다.** 그래서 ROS 는 컨테이너에서만
-돌린다. 저장소는 `/mnt/c/...` 가 아니라 WSL 의 `~/...` 아래에 clone 한다
-(`/mnt/c` 는 파일 I/O 가 느리고 권한 문제가 생긴다).
+## 1. 코드와 데이터
 
-## 2. clone
+Windows에서 MORAI, WSL2/Linux에서 편집·Git·Docker 명령을 실행한다. Docker Desktop은 Linux containers/WSL 통합을 사용한다. 기본 구성은 CPU로 동작하므로 NVIDIA 컨테이너 런타임 없이 SVM을 확인할 수 있다.
 
 ```bash
 git clone https://github.com/ahnsh03/2026-2-VIP3.git
 cd 2026-2-VIP3
-git checkout main && git pull
-git submodule update --init --recursive     # morai_msgs 26.R1
-git -C src/morai_msgs rev-parse HEAD         # 4c9be6f... 이어야 한다
+git submodule update --init --recursive
+git -C src/morai_msgs rev-parse --short=7 HEAD  # 4c9be6f (26.R1)
 ```
 
-## 3. 저장소 밖 데이터
+개발 중인 변경은 해당 PR 브랜치를 checkout한다. 저장소 옆 `../data`에 MORAI 맵, 센서 export, 수집 결과를 둔다. 기본 compose는 이 경로를 `/data`에 연결한다. 데이터가 다른 위치에 있으면 `export VIP3_DATA="/원하는/데이터/경로"`를 지정한다. 이미지 빌드에 맵·bag·가중치·외부 프로젝트를 복사하지 않는다.
 
-```
-~/projects/2026-2-Vertically Integrated Project 3/     ← 로컬 루트
-├── 2026-2-VIP3/                 ← 이 저장소
-├── data/                        ← $VIP3_DATA  (맵·수집 결과·bag)
-│   ├── KATRI 맵 데이터 자료/
-│   ├── VIP3_sensor_set_v1.json
-│   └── VIP3_network_v1.json
-└── external/
-    ├── baselines/TwinLiteNetPlus/   ← 추론·학습이 import 한다 (pinned 90f1b86)
-    ├── parking/                     ← (선택) 자율주차 논문 코드. 각자 필요한 것만
-    └── 2026-ASMC/                   ← 참조용 clone (읽기 전용)
-```
+## 2. 이미지만 빌드
 
-`docker_ros_up.sh` 가 `$VIP3_DATA` 를 컨테이너 `/data` 에 마운트한다. 기본값은 저장소와
-나란한 `../data` 다.
-
-TwinLiteNet+ upstream 이 없으면:
+아래 명령은 모두 **저장소 루트**에서 실행한다.
 
 ```bash
-git clone https://github.com/chequanghuy/TwinLiteNetPlus.git ../external/baselines/TwinLiteNetPlus
-git -C ../external/baselines/TwinLiteNetPlus checkout 90f1b8695ae311d5123b05f8534b2e11e42499d2
+./scripts/docker_ros_up.sh build
+# 필요할 때 캐시 없이 이미지 재빌드만 수행:
+# ./scripts/docker_ros_up.sh rebuild
 ```
 
-**커밋을 정확히 이 값으로 맞춰야 한다.** 가중치 로더가 검사하고 다르면 거부한다.
+빌드 과정의 별도 stage에서 VIP3 workspace 전체 catkin 빌드, MORAI 메시지 스키마, fisheye 테스트 7개, bag 프로파일 테스트 10개와 정적 검사 4개를 검증한다. 최종 이미지에는 검증 로그만 남기고 테스트용 소스·build·devel은 포함하지 않는다. 이 검증은 실행 컨테이너를 생성하지 않으며 MORAI 실시간 수신·GUI 표시 검증을 대체하지 않는다.
 
-자율주차 논문 코드는 **필요한 사람이 각자** 저장소 밖에 받는다. 목록과 링크는
-[related-work.md](related-work.md).
-
-## 4. Docker Desktop (Windows 최초 1회)
-
-**261110 센서 전환:** 팀 기본 포트는 **9090**이며 별도 포트 인자는 필요 없다. 현재 Import 파일과 4어안 SVM 실행법은 [sensors.md](sensors.md)의 현재 적용 절을 따른다. 9090이 Windows 예약 포트이면 `MORAI_BRIDGE_PORT=19090`으로 컨테이너를 시작하고 같은 포트의 로컬 프리셋을 생성한다. WebSocket Host 검증 때문에 외부·내부 포트를 동일하게 유지한다.
-
-
-1. Linux containers / WSL 2 모드
-2. **Settings → Resources → WSL Integration** — 쓰는 배포판 Enable
-
-**호스트 네트워킹은 켤 필요 없다.** 기본 compose 가 `ports: 9090:9090` 브리지 모드라
-rosbridge 하나만 퍼블리시한다. 이미 host 모드를 쓰고 있으면:
+빌드 파일: `docker/ros-noetic/Dockerfile`. 직접 빌드하려면:
 
 ```bash
-./scripts/docker_ros_up.sh up-hostnet
+docker build -f docker/ros-noetic/Dockerfile -t vip3/parking-ros:noetic .
 ```
 
-## 5. 빌드·기동
+**2026-11-10 빌드 결과:** 로컬 이미지 약 4.48GB. 전체 catkin 빌드, 테스트 17개, 정적 검사 4개 통과. [검증 기록](analysis/parking-image-build-261110.json). 실행 컨테이너는 생성하지 않았으며, 새 이미지의 MORAI 연결·GUI 표시는 직접 실행할 때 확인한다.
+
+## 3. 이름을 정한 뒤 직접 생성
+
+**팀 기본 포트는 9090**이다. 아래는 사용자가 실행하기로 했을 때의 명령이다.
 
 ```bash
-# 호스트 (WSL)
-xhost +local:docker                  # RViz/rqt 쓸 때만
-./scripts/docker_ros_up.sh build     # 최초 또는 Dockerfile 변경 시
-./scripts/docker_ros_up.sh up
-./scripts/docker_ros_up.sh check     # 9090 퍼블리시 + Windows 도달 확인
+export VIP3_CONTAINER_NAME=vip3-parking-ros  # 제안 이름; 변경 가능
+./scripts/docker_ros_up.sh config          # 생성 없이 최종 설정 확인
+./scripts/docker_ros_up.sh up              # 여기서 처음 컨테이너 생성
+./scripts/docker_ros_up.sh build-ws        # 첫 기동/소스 변경 후 catkin 빌드
+```
 
-# 컨테이너 터미널 A — 계속 띄워 둔다
-docker exec -it vip3-ros-noetic bash
-cd /root/ws
-./scripts/build_ws.sh
+이름을 변경했다면 이후 터미널에서도 같은 `VIP3_CONTAINER_NAME`을 지정한다. `build`와 `up`을 한 줄로 묶을 필요가 없다. build/devel은 프로젝트 전용 Docker 볼륨에 보관해 호스트 작업 트리에 다른 UID의 빌드 산출물이 쌓이는 것을 줄인다.
+
+**현재 검증 PC의 예외:** Windows가 9090을 예약한 상태라 `up` **전에** 다음을 실행한다. 다른 팀원의 기본값은 그대로 9090이다.
+
+```bash
+export MORAI_BRIDGE_PORT=19090
+python3 tools/export_local_morai_presets.py --port 19090 --output-dir ../data/local_morai
+# 이후 위의 up / build-ws 실행
+```
+
+기본 포트에서는 `config/VIP3_sensor_set_261110_ros.json`과 `config/VIP3_network_261110.json`을 MORAI에 Import한다. 19090 예외를 쓰면 `../data/local_morai`에 생성된 두 사본을 Import한다. WebSocket 검증 때문에 외부·내부·MORAI 접속 포트는 동일해야 한다.
+
+## 4. 직접 노드 실행
+
+호스트 터미널 세 개에서 각각 실행한다. 스크립트가 컨테이너 안의 ROS 환경을 로드한다.
+
+```bash
+# 터미널 A: 계속 유지
+./scripts/docker_ros_up.sh bridge
+```
+
+MORAI에서 두 프리셋을 Import한 뒤 센서·네트워크 **ROS Connect / Play**를 누른다.
+
+```bash
+# 터미널 B: 실제 수신 확인 후 SVM 실행
+./scripts/docker_ros_up.sh verify 15
+./scripts/docker_ros_up.sh svm
+```
+
+```bash
+# 터미널 C: 원본 4뷰 + SVM 패널
+./scripts/docker_ros_up.sh view
+```
+
+SVM은 아직 미보정 미리보기다. 최신 위치·해상도·실기 결과와 남은 캘리브레이션은 [sensors.md](sensors.md)를 따른다. 현재 이미지는 1280×960 입력을 처리하되 SVM 출력은 512×512다.
+
+파일까지 저장하려면 `svm` 대신 다음을 쓴다. `save_dir`는 기존 결과와 다른 이름으로 정한다.
+
+```bash
+./scripts/docker_ros_up.sh shell
+# 컨테이너 안
 source devel/setup.bash
-./scripts/rosbridge.sh
+roslaunch drivable_bev fisheye_svm.launch save_dir:=/data/sensor_checks/my_run
 ```
 
-MORAI 연결과 그 뒤 순서는 [simulator.md](simulator.md) §2.
+GUI에 X11 권한 오류가 있을 때만 WSL에서 `xhost +si:localuser:root`를 실행하고 다시 시도한다. WSLg의 `DISPLAY`와 `/tmp/.X11-unix`를 기본 사용한다. 실제 GUI 연결은 사용자가 컨테이너를 생성한 후 확인한다.
 
-코드만 바뀌었으면 이미지를 다시 빌드하지 않는다 — 컨테이너에서 `./scripts/build_ws.sh` 만
-다시 돌린다. `up` 은 컨테이너를 재생성하므로 **주행·녹화 중에 실행하지 않는다.**
-
-종료:
+## 5. 종료·정리
 
 ```bash
-./scripts/docker_ros_up.sh down
-xhost -local:docker
+./scripts/docker_ros_up.sh stop  # VIP3의 모든 노드 종료, 컨테이너 보관
+./scripts/docker_ros_up.sh down  # VIP3 컨테이너·compose 네트워크 제거
 ```
 
-## 6. GPU
+`down`은 소스·`../data`·빌드 볼륨을 삭제하지 않는다. 기본 compose 프로젝트 이름은 `vip3-parking`이다. ASMC 컨테이너/이미지에는 적용하지 않는다. 학습·수집 결과 보존을 위해 전체 `docker system prune`은 정리 명령에 포함하지 않는다.
 
-기본 이미지는 **PyTorch 2.1.2 + CUDA 11.8** 이다. RTX 30·40 시리즈(sm_86/sm_89)까지 커버한다.
+## 6. 이전 GPU 환경
 
-**RTX 50 시리즈(sm_120)를 쓰면 기본 이미지로는 추론이 안 된다.** torch 는 2.4.1 이후
-Python 3.8 을 버렸고 sm_120 은 cu128 부터 지원되는데 ROS Noetic 이 Python 3.8 에 묶여
-있어서 단일 인터프리터로는 해결이 불가능하다. venv 를 분리한 오버레이를 쓴다:
-
-```bash
-./scripts/docker_ros_up.sh build-rtx50
-./scripts/docker_ros_up.sh up-rtx50
-```
-
-**팀원 5명의 GPU 모델을 먼저 확인한다** (`nvidia-smi`). RTX 50 이 아무도 없으면
-`Dockerfile.rtx50` 과 오버레이를 안 써도 된다.
-
-학습 컨테이너는 별도다:
-
-```bash
-./scripts/docker_train_up.sh build
-./scripts/docker_train_up.sh up      # vip3-perception-train, /data 를 읽기 전용으로
-```
-
-## 7. 시뮬레이터 없이 되는 것
-
-**실기 없이도 여기까지 확인할 수 있다.** 새로 합류했으면 이것부터 돌려 본다.
-
-```bash
-# 전 패키지 단위 테스트 (193개, ROS·GPU 불필요)
-PKGS="src/perception/drivable_bev src/perception/camera_semantic_perception \
-      src/data_collection src/vip3_hd_map src/vip3_vehicle_state"
-# 패키지 간 import 가 있어서(vip3_hd_map -> vip3_vehicle_state) 전부 경로에 올린다.
-ALL=$(for p in $PKGS; do printf "%s/src:" "$p"; done | sed 's/:$//')
-for p in $PKGS; do
-  echo "== $p"
-  PYTHONPATH="$ALL" python3 -m unittest discover -s "$p/test" -p 'test_*.py' 2>&1 | tail -3
-done
-
-# 센서셋 지면 가시영역 — 차 주변 어디가 사각인지
-python3 tools/analyze_sensor_set_coverage.py \
-  --sensor-set config/VIP3_sensor_set_v1_ros.json --image /tmp/coverage.png
-
-# KATRI 맵에 무엇이 있는지 (주차면 포함)
-python3 src/vip3_hd_map/scripts/inspect_katri_mgeo.py \
-  --map-dir "../data/KATRI 맵 데이터 자료"
-
-# 맵 렌더
-python3 tools/render_mgeo_map.py --mgeo "../data/KATRI 맵 데이터 자료" \
-  --out /tmp/katri.png --scale 1.5
-```
-
-## 8. 안 되면
-
-[simulator.md](simulator.md) §6 의 증상 표를 먼저 본다. 그 다음:
-
-```bash
-docker exec -it vip3-ros-noetic bash -lc 'cd /root/ws && ./scripts/diagnose_morai_rosbridge.sh'
-```
-
-출력을 통째로 팀 채널에 붙인다.
+기존 TwinLite CUDA Dockerfile은 `Dockerfile.legacy-twinlite`에 보존했다. RTX50 오버레이와 `build-rtx50`는 해당 과거 경로를 위한 선택 기능이다. 기본 SVM 실행에는 이 파일이나 TwinLite 외부 clone이 필요 없다. SS-PSD GPU 환경을 추가할 때는 현재 논문의 의존성에 맞춘 별도 이미지로 검증한다.

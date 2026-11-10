@@ -7,5 +7,11 @@ services:
       context: .
       dockerfile: Dockerfile.rtx50
     image: vip3/ros-noetic:rtx50
+    gpus: all
+    volumes:
+      - ${TWINLITE_SOURCE:-../../../external/baselines/TwinLiteNetPlus}:/opt/baselines/TwinLiteNetPlus:ro
     environment:
       - VIP3_TWINLITE_PYTHON=/opt/infer-venv/bin/python
+      - TWINLITE_ROOT=/opt/baselines/TwinLiteNetPlus
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute

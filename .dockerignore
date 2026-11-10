@@ -1,0 +1,19 @@
+# Minimal repository-root context for the parking image validation stage.
+*
+!src/
+!src/**
+!config/
+!config/**
+!scripts/
+!scripts/**
+!tools/
+!tools/**
+!docker/
+!docker/ros-noetic/
+!docker/ros-noetic/**
+**/.git
+**/__pycache__
+**/*.pyc
+**/*.pyo
+**/*:Zone.Identifier
+src/CMakeLists.txt

@@ -28,10 +28,12 @@ MORAI 시뮬레이터 기반 **자율주차 시스템**을 개발한다.
 git clone https://github.com/ahnsh03/2026-2-VIP3.git && cd 2026-2-VIP3
 git submodule update --init --recursive
 
-./scripts/docker_ros_up.sh build && ./scripts/docker_ros_up.sh up
-docker exec -it vip3-ros-noetic bash
-cd /root/ws && ./scripts/build_ws.sh && source devel/setup.bash
-./scripts/rosbridge.sh
+./scripts/docker_ros_up.sh build        # 이미지만 빌드·검증
+# 이름을 정한 뒤 직접 실행할 때:
+export VIP3_CONTAINER_NAME=vip3-parking-ros
+./scripts/docker_ros_up.sh up
+./scripts/docker_ros_up.sh build-ws
+./scripts/docker_ros_up.sh bridge       # 별도 터미널: svm / view
 ```
 
 MORAI 설정은 [docs/simulator.md](docs/simulator.md) §2.
