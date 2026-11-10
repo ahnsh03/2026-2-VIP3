@@ -2,7 +2,7 @@
 
 > **문서 역할:** 정본 — 우리가 쓰는 MORAI 메시지 버전과 필드
 > **담당:** 안승현
-> **기계 정본:** `src/morai_msgs/` (submodule, `26.R1` @ `4c9be6f`), `config/vip3_topics.yaml`
+> **기계 정본:** `src/morai_msgs/` (submodule, `26.R1` @ `4c9be6f`), `config/ros/topics.yaml`
 > **최종 수정:** 2026-09-23
 
 ## 1. 왜 이 문서가 필요한가

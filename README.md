@@ -8,7 +8,7 @@ MORAI 시뮬레이터 기반 **자율주차 시스템**을 개발한다.
 | 교과목 | 알파프로젝트 3 — 001분반, 화 19~20교시, 1학점 **Pass/Fail** |
 | 지도교수 | 원종훈 (전기전자공학부) · 협력업체 교원 (주)모라이 |
 | 주제 | MORAI 시뮬레이터 기반 **자율주차** |
-| 맵 | KATRI (`R_KR_PG_KATRI`) |
+| 맵 | K-City 2025 (`R_KR_PR_K-city_2025`) |
 | 시뮬 연결 | **rosbridge** `ws://127.0.0.1:9090` (UDP 안 씀) |
 | 메시지 | `morai_msgs` **26.R1** @ `4c9be6f` |
 | 협업 | `main` 직접 push + 경로 오너십 — [docs/collaboration.md](docs/collaboration.md) |
@@ -38,10 +38,10 @@ export VIP3_CONTAINER_NAME=vip3-parking-ros
 
 MORAI 설정은 [docs/simulator.md](docs/simulator.md) §2.
 
-**시뮬레이터 없이도 여기까지 된다** — [docs/setup.md](docs/setup.md) §7:
+**시뮬레이터 없이 설정·지도부터 확인:**
 
 ```bash
-python3 tools/analyze_sensor_set_coverage.py --sensor-set config/VIP3_sensor_set_v1_ros.json
+python3 tools/check_sensor_preset.py
 python3 src/vip3_hd_map/scripts/inspect_katri_mgeo.py --map-dir "../data/KATRI 맵 데이터 자료"
 ```
 
@@ -70,18 +70,14 @@ src/
 이식했고, rosbridge 단일 전송 · morai_msgs 26.R1 · 4카메라(후방 포함) 기준으로 맞췄다.
 가져온 것과 안 가져온 것은 [docs/porting-from-asmc.md](docs/porting-from-asmc.md).
 
-**ROS·GPU 없이 호스트에서 156개 단위 테스트가 통과한다.** 아직 실기 연동은 안 했다.
+현재 센서 정본과 SVM 설정은 [config/README.md](config/README.md)에서 확인한다.
 
-### 지금 막고 있는 것 세 가지
-
-1. **`/ctrl_cmd` 가 네트워크 프리셋에 없다.** 차를 움직일 수 없다 →
-   [docs/simulator.md](docs/simulator.md) §4
-2. **rosbridge 로 카메라 4대가 20 Hz 로 오는지 미검증.** 안 나오면 수집 설계가 바뀐다 →
-   [docs/simulator.md](docs/simulator.md) §5
+1. **4어안 1280×960·179°·10Hz 수신과 SVM 미리보기를 확인했다.** 렌즈·주차선 좌표 보정은 남아 있다 → [docs/sensors.md](docs/sensors.md)
+2. **네트워크 정본에 `/ctrl_cmd`가 있다.** 기어·External 제어 모드와 실제 주차 제어는 별도 검증 대상이다 → [docs/simulator.md](docs/simulator.md)
 3. **KATRI 맵에 주차면 기하가 없다.** 원본에는 있었는데 전달이 안 됐다 →
    [docs/katri-map.md](docs/katri-map.md) §1
 
-셋 다 코드가 아니라 **확인**으로 풀린다. [docs/roadmap.md](docs/roadmap.md) §9 가 그 표다.
+역할별 남은 작업은 [docs/roadmap.md](docs/roadmap.md)를 따른다.
 
 ## 일정
 

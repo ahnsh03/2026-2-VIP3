@@ -1,29 +1,18 @@
-# drivable_bev — 카메라 semantic → base_link BEV
+# drivable_bev — 현재 4어안 SVM과 BEV 기하 코어
 
-> **문서 역할:** 패키지 가이드 — 실행법과 입출력
-> **담당:** 안승현
-> **기하 정본:** `config/cameras_vip3_v1.yaml` · `config/bev_grid.yaml`
-> **센서 정본:** `../../../config/VIP3_sensor_set_v1_ros.json` ([docs/sensors.md](../../../docs/sensors.md))
-
-4대 카메라(전·좌·우·**후**)의 semantic 확률을 지면 평면 호모그래피로 `base_link` 격자에
-투영하고 한 장으로 융합한다. ASMC `drivable_bev` 에서 기하 코어만 가져왔다.
-
-## 빠른 시작
+> **현재 설정:** `config/fisheye_svm.yaml`, `config/vehicles/`
+> **MORAI 정본:** [config/morai](../../../config/morai), [센서 가이드](../../../docs/sensors.md)
 
 ```bash
-# 컨테이너 안에서
-cd /root/ws && source devel/setup.bash
-
-# 0) 모델 없이 기하만 확인 (가장 먼저 할 것)
-roslaunch drivable_bev rgb_bev.launch
-rqt_image_view /perception/bev/debug/rgb/compressed
-
-# 1) 전체 파이프라인 (추론 + 투영 + 융합 + 시각화)
-roslaunch drivable_bev four_view_bev.launch
-
-# 후방만 따로
-roslaunch drivable_bev camera_bev.launch views:=rear
+source /root/ws/devel/setup.bash
+roslaunch drivable_bev fisheye_svm.launch
+# 마스크·차량 그림 없이 진단
+# roslaunch drivable_bev fisheye_svm.launch vehicle_mask:=false vehicle_overlay:=false
 ```
+
+`/perception/svm/panel`은 원본 4뷰와 512×512 미보정 SVM을 표시한다. 차량 그림은 시각화용이며 `valid_mask`의 차체 관측 불가 영역은 유지한다. 현재 179° 어안 영상을 아래의 핀홀 호모그래피에 직접 넣지 않는다.
+
+아래 내용은 재사용 가능한 **핀홀 semantic BEV 코어** 설명이다. `rgb_bev.launch`, `camera_bev*.launch`, `four_view_bev.launch`는 별도 핀홀 `camera_config`를 명시해야 한다. 투영 검증을 하는 launch에는 `sensor_set_path`도 필요하다. 구형 임시 센서셋은 배포하지 않으며 테스트 fixture는 실행 설정이 아니다.
 
 ## ⚠ 캘리브레이션 게이트 — 여기서 멈춰서 눈으로 확인한다
 
@@ -53,6 +42,7 @@ ASMC 원본은 4-class 경로만 있어서 그대로 두면 노드가 영원히 
 
 ```bash
 roslaunch drivable_bev four_view_bev.launch \
+  camera_config:=/path/to/calibrated_pinhole.yaml sensor_set_path:=/path/to/pinhole_sensor.json \
   secondary_head:=road_marking \
   checkpoint:=/root/ws/weights/twinlite/v6_road_marking/best_mean.pt
 ```

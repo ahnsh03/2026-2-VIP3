@@ -4,8 +4,8 @@
 # 스크립트는 값을 다시 적지 말고 여기를 읽거나, 여기서 생성한 값을 쓴다.
 #
 # 기계 정본 두 개:
-#   config/VIP3_sensor_set_261110_ros.json   센서 (MORAI Sensor 설정)
-#   config/VIP3_network_261110.json          네트워크 (MORAI Network 설정)
+#   config/morai/sensors.json   센서 (MORAI Sensor 설정)
+#   config/morai/network.json          네트워크 (MORAI Network 설정)
 # 값이 어긋나면 위 두 JSON 이 이긴다. 바꾸면 이 파일도 같이 고친다.
 #
 # 전송은 rosbridge WebSocket ws://127.0.0.1:9090 하나뿐이다. UDP 는 쓰지 않는다.
@@ -36,8 +36,8 @@ morai_msgs:
     CtrlCmd.velocity: km/h
 
 presets:
-  sensors: config/VIP3_sensor_set_261110_ros.json
-  network: config/VIP3_network_261110.json
+  sensors: config/morai/sensors.json
+  network: config/morai/network.json
 
 frames:
   world: map
@@ -123,7 +123,7 @@ reserved_sensors:
     period_s: 0.02
 
 network:
-  # VIP3_network_261110.json 의 ROS 채널. reserved_sensors 는 v1 호환 이름이다.
+  # config/morai/network.json 의 ROS 채널. reserved_sensors 는 v1 호환 이름이다.
   subscribe:      # 시뮬 -> 우리
     ego: {topic: /Ego_topic, type: morai_msgs/EgoVehicleStatus, hz: 50}
     objects: {topic: /Object_topic, type: morai_msgs/ObjectStatusList, hz: 50}

@@ -6,6 +6,7 @@ Uses the project's projection equations without importing ROS or model packages.
 """
 
 import importlib.util
+import argparse
 import json
 from pathlib import Path
 import sys
@@ -17,6 +18,10 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
+    parser = argparse.ArgumentParser(description='Historical pinhole comparison, not current fisheye calibration')
+    parser.add_argument('--sensor-set', type=Path, required=True, help='Explicit historical pinhole input')
+    parser.add_argument('--output', type=Path, required=True, help='Local analysis JSON path')
+    args = parser.parse_args()
     source = ROOT / "src/perception/drivable_bev/src/drivable_bev/calibration.py"
     spec = importlib.util.spec_from_file_location("vip3_sensor_analysis_calibration", source)
     module = importlib.util.module_from_spec(spec)
@@ -30,8 +35,10 @@ def main():
             "", "", "", "", ground,
         )
 
-    sensor_path = ROOT / "config/VIP3_sensor_set_v1_ros.json"
+    sensor_path = args.sensor_set.resolve()
     sensor_set = json.loads(sensor_path.read_text())
+    if any(row['cc'].get('modelType') == 2 for row in sensor_set['cameraList']):
+        parser.error('This tool models pinhole cameras; use fisheye_svm.launch for the current preset')
     cases = {"v1": [], "pinhole_candidate_140": []}
     for row in sensor_set["cameraList"]:
         cc = row["cc"]
@@ -61,7 +68,7 @@ def main():
             "lens_verified": False, "line_pixel_width_verified": False,
             "note": "FOV fractions are upper bounds on these samples, not observed ground coverage. Corner regions are not sampled.",
         },
-        "sensor_file": str(sensor_path.relative_to(ROOT)),
+        "sensor_file": str(sensor_path),
         "candidate": [
             {"view": n, "translation_m": t, "rotation_deg": r,
              "width": 1280, "height": 960, "horizontal_fov_deg": 140.0}
@@ -96,7 +103,7 @@ def main():
                     "two_camera_fraction": float(np.mean(count >= 2)),
                 }
             result["offsets_m"][str(distance)][name] = stats
-    target = ROOT / "docs/analysis/ss-psd-pinhole-candidates.json"
+    target = args.output
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(json.dumps(result, indent=2) + "\n")
     print(target)

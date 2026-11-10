@@ -8,20 +8,20 @@
 이 도구는 `drivable_bev` 런타임과 **같은 캘리브레이션 코드**로 후보 배치를 평가한다.
 따라서 여기서 좋게 나온 값은 BEV 에서도 같게 나온다.
 
-    # 현재 센서셋 평가
-    python3 tools/design_svm_sensor_set.py --sensor-set config/VIP3_sensor_set_v1_ros.json
+    # Git에서 복원한 과거 핀홀 센서셋 평가
+    python3 tools/design_svm_sensor_set.py --sensor-set /tmp/old-sensors.json
 
     # 제안 SVM 배치 평가 + 비교 + 그림
     python3 tools/design_svm_sensor_set.py --preset svm_v2 \
-        --compare config/VIP3_sensor_set_v1_ros.json --image /tmp/svm.png
+        --compare /tmp/old-sensors.json --image /tmp/svm.png
 
     # FOV·pitch 격자 탐색
     python3 tools/design_svm_sensor_set.py --sweep
 
     # MORAI 센서셋 JSON 으로 내보내기 (기존 파일을 템플릿으로 삼는다)
     python3 tools/design_svm_sensor_set.py --preset svm_v2 \
-        --export-sensor-set config/VIP3_sensor_set_v2_svm.json \
-        --template config/VIP3_sensor_set_v1_ros.json
+        --export-sensor-set /tmp/pinhole-candidate.json \
+        --template /tmp/old-sensors.json
 
 이 도구는 과거 **핀홀 후보**를 평가한다 (`f = w / (2*tan(fov/2))`). 현재 선택한
 MORAI FishEyeCamera에는 이 투영식을 적용하지 않는다. 현재 어안 SVM은 별도
@@ -66,8 +66,8 @@ GROUND = GroundPlane(**vehicle_geometry(VEHICLE_REFERENCE)['ground_plane'])
 SVM_GRID = BevGridSpec(-6.0, 8.0, -5.0, 5.0, 0.05)
 
 PRESETS = {
-    # 지금 쓰는 임시 센서셋 (비교 기준)
-    "current": {
+    # 과거 임시 핀홀 센서셋 (비교 기준)
+    "legacy_v1": {
         "front": dict(width=1280, height=720, fov=90.0,
                       t=(1.900, 0.000, 1.200), rot=(0.0, 2.0, 0.0)),
         "left": dict(width=640, height=480, fov=130.0,
@@ -201,6 +201,8 @@ def cameras_from_preset(preset: dict) -> dict:
 
 def cameras_from_sensor_set(path: Path) -> dict:
     document = json.loads(Path(path).read_text(encoding="utf-8"))
+    if any(row['cc'].get('modelType') == 2 for row in document.get('cameraList', [])):
+        raise ValueError('Historical pinhole tool cannot evaluate the current fisheye preset')
     names = {1: "front", 2: "left", 3: "right", 4: "rear"}
     cameras = {}
     for sensor in document.get("cameraList", []):
@@ -549,8 +551,7 @@ def main() -> None:
     parser.add_argument("--sweep", action="store_true")
     parser.add_argument("--image", type=Path)
     parser.add_argument("--export-sensor-set", type=Path)
-    parser.add_argument("--template", type=Path,
-                        default=REPO_ROOT / "config" / "VIP3_sensor_set_v1_ros.json")
+    parser.add_argument("--template", type=Path, help="Explicit historical pinhole template for export")
     arguments = parser.parse_args()
 
     if arguments.sweep:
@@ -565,7 +566,7 @@ def main() -> None:
         target = (f"preset: {arguments.preset}",
                   cameras_from_preset(PRESETS[arguments.preset]))
     else:
-        target = ("preset: current (임시 센서셋)", cameras_from_preset(PRESETS["current"]))
+        parser.error("Choose an explicit historical --preset or --sensor-set; current MORAI uses fisheye_svm.launch")
 
     if arguments.compare:
         report(f"[비교 기준] {arguments.compare}",
@@ -576,8 +577,8 @@ def main() -> None:
     if arguments.image:
         render(result, target[1], arguments.image)
     if arguments.export_sensor_set:
-        if not arguments.preset:
-            parser.error("--export-sensor-set 은 --preset 과 함께 쓴다")
+        if not arguments.preset or not arguments.template:
+            parser.error("--export-sensor-set requires --preset and an explicit --template")
         export_sensor_set(PRESETS[arguments.preset], arguments.template,
                           arguments.export_sensor_set)
 

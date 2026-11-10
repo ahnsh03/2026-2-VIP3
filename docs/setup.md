@@ -17,7 +17,7 @@ git submodule update --init --recursive
 git -C src/morai_msgs rev-parse --short=7 HEAD  # 4c9be6f (26.R1)
 ```
 
-개발 중인 변경은 해당 PR 브랜치를 checkout한다. 저장소 옆 `../data`에 MORAI 맵, 센서 export, 수집 결과를 둔다. 기본 compose는 이 경로를 `/data`에 연결한다. 데이터가 다른 위치에 있으면 `export VIP3_DATA="/원하는/데이터/경로"`를 지정한다. 이미지 빌드에 맵·bag·가중치·외부 프로젝트를 복사하지 않는다.
+개발 중인 변경은 해당 PR 브랜치를 checkout한다. 저장소 옆 `../data`에 원본 맵·export와 수집 결과를 둔다. 팀 실행 정본과 로컬 원본의 구분은 [config/README.md](../config/README.md)를 따른다. 기본 compose는 이 경로를 `/data`에 연결한다. 데이터가 다른 위치에 있으면 `export VIP3_DATA="/원하는/데이터/경로"`를 지정한다. 이미지 빌드에 맵·bag·가중치·외부 프로젝트를 복사하지 않는다.
 
 ## 2. 이미지만 빌드
 
@@ -60,7 +60,7 @@ python3 tools/export_local_morai_presets.py --port 19090 --output-dir ../data/lo
 # 이후 위의 up / build-ws 실행
 ```
 
-기본 포트에서는 `config/VIP3_sensor_set_261110_ros.json`과 `config/VIP3_network_261110.json`을 MORAI에 Import한다. 19090 예외를 쓰면 `../data/local_morai`에 생성된 두 사본을 Import한다. WebSocket 검증 때문에 외부·내부·MORAI 접속 포트는 동일해야 한다.
+기본 포트에서는 `config/morai/sensors.json`과 `config/morai/network.json`을 MORAI에 Import한다. 19090 예외를 쓰면 `../data/local_morai`에 생성된 두 사본을 Import한다. WebSocket 검증 때문에 외부·내부·MORAI 접속 포트는 동일해야 한다.
 
 ## 4. 직접 노드 실행
 
@@ -93,7 +93,7 @@ vip3-ros-gui rqt-image /perception/svm/panel
 
 ### bridge 터미널의 센서 상태 로그
 
-`./scripts/rosbridge.sh`는 진단 노드를 함께 실행해 **5초마다** WebSocket 클라이언트 수와 필수 토픽(현재 Ego + 카메라 4개)의 수신 Hz / 설정 Hz, 마지막 수신 후 경과 시간, 구간 메시지 수를 출력한다. 토픽과 설정 Hz는 `config/vip3_topics.yaml`에서 읽는다. 이미지는 디코딩하지 않고 수신 횟수만 센다.
+`./scripts/rosbridge.sh`는 진단 노드를 함께 실행해 **5초마다** WebSocket 클라이언트 수와 필수 토픽(현재 Ego + 카메라 4개)의 수신 Hz / 설정 Hz, 마지막 수신 후 경과 시간, 구간 메시지 수를 출력한다. 토픽과 설정 Hz는 `config/ros/topics.yaml`에서 읽는다. 이미지는 디코딩하지 않고 수신 횟수만 센다.
 
 - `OK`: 최근 수신 중이며 설정 Hz의 60% 이상.
 - `MISSING`: 실행 후 한 번도 수신하지 않음. 연결·Play 전에는 정상적으로 나타난다.

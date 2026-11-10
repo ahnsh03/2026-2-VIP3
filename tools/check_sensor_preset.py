@@ -11,9 +11,9 @@ import yaml
 
 def main():
     root = Path(__file__).resolve().parents[1]
-    contract = yaml.safe_load((root / 'config/vip3_topics.yaml').read_text())
+    contract = yaml.safe_load((root / 'config/ros/topics.yaml').read_text())
     preset = json.loads((root / contract['presets']['sensors']).read_text())
-    svm_path = root / 'src/perception/drivable_bev/config/fisheye_svm_261110.yaml'
+    svm_path = root / 'src/perception/drivable_bev/config/fisheye_svm.yaml'
     svm = yaml.safe_load(svm_path.read_text())
     vehicle_path = (svm_path.parent / svm['vehicle_geometry_file']).resolve()
     assert vehicle_path == (root / contract['frames']['vehicle_geometry_file']).resolve()

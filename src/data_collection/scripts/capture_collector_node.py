@@ -161,8 +161,8 @@ class CaptureModeCollector(object):
         self._ego_sub = rospy.Subscriber(
             ego_topic, EgoVehicleStatus, self._on_ego, queue_size=1
         )
-        # VIP3_network_v1.json 에는 아직 Ego Ctrl Cmd 채널이 없다. 그래서 당분간
-        # control_source 는 항상 "manual_or_unknown" 이 정상이다. 버그가 아니다.
+        # 현재 네트워크에는 /ctrl_cmd가 있다. 실제 제어 발행자가 없으면
+        # control_source는 manual_or_unknown으로 기록한다.
         self._ctrl_sub = rospy.Subscriber(ctrl_topic, CtrlCmd, self._on_ctrl, queue_size=1)
 
         if self.hz > 2.0:

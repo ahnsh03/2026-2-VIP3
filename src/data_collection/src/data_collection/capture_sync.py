@@ -25,7 +25,7 @@ from pathlib import Path
 SYNC_SCHEMA_VERSION = "vip3-capture-sync-1.0.0"
 
 # (MORAI SensorData 하위 폴더, 우리 뷰 이름, 원본 (H, W))
-# config/vip3_topics.yaml 의 cameras 블록이 정본이다. 값이 어긋나면 preflight 가
+# config/ros/topics.yaml 의 cameras 블록이 정본이다. 값이 어긋나면 preflight 가
 # 프레임마다 "shape mismatch" 로 터진다 — 이름만 바꾸지 말 것.
 # CAMERA_4 는 ASMC 의 하향 traffic_light 카메라가 아니라 **후방** 카메라다.
 # 광학이 front 와 동일(1280x720, FOV 90)하고, 학습에 쓰는 뷰다.

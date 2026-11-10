@@ -3,7 +3,7 @@
 > **문서 역할:** 패키지 가이드 — 실행 절차
 > **담당:** 김동현 — **ROS bridge 연결·수집을 즉시 병행 개발**한다 ([roadmap.md](../../docs/roadmap.md) §3)
 > **최종 수정:** 2026-11-10
-> **토픽 정본:** [config/vip3_topics.yaml](../../config/vip3_topics.yaml) · [docs/simulator.md](../../docs/simulator.md)
+> **토픽 정본:** [config/ros/topics.yaml](../../config/ros/topics.yaml) · [docs/simulator.md](../../docs/simulator.md)
 
 현재 목표는 MORAI 원본 카메라·상태·시간 정보를 기록하고 재생해 SVM·SS-PSD 개발에 제공하는 것이다. 기존 Capture/semantic-mask 도구는 TwinLite용으로 이식한 경로이며 **SS-PSD 방향 접점 라벨을 자동 생성하는 구현이 아니다.** SS-PSD 학습용 BEV·point/slot 라벨 변환은 [최신 설계](../../docs/ss-psd-sensor-bev-baseline.md)에 따라 추가한다.
 

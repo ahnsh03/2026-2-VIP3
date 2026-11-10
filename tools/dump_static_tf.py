@@ -4,7 +4,7 @@
 센서 위치를 바꾸면 `src/vip3_bringup/launch/static_tf.launch` 의 숫자도 같이 바꿔야 한다.
 손으로 고치면 반드시 틀리므로 이 스크립트 출력을 붙여넣는다.
 
-    python3 tools/dump_static_tf.py --sensor-set config/VIP3_sensor_set_v1_ros.json
+    python3 tools/dump_static_tf.py --sensor-set config/morai/sensors.json
 
 주의: static_transform_publisher 의 args 는 `x y z yaw pitch roll` [rad] 순서다.
 센서셋의 rot 은 `roll pitch yaw` [deg] 라 순서가 반대다. 여기서 자주 틀린다.
@@ -37,7 +37,7 @@ def emit(frame, position, rotation_deg, note):
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--sensor-set", type=Path, default=Path("config/VIP3_sensor_set_261110_ros.json")
+        "--sensor-set", type=Path, default=Path(__file__).resolve().parents[1] / "config/morai/sensors.json"
     )
     arguments = parser.parse_args()
     document = json.loads(arguments.sensor_set.read_text(encoding="utf-8"))

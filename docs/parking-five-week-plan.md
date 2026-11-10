@@ -77,7 +77,7 @@ Pure Pursuit와 Hybrid A*의 원전은 2024년 이전이다. 이들은 구현 �
 
 ### 센서에서 먼저 해결할 문제
 
-현재 [sensors.md](sensors.md)는 기존 v1의 근접 사각지대를 분석하고, [v2 SVM light 프리셋](../config/VIP3_sensor_set_v2_svm_light.json)과 [설계 도구](../tools/design_svm_sensor_set.py)를 제안하고 있다. **기존 값은 설계 정답으로 사용하지 않고, 재설계한 후보를 평가하는 도구만 재사용한다.** 분석상의 지면 커버리지는 차체 가림·실제 FOV·노면을 반영한 시뮬 측정치가 아니다. 프리셋의 카메라 위치가 해당 차량 외부에 적절히 설치되는지도 확인한다.
+현재 센서셋은 [config/morai/sensors.json](../config/morai/sensors.json)의 4어안 구성이다. 구형 v1/v2 프리셋은 Git 이력에만 보존한다. [현재 센서 가이드](sensors.md)의 실제 수신·SVM 비교를 기준으로 근접 가시성과 이음부를 보정한다.
 
 - 시작 수집 후보: 카메라당 1280×960, 10Hz. 부하가 크면 640×480과 선의 원본 픽셀 폭·검출 오차·지연을 비교한다. 배치·렌즈·각도는 [최신 설계](ss-psd-sensor-bev-baseline.md)에 따른다.
 - MORAI 공식 문서에 Fish Eye Camera가 있으므로 사용 버전의 어안 옵션·투영식을 우선 확인한다. 현재 핀홀·무왜곡 설정을 어안 논문의 모델과 혼동하지 않는다. 기하 투영 모델을 카메라 설정에 맞춘다. 학습형 BEVFormer/LSS를 추가할 이유는 현재 범위에서 작다.

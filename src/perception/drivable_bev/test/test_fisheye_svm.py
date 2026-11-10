@@ -11,6 +11,18 @@ from drivable_bev.vehicle_geometry import load_svm_config, vehicle_geometry
 
 
 class TestFisheyeSvm(unittest.TestCase):
+    def test_unmasked_debug_keeps_body_invalid_and_default_render_unchanged(self):
+        config = load_svm_config(Path(__file__).resolve().parents[1] / 'config/fisheye_svm.yaml')
+        svm = FisheyeSvm(config)
+        images = {v: np.full((c['height'], c['width'], 3), 180, np.uint8)
+                  for v, c in config['cameras'].items()}
+        masked, validity = svm.render(images), svm.valid_mask.copy()
+        debug = svm.render(images, apply_vehicle_mask=False)
+        self.assertGreater(np.count_nonzero(debug[svm.body_mask] != masked[svm.body_mask]), 100)
+        np.testing.assert_array_equal(svm.valid_mask, validity)
+        self.assertTrue(np.all(svm.valid_mask[svm.body_mask] == 0))
+        np.testing.assert_array_equal(svm.render(images), masked)
+
     def test_projection_matches_opencv_with_distortion(self):
         k = np.array([[205., 0, 320], [0, 207., 240], [0, 0, 1.]])
         d = np.array([.01, -.002, .0003, -.00004])
@@ -20,7 +32,7 @@ class TestFisheyeSvm(unittest.TestCase):
         np.testing.assert_allclose(actual, expected.reshape(-1, 2), atol=1e-9)
 
     def test_real_preset_has_coverage_and_body_is_masked(self):
-        config = load_svm_config(Path(__file__).resolve().parents[1] / 'config/fisheye_svm_261110.yaml')
+        config = load_svm_config(Path(__file__).resolve().parents[1] / 'config/fisheye_svm.yaml')
         svm = FisheyeSvm(config)
         images = {v: np.full((config['cameras'][v]['height'], config['cameras'][v]['width'], 3),
                              180, np.uint8) for v in VIEWS}
@@ -36,7 +48,7 @@ class TestFisheyeSvm(unittest.TestCase):
             svm.render({v: np.zeros((240, 320, 3), np.uint8) for v in VIEWS})
 
     def test_geometry_uses_rear_axle_not_body_center_origin(self):
-        config = load_svm_config(Path(__file__).resolve().parents[1] / 'config/fisheye_svm_261110.yaml')
+        config = load_svm_config(Path(__file__).resolve().parents[1] / 'config/fisheye_svm.yaml')
         self.assertAlmostEqual(config['center_x_m'], 1.5275)
         self.assertAlmostEqual(config['vehicle_mask']['x_min_m'], -0.79)
         self.assertAlmostEqual(config['vehicle_mask']['x_max_m'], 3.845)
@@ -50,7 +62,7 @@ class TestFisheyeSvm(unittest.TestCase):
             vehicle_geometry(config['vehicle_geometry'])
 
     def test_ground_slope_changes_projection_without_changing_body_mask(self):
-        config = load_svm_config(Path(__file__).resolve().parents[1] / 'config/fisheye_svm_261110.yaml')
+        config = load_svm_config(Path(__file__).resolve().parents[1] / 'config/fisheye_svm.yaml')
         flat = FisheyeSvm(config)
         config['vehicle_geometry']['ground_reference']['dz_dx'] = .02
         sloped = FisheyeSvm(config)
@@ -58,7 +70,7 @@ class TestFisheyeSvm(unittest.TestCase):
         self.assertGreater(np.max(np.abs(flat.maps['front'][1] - sloped.maps['front'][1])), 1)
 
     def test_saved_capture_replays_without_external_vehicle_config(self):
-        config = load_svm_config(Path(__file__).resolve().parents[1] / 'config/fisheye_svm_261110.yaml')
+        config = load_svm_config(Path(__file__).resolve().parents[1] / 'config/fisheye_svm.yaml')
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / 'config.yaml'
             path.write_text(yaml.safe_dump(config))

@@ -2,7 +2,7 @@
 
 > **문서 역할:** 패키지 가이드
 > **담당:** 하수영 (모델) · 안승현 (배선)
-> **토픽 정본:** [config/vip3_topics.yaml](../../../config/vip3_topics.yaml)
+> **토픽 정본:** [config/ros/topics.yaml](../../../config/ros/topics.yaml)
 
 MORAI rosbridge 가 주는 4대 JPEG 카메라를 **latest-only** 로 받아 TwinLiteNet+ 2-head 추론
 결과를 표준 ROS 토픽으로 발행한다. 모델 로딩은 backend 에 격리돼 있어 **다른 segmentation

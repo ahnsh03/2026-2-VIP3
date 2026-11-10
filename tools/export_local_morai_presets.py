@@ -28,7 +28,7 @@ def main():
     if not 1 <= args.port <= 65535:
         parser.error('port must be 1..65535')
     root = Path(__file__).resolve().parents[1]
-    contract = yaml.safe_load((root / 'config/vip3_topics.yaml').read_text())
+    contract = yaml.safe_load((root / 'config/ros/topics.yaml').read_text())
     args.output_dir.mkdir(parents=True, exist_ok=True)
     for key in ('sensors', 'network'):
         source = root / contract['presets'][key]

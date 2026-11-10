@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import hashlib
 import tempfile
 import unittest
 from dataclasses import replace
@@ -18,17 +19,29 @@ from drivable_bev.calibration import (
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = PACKAGE_ROOT.parents[2]
-SNAPSHOT = PACKAGE_ROOT / "config" / "cameras_vip3_v1.yaml"
-SENSOR_SET = REPO_ROOT / "config" / "VIP3_sensor_set_v1_ros.json"
+SNAPSHOT = PACKAGE_ROOT / "test" / "fixtures" / "pinhole_cameras.yaml"
 
 
 class CameraCalibrationTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.snapshot, cls.cameras = load_calibration_snapshot(SNAPSHOT)
+        cls.directory = tempfile.TemporaryDirectory()
+        cls.addClassCleanup(cls.directory.cleanup)
+        cls.sensor_set = Path(cls.directory.name) / 'synthetic_sensor.json'
+        # Minimal synthetic input for the file-name/hash/geometry validation contract.
+        document = {'cameraList': [
+            {'m_SensorUniqueID': camera.sensor_id,
+             'cc': {'cameraResWidth': camera.width, 'cameraResHeight': camera.height,
+                    'cameraFOV': camera.horizontal_fov_deg},
+             'pos': dict(zip(('x', 'y', 'z'), camera.translation_m)),
+             'rot': dict(zip(('roll', 'pitch', 'yaw'), camera.rotation_deg))}
+            for camera in cls.cameras.values()]}
+        cls.sensor_set.write_text(json.dumps(document))
+        cls.snapshot['source_sha256'] = hashlib.sha256(cls.sensor_set.read_bytes()).hexdigest()
 
-    def test_snapshot_matches_checked_in_sensor_set(self):
-        validate_sensor_set_snapshot(self.snapshot, self.cameras, SENSOR_SET)
+    def test_snapshot_matches_synthetic_sensor_set(self):
+        validate_sensor_set_snapshot(self.snapshot, self.cameras, self.sensor_set)
 
     def test_ground_plane_is_explicit_and_shared(self):
         planes = {camera.ground_plane for camera in self.cameras.values()}
@@ -36,7 +49,7 @@ class CameraCalibrationTest(unittest.TestCase):
         plane = planes.pop()
         self.assertEqual("base_link", plane.frame_id)
         self.assertEqual("plane", plane.model)
-        self.assertEqual("provisional_asmc_carryover_20260923", plane.source)
+        self.assertEqual("synthetic_pinhole_regression", plane.source)
         np.testing.assert_allclose(plane.coefficients, [0.0, 0.0, -0.35])
 
     def test_missing_or_invalid_ground_plane_is_rejected(self):
@@ -131,10 +144,10 @@ class CameraCalibrationTest(unittest.TestCase):
 
     def test_changed_sensor_set_is_rejected(self):
         """센서셋 내용이 바뀌면 기동을 막는다 (파일 이름은 같게 둬서 해시 경로를 탄다)."""
-        document = json.loads(SENSOR_SET.read_text(encoding="utf-8"))
+        document = json.loads(self.sensor_set.read_text(encoding="utf-8"))
         document["cameraList"][0]["rot"]["pitch"] = "3.000"
         with tempfile.TemporaryDirectory() as temporary:
-            changed = Path(temporary) / SENSOR_SET.name
+            changed = Path(temporary) / self.sensor_set.name
             changed.write_text(json.dumps(document), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "SHA-256 mismatch"):
                 validate_sensor_set_snapshot(self.snapshot, self.cameras, changed)
@@ -146,8 +159,8 @@ class CameraCalibrationTest(unittest.TestCase):
         파일 이름을 먼저 본다.
         """
         with tempfile.TemporaryDirectory() as temporary:
-            other = Path(temporary) / "VIP3_sensor_set_v2_svm.json"
-            other.write_text(SENSOR_SET.read_text(encoding="utf-8"), encoding="utf-8")
+            other = Path(temporary) / "different_sensor.json"
+            other.write_text(self.sensor_set.read_text(encoding="utf-8"), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "sensor-set file mismatch"):
                 validate_sensor_set_snapshot(self.snapshot, self.cameras, other)
 
@@ -157,7 +170,7 @@ class CameraCalibrationTest(unittest.TestCase):
         snapshot.pop("source_sensor_set", None)
         with tempfile.TemporaryDirectory() as temporary:
             other = Path(temporary) / "anything.json"
-            other.write_text(SENSOR_SET.read_text(encoding="utf-8"), encoding="utf-8")
+            other.write_text(self.sensor_set.read_text(encoding="utf-8"), encoding="utf-8")
             validate_sensor_set_snapshot(snapshot, self.cameras, other)
 
 

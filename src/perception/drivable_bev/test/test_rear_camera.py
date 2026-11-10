@@ -5,7 +5,7 @@ ASMC drivable_bev 는 전방 3대로만 돌았다. VIP3 는 후방 카메라를 
 핵심 뷰다. 이 파일은 "후방이 조용히 빈 BEV 를 내보내는" 회귀를 잡는다.
 
 여기서 깨지면 의심할 곳은 세 군데다.
-  1. cameras_vip3_v1.yaml 의 rear rotation_deg yaw 값 (180 이어야 한다)
+  1. pinhole_cameras.yaml 의 rear rotation_deg yaw 값 (180 이어야 한다)
   2. ground_plane.z_at_origin_m 부호
   3. MORAI pitch 부호 규약 (양수 = 렌즈 아래)
 """
@@ -25,7 +25,7 @@ from drivable_bev.homography import build_homography
 from drivable_bev.projector import CameraBevProjector
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
-SNAPSHOT = PACKAGE_ROOT / "config" / "cameras_vip3_v1.yaml"
+SNAPSHOT = PACKAGE_ROOT / "test" / "fixtures" / "pinhole_cameras.yaml"
 GRID = BevGridSpec(-10.0, 10.0, -8.0, 8.0, 0.05)
 
 

@@ -56,7 +56,7 @@ asmc/ros-noetic:dev  -> vip3/ros-noetic:dev
 ```
 
 전방에 접두어를 붙여 4방향을 대칭으로 만들었다. MORAI 기본값(`/image_jpeg`)과 다르므로
-센서셋에서 명시한다. 정본은 [config/vip3_topics.yaml](../config/vip3_topics.yaml).
+센서셋에서 명시한다. 정본은 [config/ros/topics.yaml](../config/ros/topics.yaml).
 
 ### UDP 흔적
 

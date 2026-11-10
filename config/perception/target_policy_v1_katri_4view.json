@@ -114,8 +114,8 @@
   },
   "palette_source": "MORAI 26.R1 Semantic camera official RGB palette encoded in data_collection.mask_baker.OFFICIAL_PALETTE_RGB",
   "vip3_notes": [
-    "views 4개는 config/vip3_topics.yaml 의 cam_front/cam_left/cam_right/cam_rear 와 일치한다.",
-    "rear 카메라는 front 와 1280x720 / FOV 90 / principalPoint 가 동일하므로 letterbox 기하도 front 와 같다(720x1280 -> 360x640, top/bottom 12px pad).",
+    "views 4개는 config/ros/topics.yaml 의 cam_front/cam_left/cam_right/cam_rear 와 일치한다.",
+    "TwinLite용 보존 초안이다. 현재 4어안 RGB 1280x960 프리셋은 semantic GT를 제공하지 않으며, 이 정책을 SS-PSD 슬롯 라벨 규격으로 사용하지 않는다.",
     "data_collection 포트에서 mask_baker 모듈 경로가 바뀌면 palette_source 문자열을 함께 갱신할 것."
   ]
 }

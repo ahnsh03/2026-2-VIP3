@@ -194,7 +194,7 @@ def ego_message_to_dict(msg):
 
     단위 주의: EgoVehicleStatus 의 조향각은 **deg**, angular_velocity 는 **deg/s** 다.
     CtrlCmd 쪽 front_steer/rear_steer 는 **rad** 다. 절대 섞지 말 것
-    (config/vip3_topics.yaml 의 units 블록이 정본).
+    (config/ros/topics.yaml 의 units 블록이 정본).
     26.R1 에는 wheel_angle 이 없다 — beta_drive 전용 필드였고 삭제했다.
     """
     result = {

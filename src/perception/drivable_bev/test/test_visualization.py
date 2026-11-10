@@ -27,7 +27,7 @@ class VisualizationTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         _, cls.cameras = load_calibration_snapshot(
-            PACKAGE_ROOT / "config" / "cameras_vip3_v1.yaml"
+            PACKAGE_ROOT / "test" / "fixtures" / "pinhole_cameras.yaml"
         )
         cls.grid = BevGridSpec(-5.0, 20.0, -8.0, 8.0, 0.1)
 

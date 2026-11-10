@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""저장소의 ROS 토픽 문자열이 `config/vip3_topics.yaml` 계약과 맞는지 검사한다.
+"""저장소의 ROS 토픽 문자열이 `config/ros/topics.yaml` 계약과 맞는지 검사한다.
 
 ASMC 에서 이식할 때 가장 조용히 틀리는 것이 토픽 이름이다. 노드는 멀쩡히 뜨고
 구독만 안 돼서 시뮬레이터를 켜기 전에는 알 수가 없다.
@@ -31,7 +31,7 @@ from pathlib import Path
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-CONTRACT = REPO_ROOT / "config" / "vip3_topics.yaml"
+CONTRACT = REPO_ROOT / "config" / "ros" / "topics.yaml"
 SELF = Path(__file__).resolve()
 
 SEARCH_DIRS = ("src", "scripts", "tools")
@@ -145,7 +145,8 @@ def scan_code() -> dict:
 def scan_sensor_sets() -> dict:
     """센서셋 JSON 의 rosConfig.Topic 만 구조로 읽는다 (ros2NativeConfig 는 무시)."""
     found = {}
-    for path in sorted((REPO_ROOT / "config").glob("VIP3_sensor_set_*.json")):
+    contract = yaml.safe_load(CONTRACT.read_text(encoding="utf-8"))
+    for path in [REPO_ROOT / contract['presets']['sensors']]:
         document = json.loads(path.read_text(encoding="utf-8"))
         for key in ("cameraList", "Lidar3DList", "GPSList", "IMUList"):
             for sensor in document.get(key, []):

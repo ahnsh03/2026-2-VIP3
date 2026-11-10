@@ -2,7 +2,8 @@
   <!-- 모델 없이 도는 4-카메라 원본 RGB 서라운드 BEV.
        rqt_image_view /perception/bev/debug/rgb/compressed -->
   <arg name="views" default="front, left, right, rear"/>
-  <arg name="camera_config" default="$(find drivable_bev)/config/cameras_vip3_v1.yaml"/>
+  <!-- Legacy pinhole path: supply an explicit calibrated pinhole config. Use fisheye_svm.launch for MORAI. -->
+  <arg name="camera_config"/>
   <arg name="rgb_bev_config" default="$(find drivable_bev)/config/rgb_bev.yaml"/>
 
   <node pkg="drivable_bev" type="rgb_bev_node.py"

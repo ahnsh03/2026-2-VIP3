@@ -36,10 +36,9 @@
 │   ├── ros-noetic/      ROS/SVM 실행 (rosbridge, RViz, OpenCV; 모델 환경은 별도)
 │   └── perception-train/ 학습 전용 (ROS 없음)
 ├── config/          파라미터 — 기계 정본
-│   ├── vip3_topics.yaml            토픽·프레임·단위 계약
-│   ├── VIP3_sensor_set_261110_ros.json MORAI Sensor 설정 (ROS 전환본)
-│   ├── VIP3_network_261110.json        MORAI Network 설정
-│   └── perception/                 target policy 등
+│   ├── morai/              sensors.json · network.json (현재 Import 정본)
+│   ├── ros/                topics.yaml · rosbridge.env
+│   └── perception/         공유 학습 정책·선택 양식
 ├── scripts/         실행 진입점 (도커·rosbridge·학습·데이터셋)
 ├── tools/           ROS 없이 도는 오프라인 도구
 ├── weights/         인지 가중치 (TwinLiteNet+ Medium, 파일당 약 8 MB)
@@ -96,7 +95,7 @@ MORAI (Windows)
 | **하수영 — 주업무 확정** | `src/perception/drivable_bev/`, `src/perception/slot_detector/`(예정). SVM·인지 전처리/후처리·가중치 연결. 차량 기준 입구·방향 출력까지 담당하는 안을 제안 |
 | **안승현 — 주업무 확정** | 센서 JSON 확정·공유, 전체 관리·MORAI 총괄·질의응답. 센서 기준·모듈 계약을 검토하며 별도 통합 구현 인력으로 계산하지 않음 |
 | **장원태 — 주업무 확정** | `docs/presentations.md`, 발표자료 제작·발표, 안승현과 공동 관리·질의응답. 별도 평가·학습 구현 인력으로 계산하지 않음 |
-| 공동 | `config/vip3_topics.yaml`, `config/VIP3_network_261110.json`, 센서 JSON·카메라 파라미터·static TF, `src/vip3_msgs/` |
+| 공동 | `config/ros/topics.yaml`, `config/morai/network.json`, 센서 JSON·카메라 파라미터·static TF, `src/vip3_msgs/` |
 | 기존 공용 코드 | `docker/`, `src/vip3_bringup/`, `src/vip3_vehicle_state/`, `src/vip3_hd_map/`, 공통 `tools/`는 기존 담당과 인계하며 작업. MORAI 메시지 submodule의 버전을 임의로 바꾸지 않음 |
 | 전원 | `docs/` (연구노트는 각자 파일) |
 
@@ -106,34 +105,25 @@ MORAI (Windows)
 
 ### 센서셋을 바꿀 때 같이 고칠 파일 (안승현 확정, 하수영·김동현 연동 확인)
 
-센서 위치·해상도·FOV가 바뀌면 아래 종류의 파일을 함께 갱신한다. v1 파일명은 현 구현 예시이며 임시 센서셋을 유지할 의무는 없다. 새 버전 경로·해시·토픽으로 함께 전환한다.
+센서 위치·해상도·FOV 변경은 아래 파일을 함께 갱신한다.
 
-1. `config/VIP3_sensor_set_v1_ros.json` — 기계 정본
-2. `config/vip3_topics.yaml` — 팀 계약
-3. `src/perception/drivable_bev/config/cameras_vip3_v1.yaml` — **`source_sha256` 포함**
-   (`sha256sum config/VIP3_sensor_set_v1_ros.json`). 안 맞으면 BEV 노드가 기동을 거부한다
-4. `src/vip3_bringup/launch/static_tf.launch` — `python3 tools/dump_static_tf.py` 출력으로 교체
-
-바꾼 뒤 확인:
+1. `config/morai/sensors.json` 및 `config/morai/network.json`
+2. `config/ros/topics.yaml`
+3. `src/perception/drivable_bev/config/fisheye_svm.yaml`
+4. `src/vip3_bringup/launch/static_tf.launch` — `python3 tools/dump_static_tf.py`로 확인
 
 ```bash
-# 지면 가시영역 (빠른 확인)
-python3 tools/analyze_sensor_set_coverage.py --sensor-set config/VIP3_sensor_set_v1_ros.json
-# SVM 기준 정밀 평가 — 사각 폭·중복률·주차선 해상도까지 (drivable_bev 와 같은 코드)
-python3 tools/design_svm_sensor_set.py --sensor-set config/VIP3_sensor_set_v1_ros.json
-# 후방 카메라 기하 회귀
-PYTHONPATH="src/perception/drivable_bev/src:src/perception/camera_semantic_perception/src" \
-  python3 -m unittest discover -s src/perception/drivable_bev/test -p 'test_rear*.py'
+python3 tools/check_sensor_preset.py
 ```
 
-**261110 현재 센서 전환:** 현재 정본은 `config/VIP3_sensor_set_261110_ros.json`과 `config/VIP3_network_261110.json`이다. 어안 미리보기는 `fisheye_svm.launch`를 사용하고 `check_sensor_preset.py`로 JSON·토픽 계약·SVM 파라미터를 대조한다. 기존 핀홀 설정을 새 어안에 적용하지 않는다. static TF도 새 4카메라 배치로 변경했다. 상세 절차는 [sensors.md](sensors.md)의 현재 적용 절을 따른다.
+현재 실행은 `fisheye_svm.launch`다. 구형 핀홀 프리셋은 Git 이력에만 남기고, 핀홀 코드의 회귀 검사는 독립 테스트 fixture로 유지한다. 공유 파일·개인 원본·수집 데이터의 위치는 [config/README.md](../config/README.md)를 따른다.
 
 ## 6. 정합성 검사기 3개
 
 시뮬레이터를 켜기 전에, **조용히 틀리는 종류의 오류**를 잡는다. 셋 다 ROS·GPU 없이 돈다.
 
 ```bash
-python3 tools/check_topic_contract.py      # 토픽 이름이 config/vip3_topics.yaml 과 맞는가
+python3 tools/check_topic_contract.py      # 토픽 이름이 config/ros/topics.yaml 과 맞는가
 python3 tools/check_node_imports.py        # 노드가 없는 이름을 import 하는가
 python3 tools/check_launch_params.py --all # 런치가 노드 파라미터를 설정할 수 있는가
 ```

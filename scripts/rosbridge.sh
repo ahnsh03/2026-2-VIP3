@@ -90,7 +90,7 @@ echo "  Sensor logs    : ${MORAI_TOPIC_MONITOR}, every ${MORAI_TOPIC_LOG_INTERVA
 echo ""
 echo "  MORAI(Windows) 설정:"
 echo "    Network Setup  : ROS,  ws://127.0.0.1:${BRIDGE_PORT}  → Connect"
-echo "    Sensor  Setup  : VIP3_sensor_set_261110_ros (4 fisheye cameras)"
+echo "    Sensor  Setup  : config/morai/sensors.json (4 fisheye cameras)"
 echo "    Host port     : Docker publish 포트와 bridge 포트를 동일하게 사용"
 echo "    Ego Ctrl       : /ctrl_cmd  (morai_msgs/CtrlCmd, front_steer 사용)"
 echo "    Map/Scenario   : R_KR_PG_KATRI"
@@ -114,4 +114,4 @@ exec roslaunch vip3_bringup morai_rosbridge.launch \
   monitor:="${MORAI_TOPIC_MONITOR}" \
   monitor_interval:="${MORAI_TOPIC_LOG_INTERVAL}" \
   monitor_stale_after:="${MORAI_TOPIC_STALE_AFTER}" \
-  topics_config:="${VIP3_WS_ROOT}/config/vip3_topics.yaml"
+  topics_config:="${VIP3_WS_ROOT}/config/ros/topics.yaml"

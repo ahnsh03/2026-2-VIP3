@@ -82,8 +82,8 @@ next_steps() {
 
 MORAI (Windows):
   Map            R_KR_PG_KATRI
-  Network        config/VIP3_network_261110.json  Import -> Connect
-  Sensor         config/VIP3_sensor_set_261110_ros.json  Import -> Connect
+  Network        config/morai/network.json  Import -> Connect
+  Sensor         config/morai/sensors.json  Import -> Connect
   Ego Ctrl Cmd   ROS / /ctrl_cmd (프리셋에 포함)
   Local port     MORAI_BRIDGE_PORT 변경 시 프리셋의 접속 포트도 동일하게 변경
   Play

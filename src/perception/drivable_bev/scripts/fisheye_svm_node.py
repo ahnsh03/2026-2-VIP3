@@ -22,6 +22,7 @@ class SvmNode:
         self.config = rospy.get_param("~svm")
         self.svm = FisheyeSvm(self.config)
         self.config = self.svm.config
+        self.show_vehicle_mask = rospy.get_param("~vehicle_mask", True)
         self.vehicle_overlay = None
         if rospy.get_param("~vehicle_overlay", True):
             try:
@@ -98,12 +99,16 @@ class SvmNode:
         started = time.perf_counter()
         images = {v: frames[v].image for v in VIEWS}
         projection = self.svm.render(images)
-        image = self.display_image(projection)
-        grid_image = self.display_image(self.svm.debug_image(projection))
+        display_projection = projection if self.show_vehicle_mask else self.svm.render(images, apply_vehicle_mask=False)
+        image = self.display_image(display_projection)
+        grid_image = self.display_image(self.svm.debug_image(display_projection))
         # Preview topic also carries a warning so it cannot silently become training input.
         for display in (image, grid_image):
             cv2.putText(display, "UNCALIBRATED PREVIEW", (8, self.svm.size - 12),
                         cv2.FONT_HERSHEY_SIMPLEX, .55, (0, 180, 255), 1, cv2.LINE_AA)
+            if not self.show_vehicle_mask:
+                cv2.putText(display, "BODY MASK OFF | DEBUG", (8, self.svm.size - 34),
+                            cv2.FONT_HERSHEY_SIMPLEX, .48, (0, 180, 255), 1, cv2.LINE_AA)
         stamp = rospy.Time.from_sec(max(f.stamp for f in frames.values())) if clock == "header" else rospy.Time.now()
         self.send(self.preview, image, stamp)
         panel = np.zeros((580, 1180, 3), np.uint8)
@@ -131,10 +136,13 @@ class SvmNode:
                 cv2.imwrite(str(path / (view + ".png")), images[view])
             cv2.imwrite(str(path / "svm_preview.png"), image)
             cv2.imwrite(str(path / "svm_projection.png"), projection)
+            if not self.show_vehicle_mask:
+                cv2.imwrite(str(path / "svm_unmasked.png"), display_projection)
             cv2.imwrite(str(path / "svm_panel.png"), panel)
             cv2.imwrite(str(path / "valid_mask.png"), self.svm.valid_mask)
             (path / "config.yaml").write_text(yaml.safe_dump(self.config, sort_keys=False))
             report = {"calibrated": False, "clock": clock, "span_ms": span * 1000,
+                      "display_vehicle_mask": self.show_vehicle_mask,
                       "vehicle_overlay": self.vehicle_overlay.metadata if self.vehicle_overlay else None,
                       "render_ms": elapsed, "frames": {v: {"stamp": f.stamp, "frame_id": f.frame_id}
                                                          for v, f in frames.items()}}

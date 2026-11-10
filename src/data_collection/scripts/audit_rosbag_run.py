@@ -23,7 +23,7 @@ import rosbag
 
 # RGB <-> Semantic 시각 정합 검사. semantic 카메라는 강도균 파트가 붙인 뒤에만 존재하므로
 # 한쪽이 없으면 그 쌍은 조용히 건너뛴다 (semantic_gt bag 에서만 검사된다).
-# 토픽 이름은 config/vip3_topics.yaml 과 bag_profiles/semantic_gt.yaml 을 따른다.
+# 토픽 이름은 config/ros/topics.yaml 과 bag_profiles/semantic_gt.yaml 을 따른다.
 VIEWS = ("front", "left", "right", "rear")
 PAIR_LIMITS_MS = {
     "rgb_sem_{}".format(view): (

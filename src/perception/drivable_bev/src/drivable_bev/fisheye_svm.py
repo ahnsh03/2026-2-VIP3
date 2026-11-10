@@ -92,6 +92,7 @@ class FisheyeSvm:
         self.body_mask = ((self.x >= body["x_min_m"]) & (self.x <= body["x_max_m"])
                           & (self.y >= body["y_min_m"]) & (self.y <= body["y_max_m"]))
         self.maps = {}
+        self.unmasked_weights = {}
         for view in VIEWS:
             camera = config["cameras"][view]
             width, height = int(camera["width"]), int(camera["height"])
@@ -100,7 +101,13 @@ class FisheyeSvm:
             limit = math.radians(float(camera["max_ray_angle_deg"]))
             valid = ((optical[..., 2] > 0) & (theta < limit) & (uv[..., 0] >= 1)
                      & (uv[..., 0] < width - 2) & (uv[..., 1] >= 1)
-                     & (uv[..., 1] < height - 2) & ~self.body_mask)
+                     & (uv[..., 1] < height - 2))
+            edge = np.minimum.reduce([uv[..., 0], width - 1 - uv[..., 0],
+                                      uv[..., 1], height - 1 - uv[..., 1]])
+            lens_weight = np.clip(edge / 25, 0, 1) * np.clip(1 - theta / limit, 0, 1) ** 2
+            # Diagnostic only: show the sampled image even where the body hides the ground.
+            self.unmasked_weights[view] = (lens_weight * valid).astype(np.float32)
+            valid &= ~self.body_mask
             # Approximate body-occlusion test sampled along the ground ray.
             # It cannot replace visibility validation against the actual vehicle mesh.
             position = np.asarray(camera["translation_m"])
@@ -109,15 +116,14 @@ class FisheyeSvm:
                 qy = position[1] + fraction * (self.y - position[1])
                 valid &= ~((qx > body["x_min_m"]) & (qx < body["x_max_m"])
                            & (qy > body["y_min_m"]) & (qy < body["y_max_m"]))
-            edge = np.minimum.reduce([uv[..., 0], width - 1 - uv[..., 0],
-                                      uv[..., 1], height - 1 - uv[..., 1]])
-            weight = (np.clip(edge / 25, 0, 1) * np.clip(1 - theta / limit, 0, 1) ** 2
-                      * valid).astype(np.float32)
+            weight = (lens_weight * valid).astype(np.float32)
             self.maps[view] = (uv[..., 0].astype(np.float32), uv[..., 1].astype(np.float32), weight)
         self.weight_sum = sum(item[2] for item in self.maps.values())
+        self.unmasked_weight_sum = sum(self.unmasked_weights.values())
         self.valid_mask = ((self.weight_sum > 1e-6) & ~self.body_mask).astype(np.uint8) * 255
 
-    def render(self, images):
+    def render(self, images, apply_vehicle_mask=True):
+        """Disabling the mask reveals body-distorted samples for display inspection only."""
         fused = np.zeros((self.size, self.size, 3), dtype=np.float32)
         for view in VIEWS:
             camera = self.config["cameras"][view]
@@ -125,12 +131,16 @@ class FisheyeSvm:
             if image.shape != (camera["height"], camera["width"], 3):
                 raise ValueError("{} image dimensions differ from configuration".format(view))
             mx, my, weight = self.maps[view]
+            if not apply_vehicle_mask:
+                weight = self.unmasked_weights[view]
             warped = cv2.remap(image, mx, my, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
             fused += warped.astype(np.float32) * weight[..., None]
-        fused /= np.maximum(self.weight_sum[..., None], 1e-6)
+        weight_sum = self.weight_sum if apply_vehicle_mask else self.unmasked_weight_sum
+        fused /= np.maximum(weight_sum[..., None], 1e-6)
         result = np.clip(fused, 0, 255).astype(np.uint8)
         fill = self.config.get('vehicle_geometry', {}).get('mask', {}).get('fill_bgr', (40, 40, 40))
-        result[self.body_mask] = fill
+        if apply_vehicle_mask:
+            result[self.body_mask] = fill
         return result
 
     def debug_image(self, image):

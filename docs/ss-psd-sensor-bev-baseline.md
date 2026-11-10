@@ -141,7 +141,9 @@ SVM은 주변 카메라를 합성하는 시스템이고 BEV는 그 결과의 시
 100%는 **해당 표본의 기하적 상한**이며 실제 관측·주차선 검출 성공률이 아니다. B안도 후방 20cm 선의 2대 중복 관측은 0%였으므로 네 대각선의 겹침 검증을 별도로 해야 한다. 이 결과는 센서 재배치가 필요한 이유와 시험할 후보를 제공한다. [상세 계산 JSON](analysis/ss-psd-pinhole-candidates.json)
 
 ```bash
-python3 tools/analyze_ss_psd_sensor_candidates.py
+git show 217b5a3:config/VIP3_sensor_set_v1_ros.json > /tmp/old-sensors.json
+python3 tools/analyze_ss_psd_sensor_candidates.py --sensor-set /tmp/old-sensors.json \
+  --output ../data/analysis/pinhole-candidates.json
 ```
 
 ## 4. SS-PSD용 BEV 규격

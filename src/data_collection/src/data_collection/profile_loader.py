@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """수집 프로파일 YAML 로더 (+ 환경변수 오버라이드).
 
-토픽 정본은 config/vip3_topics.yaml 이다. 여기 DEFAULT_TOPICS 는 그 사본이며,
+토픽 정본은 config/ros/topics.yaml 이다. 여기 DEFAULT_TOPICS 는 그 사본이며,
 프로파일 YAML 의 topics: 블록이 항상 우선한다.
 """
 
