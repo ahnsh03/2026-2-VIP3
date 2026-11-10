@@ -20,7 +20,8 @@ class TestFisheyeSvm(unittest.TestCase):
     def test_real_preset_has_coverage_and_body_is_masked(self):
         config = yaml.safe_load((Path(__file__).resolve().parents[1] / 'config/fisheye_svm_261110.yaml').read_text())
         svm = FisheyeSvm(config)
-        images = {v: np.full((480, 640, 3), 180, np.uint8) for v in VIEWS}
+        images = {v: np.full((config['cameras'][v]['height'], config['cameras'][v]['width'], 3),
+                             180, np.uint8) for v in VIEWS}
         image = svm.render(images)
         self.assertEqual(image.shape, (512, 512, 3))
         self.assertGreater(np.mean(svm.valid_mask > 0), .60)

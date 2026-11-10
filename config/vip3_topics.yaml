@@ -51,10 +51,10 @@ cameras:
     topic: /cam_front/image_jpeg/compressed
     frame_id: cam_front
     type: sensor_msgs/CompressedImage
-    width: 640
-    height: 480
+    width: 1280
+    height: 960
     horizontal_fov_deg: 179.0
-    translation_m: [3.8, 0.0, 0.4]
+    translation_m: [3.85, 0.0, 0.3]
     rotation_deg: [0.0, 35.0, 0.0]
     period_s: 0.1
     projection_model: fisheye_uncalibrated
@@ -63,8 +63,8 @@ cameras:
     topic: /cam_left/image_jpeg/compressed
     frame_id: cam_left
     type: sensor_msgs/CompressedImage
-    width: 640
-    height: 480
+    width: 1280
+    height: 960
     horizontal_fov_deg: 179.0
     translation_m: [2.1, 1.05, 0.7]
     rotation_deg: [0.0, 45.0, 90.0]
@@ -75,8 +75,8 @@ cameras:
     topic: /cam_right/image_jpeg/compressed
     frame_id: cam_right
     type: sensor_msgs/CompressedImage
-    width: 640
-    height: 480
+    width: 1280
+    height: 960
     horizontal_fov_deg: 179.0
     translation_m: [2.1, -1.05, 0.7]
     rotation_deg: [0.0, 45.0, 270.0]
@@ -87,8 +87,8 @@ cameras:
     topic: /cam_rear/image_jpeg/compressed
     frame_id: cam_rear
     type: sensor_msgs/CompressedImage
-    width: 640
-    height: 480
+    width: 1280
+    height: 960
     horizontal_fov_deg: 179.0
     translation_m: [-0.8, 0.0, 0.3]
     rotation_deg: [0.0, 35.0, 180.0]

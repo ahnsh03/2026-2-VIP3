@@ -1,6 +1,6 @@
 # MORAI 연동 — rosbridge 단일 경로
 
-> **261110 갱신:** 현재 Import 파일은 `config/VIP3_sensor_set_261110_ros.json` 및 `config/VIP3_network_261110.json`이다. 아래 v1 예제보다 [현재 센서 가이드](sensors.md)를 우선한다. 새 네트워크에는 `/ctrl_cmd`가 포함되어 있고 네 카메라 모두 640×480·179°·10Hz다.
+> **261110 갱신:** 현재 Import 파일은 `config/VIP3_sensor_set_261110_ros.json` 및 `config/VIP3_network_261110.json`이다. 아래 v1 예제보다 [현재 센서 가이드](sensors.md)를 우선한다. 새 네트워크에는 `/ctrl_cmd`가 포함되어 있고 네 카메라 모두 1280×960·179°·10Hz다.
 
 > **문서 역할:** 정본 — 시뮬레이터 연결 절차·토픽·진단
 > **담당:** 안승현 · 장원태

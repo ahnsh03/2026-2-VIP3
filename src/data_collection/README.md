@@ -7,7 +7,7 @@
 
 현재 목표는 MORAI 원본 카메라·상태·시간 정보를 기록하고 재생해 SVM·SS-PSD 개발에 제공하는 것이다. 기존 Capture/semantic-mask 도구는 TwinLite용으로 이식한 경로이며 **SS-PSD 방향 접점 라벨을 자동 생성하는 구현이 아니다.** SS-PSD 학습용 BEV·point/slot 라벨 변환은 [최신 설계](../../docs/ss-psd-sensor-bev-baseline.md)에 따라 추가한다.
 
-**261110 센서셋 적용:** `parking_raw`/`parking_gt` 및 `parking_core`는 새 4어안 구성으로 변경했다. 카메라는 모두 640×480·10Hz이고 LiDAR/GPS/IMU는 필수로 기다리지 않는다. 실제 수신 결과와 SVM 미리보기는 [센서 가이드](../../docs/sensors.md)를 따른다.
+**261110 센서셋 적용:** `parking_raw`/`parking_gt` 및 `parking_core`는 새 4어안 구성으로 변경했다. 카메라는 모두 1280×960·10Hz이고 LiDAR/GPS/IMU는 필수로 기다리지 않는다. 실제 수신 결과와 SVM 미리보기는 [센서 가이드](../../docs/sensors.md)를 따른다.
 
 **Capture Mode 이식 코드는 아직 v1 전용이다.** `capture_sync.CAMERAS`는 기존 ID·해상도와 GPS/IMU 파일을 기대하므로, 새 어안 export에 아래 `sync_capture_data.py` 경로를 그대로 사용하면 안 된다. 현재 새 센서셋 수집은 ROS `parking_raw` bag 경로를 사용한다. Capture Mode를 다시 쓸 때는 run의 센서셋별 ID/해상도/모달리티 어댑터를 추가한다.
 

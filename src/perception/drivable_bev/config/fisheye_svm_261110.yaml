@@ -21,23 +21,23 @@ cameras:
     sensor_id: 1
     topic: /cam_front/image_jpeg/compressed
     frame_id: cam_front
-    width: 640
-    height: 480
+    width: 1280
+    height: 960
     translation_m:
-    - 3.8
+    - 3.85
     - 0.0
-    - 0.4
+    - 0.3
     rotation_deg:
     - 0.0
     - 35.0
     - 0.0
     K:
-    - - 204.85641837079712
+    - - 409.71283674159423
       - 0
-      - 320.0
+      - 640.0
     - - 0
-      - 204.85641837079712
-      - 240.0
+      - 409.71283674159423
+      - 480.0
     - - 0
       - 0
       - 1
@@ -51,8 +51,8 @@ cameras:
     sensor_id: 2
     topic: /cam_rear/image_jpeg/compressed
     frame_id: cam_rear
-    width: 640
-    height: 480
+    width: 1280
+    height: 960
     translation_m:
     - -0.8
     - 0.0
@@ -62,12 +62,12 @@ cameras:
     - 35.0
     - 180.0
     K:
-    - - 204.85641837079712
+    - - 409.71283674159423
       - 0
-      - 320.0
+      - 640.0
     - - 0
-      - 204.85641837079712
-      - 240.0
+      - 409.71283674159423
+      - 480.0
     - - 0
       - 0
       - 1
@@ -81,8 +81,8 @@ cameras:
     sensor_id: 3
     topic: /cam_left/image_jpeg/compressed
     frame_id: cam_left
-    width: 640
-    height: 480
+    width: 1280
+    height: 960
     translation_m:
     - 2.1
     - 1.05
@@ -92,12 +92,12 @@ cameras:
     - 45.0
     - 90.0
     K:
-    - - 204.85641837079712
+    - - 409.71283674159423
       - 0
-      - 320.0
+      - 640.0
     - - 0
-      - 204.85641837079712
-      - 240.0
+      - 409.71283674159423
+      - 480.0
     - - 0
       - 0
       - 1
@@ -111,8 +111,8 @@ cameras:
     sensor_id: 4
     topic: /cam_right/image_jpeg/compressed
     frame_id: cam_right
-    width: 640
-    height: 480
+    width: 1280
+    height: 960
     translation_m:
     - 2.1
     - -1.05
@@ -122,12 +122,12 @@ cameras:
     - 45.0
     - 270.0
     K:
-    - - 204.85641837079712
+    - - 409.71283674159423
       - 0
-      - 320.0
+      - 640.0
     - - 0
-      - 204.85641837079712
-      - 240.0
+      - 409.71283674159423
+      - 480.0
     - - 0
       - 0
       - 1

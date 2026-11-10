@@ -13,28 +13,37 @@
 
 | ID / 방향 | 위치 x,y,z (m) | roll,pitch,yaw (°) | ROS frame |
 |---|---|---|---|
-| 1 전방 | 3.80, 0, 0.40 | 0, 35, 0 | cam_front |
+| 1 전방 | 3.85, 0, 0.30 | 0, 35, 0 | cam_front |
 | 2 후방 | −0.80, 0, 0.30 | 0, 35, 180 | cam_rear |
 | 3 좌측 | 2.10, 1.05, 0.70 | 0, 45, 90 | cam_left |
 | 4 우측 | 2.10, −1.05, 0.70 | 0, 45, 270 | cam_right |
 
-공통: FishEyeCamera(`modelType=2`), RGB, 640×480, Horizontal FOV 179°, 10 Hz, JPEG 품질 90, ROS(`commType=3`). LiDAR/GPS/IMU는 이번 export에 없다. `reserved_sensors`는 구형 코드의 토픽 이름만 보존하며 현재 필수 수신 항목이 아니다.
+공통: FishEyeCamera(`modelType=2`), RGB, 1280×960, Horizontal FOV 179°, 10 Hz, JPEG 품질 90, ROS(`commType=3`). LiDAR/GPS/IMU는 이번 export에 없다. `reserved_sensors`는 구형 코드의 토픽 이름만 보존하며 현재 필수 수신 항목이 아니다.
 
-- 원본 카메라 4대의 Topic이 모두 `/image_jpeg/compressed`였다. 수정본은 `/cam_{front,rear,left,right}/image_jpeg/compressed`, frame은 위 표와 같다. 위치·회전·렌즈·해상도·주기는 변경하지 않았다. `/compressed` 포함 여부는 실제 export 형식을 따르며 수신 토픽으로 다시 확인한다.
+- 최초 export의 중복 토픽을 방향별로 분리했고, 재수정 export에도 `/cam_{front,rear,left,right}/image_jpeg/compressed`와 위 frame이 유지되어 있다. 새 전방 위치와 네 카메라 해상도를 그대로 반영했다. 최신 원본의 19090 접속값은 팀 공유본에서 **9090**으로 정규화하고 원본 파일은 보존했다.
 - 새 네트워크에는 `/ctrl_cmd`가 있다. 외부 `PUBSUB_TYPE=771`, `Division_TYPE=3`이며 실제 ROS 설정은 `config` 대신 `EgoCtrlConfig`에 있다. `_PUBSUB_TYPE=0`만 보고 누락으로 판정하면 안 된다. 명령 송신·차량 이동 검증은 센서 미리보기와 별도다.
 - 원본 마지막 `PUBSUB_TYPE=4865`, `netType=8` 항목도 보존했다. ROS가 아닌 채널의 기본 `rosConfig` 문자열을 활성 토픽으로 읽지 않는다.
-- 센서 원본 SHA-256: `cbc7a6d642cbd12ff146a47cfa31215b166831a02cae5ba8279cdbe356ea337b`.
+- 센서 원본 SHA-256: `559e5952d0fdf05b1b15653eeca2e112a8a5942354cb4ba6ea0d60ed95293859`.
 
 ### 실행
 
-기본 포트는 9090이다. 이 PC에서는 Windows의 TCP 예약 범위 9011–9110에 포함되어 Docker publish가 실패했다. rosbridge의 WebSocket Host 포트 검사 때문에 안팎 포트를 동일하게 맞춘다. 예약 범위를 변경하지 않고 호스트 19090 → 컨테이너 19090을 사용한다. 다른 PC는 먼저 `netsh interface ipv4 show excludedportrange protocol=tcp`로 확인한다.
+**팀 기본값은 9090이다.** 공유 센서/네트워크 JSON, Docker compose, bridge 스크립트, 프리셋 출력 도구가 모두 9090을 기본으로 사용한다. 팀원은 별도 포트 인자를 지정할 필요가 없다.
 
 ```bash
-# 호스트: 필요할 때만 대체 포트를 지정한다.
+# 호스트: 팀 기본 실행 (9090)
+./scripts/docker_ros_up.sh up
+# MORAI Import:
+#   config/VIP3_sensor_set_261110_ros.json
+#   config/VIP3_network_261110.json
+# ROS Connect / Play
+```
+
+현재 검증 PC만 Windows 예약 포트(9011–9110) 문제로 **19090을 로컬 예외**로 사용한다. 팀 공유 기본값을 바꾸는 설정은 아니다. 동일한 문제가 있는 PC에서만 아래 명령으로 로컬 사본을 만든다. WebSocket Host 검증 때문에 외부·내부 포트를 동일하게 사용한다.
+
+```bash
 MORAI_BRIDGE_PORT=19090 ./scripts/docker_ros_up.sh up
 python3 tools/export_local_morai_presets.py --port 19090 --output-dir ../data/local_morai
-# 출력된 두 JSON을 MORAI에서 Import하고 Connect / Play.
-# 포트 변경은 컨테이너 내부 ROS_MASTER_URI를 바꾸는 작업이 아니다.
+# 이 경우에만 출력된 로컬 사본 두 개를 MORAI에 Import한다.
 ```
 
 ```bash
@@ -44,8 +53,8 @@ python3 tools/export_local_morai_presets.py --port 19090 --output-dir ../data/lo
 # 별도 터미널
 source devel/setup.bash
 python3 scripts/verify_morai_topics.py --profile runtime --duration 15 \
-  --json-out /data/sensor_checks/261110_live/topics.json
-roslaunch drivable_bev fisheye_svm.launch save_dir:=/data/sensor_checks/261110_live
+  --json-out /data/sensor_checks/261110_1280x960/topics.json
+roslaunch drivable_bev fisheye_svm.launch save_dir:=/data/sensor_checks/261110_1280x960
 # 별도 터미널: raw 패널에는 네 원본 영상과 SVM이 함께 표시된다.
 rqt_image_view /perception/svm/panel
 ```
@@ -54,21 +63,23 @@ rqt_image_view /perception/svm/panel
 
 ### 미리보기와 캘리브레이션의 구분
 
-새 `fisheye_svm.launch`는 기존 핀홀 `rgb_bev.launch`와 별도다. [OpenCV fisheye 모델](https://docs.opencv.org/4.x/db/d58/group__calib3d__fisheye.html)의 광선 투영과 `cv2.remap`을 사용한다. 초기값 `f=640/radians(179)`, `D=0`은 **MORAI 렌즈를 측정한 결과가 아닌 등거리 모델 가정**이다. JSON의 `focalLengthpixel=320`이나 `lensDistortion=[0,0,0]`을 이 모델의 교정값으로 해석하지 않는다.
+새 `fisheye_svm.launch`는 기존 핀홀 `rgb_bev.launch`와 별도다. [OpenCV fisheye 모델](https://docs.opencv.org/4.x/db/d58/group__calib3d__fisheye.html)의 광선 투영과 `cv2.remap`을 사용한다. 초기값 `f=1280/radians(179)`, `D=0`은 **MORAI 렌즈를 측정한 결과가 아닌 등거리 모델 가정**이다. JSON의 `focalLengthpixel=320`이나 `lensDistortion=[0,0,0]`을 이 모델의 교정값으로 해석하지 않는다.
 
 노면 z=−0.35m, pitch 부호, 차체 마스크도 검증 대상이다. 합성 범위 10×10m, 출력 512×512, 중심 x=1.525m는 SS-PSD 입력을 위한 초기 설계다. 미리보기에는 `UNCALIBRATED PREVIEW`가 들어가며 학습·평가·제어 입력으로 연결하지 않았다. 실제 주차선 직선성, 이음부 오차, 차체 가림과 차 옆 유효 영역을 확인한 뒤 K/D·외부 파라미터·노면을 보정하고 깨끗한 모델 입력을 별도로 만든다. 현재 유효 마스크는 가정한 기하의 결과이며 실제 가시성 보증이 아니다.
 
-검증: `check_sensor_preset.py`(JSON·토픽 계약·SVM 위치 일치), `check_topic_contract.py`, `check_node_imports.py`, `check_launch_params.py`, fisheye 단위 테스트. ROS 전체 빌드에서 발견한 `vip3_hd_map`의 package/setup 버전 불일치는 0.2.0으로 통일했다. 실기 결과는 [수신 보고서](analysis/sensor-check-261110.json)에 기록했다.
+검증: `check_sensor_preset.py`(JSON·토픽 계약·SVM 위치 일치), `check_topic_contract.py`, `check_node_imports.py`, `check_launch_params.py`, fisheye 단위 테스트. ROS 전체 빌드에서 발견한 `vip3_hd_map`의 package/setup 버전 불일치는 0.2.0으로 통일했다. 최신 실기 결과는 [1280×960 수신 보고서](analysis/sensor-check-261110-1280x960.json)에 기록했다.
 
-### 실기 결과 (2026-11-10)
+### 최신 실기 결과: 1280×960 (2026-11-10)
 
-Windows → rosbridge WebSocket handshake와 MORAI 접속 확인 후 15초 측정했다. 카메라 4대는 9.987–10.004Hz, `/Ego_topic`은 44.802Hz(설정 50Hz)였고 수신 검사 및 26.R1 메시지 스키마 게이트를 통과했다. `/ctrl_cmd`에는 MORAI의 구독자가 연결되어 있으며 차량 명령을 보내는 시험은 하지 않았다.
+전방 위치 `(3.85, 0, 0.30)m`와 카메라 4대의 1280×960 입력을 반영한 후, 15초 카메라 수신 검사에서 **9.969–10.014Hz**를 확인했다. SVM 출력은 **약 5Hz**다. 첫 저장 묶음의 헤더 시각 차이는 35.0ms, 합성·패널 처리 시간은 31.9ms이며 전체 실행의 지연 분포를 뜻하지 않는다. 이전과 촬영 장소가 달라 해상도 개선 효과를 직접 비교한 실험으로 해석하지 않는다.
 
-SVM 미리보기 출력은 약 5Hz다. 첫 저장 묶음의 헤더 시각 차이는 1.0ms, 합성·패널 처리 시간은 15.8ms였다. 이 한 묶음의 수치는 전체 실행의 지연 분포가 아니다. rqt 창에 `/perception/svm/panel`을 연결했고 원본 4장과 합성 결과를 저장·검토했다. 도로선은 보이지만 차체/범퍼가 합성에 남고 이음부에 왜곡이 있으므로 **주차칸 정확도나 360° 무사각 검증 완료를 뜻하지 않는다.** 주차선이 있는 위치에서 대응점과 렌즈·노면을 보정하는 것이 다음 단계다.
+주차칸 위치에서 실제 4뷰와 합성 영상을 저장·검토했다. 새 입력은 1280×960이지만 SS-PSD 규격에 맞춘 SVM 출력은 512×512, 범위는 10×10m로 유지했다. 주차선은 보이지만 차체/범퍼 흔적과 이음부 오차가 남아 **주차칸 좌표 정확도·완전한 무사각 검증은 아직 아니다.** rqt의 `/perception/svm/panel`에서 현재 영상을 볼 수 있다.
 
-![MORAI 실제 4뷰와 미보정 SVM](images/svm-261110-live-preview.png)
+![1280×960 실제 4뷰와 SVM 미리보기](images/svm-261110-1280x960-preview.png)
 
-검증에는 이미 설치된 ROS Noetic 런타임 이미지에서 VIP3 전체 catkin workspace를 빌드해 사용했다. 저장소 전용 Docker 이미지를 새로 빌드한 결과로 보고하지 않는다. OpenCV 5.0.0에서 fisheye 테스트 7개, 수집 bag 프로파일 테스트 10개와 정적 검사 4개를 통과했다.
+이번 수신 검사는 카메라 4대만 대상으로 했다. 차량 상태·제어 채널을 재검증한 결과로 보고하지 않는다. 이전 640×480 검사에서 확인한 Ego 44.802Hz와 CtrlCmd 구독 연결 기록은 [이전 보고서](analysis/sensor-check-261110.json)에 보존했다.
+
+OpenCV 5.0.0의 ROS Noetic 환경에서 fisheye 테스트 7개와 JSON·토픽·TF·기본 포트 검사를 통과했다. 렌즈 파라미터와 노면 높이의 초기 가정은 그대로이며, 실제 교정 완료로 표시하지 않는다.
 
 ## 1. 과거 상태 기록
 

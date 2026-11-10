@@ -24,6 +24,8 @@ def main():
         block, preview = sensor['cc'], svm['cameras'][name]
         assert block['commType'] == 3 and block['modelType'] == 2
         assert block['rosConfig']['RosMessageOnOff']
+        assert block['rosConfig']['RosBridgePort'] == contract['bridge']['port'] == 9090
+        assert block['rosConfig']['RosBridgeServerUrl'] == contract['bridge']['url']
         for target in (expected, preview):
             assert target['topic'] == block['rosConfig']['Topic'], name + ' topic drift'
             assert target['frame_id'] == block['rosConfig']['frameID'], name + ' frame drift'
@@ -47,6 +49,7 @@ def main():
                 for item in ego['listEgoNetworkInfo'] if item['PUBSUB_TYPE'] == 771]
     assert len(controls) == 1 and controls[0]['commType'] == 3
     assert controls[0]['rosConfig']['Topic'] == contract['network']['publish']['ctrl_cmd']['topic']
+    assert controls[0]['rosConfig']['RosBridgePort'] == 9090
     print('PASS: four fisheye poses, dimensions, IDs, unique topics/frames and CtrlCmd match')
     print('Lens calibration and live connection are separate gates; not validated by this check.')
 
