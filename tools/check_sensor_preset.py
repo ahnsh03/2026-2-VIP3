@@ -13,7 +13,16 @@ def main():
     root = Path(__file__).resolve().parents[1]
     contract = yaml.safe_load((root / 'config/vip3_topics.yaml').read_text())
     preset = json.loads((root / contract['presets']['sensors']).read_text())
-    svm = yaml.safe_load((root / 'src/perception/drivable_bev/config/fisheye_svm_261110.yaml').read_text())
+    svm_path = root / 'src/perception/drivable_bev/config/fisheye_svm_261110.yaml'
+    svm = yaml.safe_load(svm_path.read_text())
+    vehicle_path = (svm_path.parent / svm['vehicle_geometry_file']).resolve()
+    assert vehicle_path == (root / contract['frames']['vehicle_geometry_file']).resolve()
+    vehicle = yaml.safe_load(vehicle_path.read_text())
+    spec = vehicle['documented_spec']
+    assert vehicle['origin'] == 'rear_axle_midpoint'
+    assert math.isclose(spec['length_m'], spec['wheelbase_m'] + spec['front_overhang_m'] + spec['rear_overhang_m'])
+    assert vehicle['ground_reference']['base_link_height_m'] > 0
+    assert not {'ground_z_m', 'center_x_m', 'vehicle_mask'} & set(svm), 'derive geometry from shared vehicle file'
     cameras = {item['m_SensorUniqueID']: item for item in preset['cameraList']}
     assert len(cameras) == len(preset['cameraList']) == 4, 'four distinct camera IDs required'
     topics, frames = [], []

@@ -1,0 +1,305 @@
+{
+  "date_kst": "2026-11-11",
+  "vehicle": "2023_Hyundai_Ioniq5",
+  "map": "R_KR_PR_K-city_2025",
+  "simulator_version": "26.R1.H3",
+  "sources": {
+    "documentation": "https://help-morai-sim.scrollhelp.site/ko/morai-sim-drive/26.R1/vehicle-specification",
+    "vehicle_bundle": {
+      "name": "hyundai_ioniq5.vehicle",
+      "version": "v.R1.260701.H3",
+      "sha256": "fcba1dbc04837beb252070b5674e274c579bc3609182cadbb24ae145f0287f1d"
+    },
+    "scene_bundle": {
+      "name": "r_kr_pr_k-city_2025.scene",
+      "version": "v.R1.260701.H3",
+      "sha256": "17bf603b0468faea499ec31f08249cc1cb44f91e2a56c624a7a81eba4fc0e995"
+    },
+    "live_tf_capture": {
+      "path": "../data/vehicle_checks/261111/live_tf_samples.json",
+      "sha256": "4241d6270f2795ccac4175d057fc9af470307da57866d9cdc8c95f2896eeeb90"
+    },
+    "parser": "UnityPy 1.25.4; read-only inspection; assets not included in repository"
+  },
+  "map_spec": {
+    "plane_coordinate_system": 0,
+    "utm_num": 52,
+    "utm_offset": [
+      302595.0,
+      4124145.0,
+      0.0
+    ]
+  },
+  "runtime": {
+    "tf_samples": 222,
+    "ego_samples": 222,
+    "position_mean_enu_m": [
+      -121.27255977596249,
+      -486.36233410534555,
+      28.50005374942814
+    ],
+    "position_std_m": [
+      4.567015114278767e-06,
+      1.8962415651086113e-05,
+      1.0462088672458375e-06
+    ],
+    "quaternion_xyzw": [
+      -0.0022652194218675953,
+      0.003542393206080078,
+      0.9660545808547586,
+      0.25830382699619653
+    ],
+    "max_speed_mps": 5.097345037412484e-05,
+    "sensor_transforms": {
+      "cam_front": {
+        "stamp": 1794324271.974,
+        "parent": "/base_link",
+        "child": "cam_front",
+        "position": [
+          3.849999904632568,
+          0.0,
+          0.300000011920928
+        ],
+        "quaternion_xyzw": [
+          0.0,
+          0.300705760717391,
+          0.0,
+          0.9537169337272641
+        ]
+      },
+      "cam_rear": {
+        "stamp": 1794324271.974,
+        "parent": "/base_link",
+        "child": "cam_rear",
+        "position": [
+          -0.8000000119209291,
+          0.0,
+          0.300000011920928
+        ],
+        "quaternion_xyzw": [
+          -0.300705760717391,
+          -1.314426611997987e-08,
+          -0.9537169337272641,
+          -4.16882919296313e-08
+        ]
+      },
+      "cam_left": {
+        "stamp": 1794324271.974,
+        "parent": "/base_link",
+        "child": "cam_left",
+        "position": [
+          2.099999904632568,
+          1.049999952316284,
+          0.699999988079071
+        ],
+        "quaternion_xyzw": [
+          -0.270598083734512,
+          -0.270598083734512,
+          -0.653281450271606,
+          -0.653281450271606
+        ]
+      },
+      "cam_right": {
+        "stamp": 1794324271.974,
+        "parent": "/base_link",
+        "child": "cam_right",
+        "position": [
+          2.099999904632568,
+          -1.049999952316284,
+          0.699999988079071
+        ],
+        "quaternion_xyzw": [
+          -0.270598083734512,
+          0.270598083734512,
+          -0.653281450271606,
+          0.653281450271606
+        ]
+      }
+    }
+  },
+  "asset_geometry": {
+    "wheels": [
+      {
+        "name": "Wheel_R1L",
+        "component_id": -910055829736679117,
+        "radius_m": 0.36000001430511475,
+        "suspension_distance_m": 0.30000001192092896,
+        "ground_penetration_parameter_m": 0.019999999552965164
+      },
+      {
+        "name": "Wheel_R1R",
+        "component_id": 395411834972406543,
+        "radius_m": 0.36000001430511475,
+        "suspension_distance_m": 0.30000001192092896,
+        "ground_penetration_parameter_m": 0.019999999552965164
+      },
+      {
+        "name": "Wheel_F1L",
+        "component_id": 3053656606709700356,
+        "radius_m": 0.36000001430511475,
+        "suspension_distance_m": 0.30000001192092896,
+        "ground_penetration_parameter_m": 0.019999999552965164
+      },
+      {
+        "name": "Wheel_F1R",
+        "component_id": 6429491792361682846,
+        "radius_m": 0.36000001430511475,
+        "suspension_distance_m": 0.30000001192092896,
+        "ground_penetration_parameter_m": 0.019999999552965164
+      }
+    ],
+    "root": "rear axle midpoint; wheel physics anchors at Unity y=0, rear z=0, front z=3",
+    "axis_conversion_local": "base_link [x,y,z] = Unity vehicle [z,-x,y]",
+    "bbox_unity_min": {
+      "x": -1.080417275428772,
+      "y": -0.3684999644756317,
+      "z": -0.7899996042251587
+    },
+    "bbox_unity_max": {
+      "x": 1.0804176330566406,
+      "y": 1.2755463123321533,
+      "z": 3.845008373260498
+    },
+    "bbox_length_width_height_m": [
+      4.635007858276367,
+      2.160834789276123,
+      1.6440463066101074
+    ],
+    "maximum_wheel_angle_deg": 40
+  },
+  "ground_measurement": {
+    "method": "Vertical intersection of mean live base_link pose with installed, enabled road MeshCollider; triangle transformed to base_link using live TF",
+    "road_object": "road-mesh-subset1-1",
+    "collider_path_id": 12547,
+    "mesh_path_id": 1607,
+    "unity_scene_to_enu": "ENU [x,y,z] = [-Unity.x,-Unity.z,Unity.y] for this scene",
+    "triangle_enu_m": [
+      [
+        -120.75615692138672,
+        -486.68493775396337,
+        28.151139920173396
+      ],
+      [
+        -123.73924255371094,
+        -487.54422120067863,
+        28.138549474287725
+      ],
+      [
+        -120.84990692138672,
+        -485.821015634787,
+        28.150321705373152
+      ]
+    ],
+    "surface_z_enu_m": 28.14873683895921,
+    "vertical_clearance_m": 0.3513169104689311,
+    "base_axis_clearance_m": 0.351324099385307,
+    "local_plane_base_link": {
+      "dz_dx": 0.002194297463752825,
+      "dz_dy": -0.007437884144942783,
+      "z_at_origin_m": -0.351324099385307
+    },
+    "radius_5m_fit": {
+      "unique_vertices": 15,
+      "dz_dx": 0.0010304566928743806,
+      "dz_dy": -0.010219177421422726,
+      "z_at_origin_m": -0.35059713131774645,
+      "rmse_m": 0.0034298050743435658,
+      "max_residual_m": 0.007609886374900621
+    },
+    "scene_frame_crosscheck": {
+      "method": "Untransformed Lane_White_Parking mesh vertices vs independent provided parking GT coordinates; all ancestor transforms are identity",
+      "candidates": [
+        {
+          "unity_xz_signs": [
+            1,
+            1
+          ],
+          "median_xy_distance_to_gt_m": 439.9307396424341,
+          "p95_xy_distance_to_gt_m": 476.0774646399624,
+          "points_within_20cm": 0,
+          "gt_points": 145
+        },
+        {
+          "unity_xz_signs": [
+            -1,
+            1
+          ],
+          "median_xy_distance_to_gt_m": 377.96410306268007,
+          "p95_xy_distance_to_gt_m": 412.80024771783303,
+          "points_within_20cm": 0,
+          "gt_points": 145
+        },
+        {
+          "unity_xz_signs": [
+            1,
+            -1
+          ],
+          "median_xy_distance_to_gt_m": 197.4764885663806,
+          "p95_xy_distance_to_gt_m": 237.62319647287015,
+          "points_within_20cm": 0,
+          "gt_points": 145
+        },
+        {
+          "unity_xz_signs": [
+            -1,
+            -1
+          ],
+          "median_xy_distance_to_gt_m": 0.09825874975824454,
+          "p95_xy_distance_to_gt_m": 2.751308254272024,
+          "points_within_20cm": 123,
+          "gt_points": 145
+        }
+      ]
+    }
+  },
+  "applied": {
+    "base_link_height_m": 0.35,
+    "ground_z_m": -0.35,
+    "body_length_m": 4.635,
+    "body_width_m": 1.892,
+    "body_x_bounds_m": [
+      -0.79,
+      3.845
+    ],
+    "body_y_bounds_m": [
+      -0.946,
+      0.946
+    ],
+    "svm_center_x_m": 1.5275,
+    "choice": "Use rounded stationary height and horizontal baseline across runs; retain local sloped-plane measurement as site-specific calibration evidence"
+  },
+  "limitations": [
+    "One stationary pose, not a dynamic ride-height calibration.",
+    "0.36m wheel radius is not the measured loaded base_link height.",
+    "Documented height 2.434m conflicts with serialized bbox height 1.644m; both retained with provenance.",
+    "Body mask uses 1.892m body width, not the full 2.161m mirror-inclusive asset box.",
+    "Lens K/D and seams remain uncalibrated; no parking-coordinate accuracy claim."
+  ],
+  "validation": {
+    "fisheye_tests_passed": 10,
+    "static_checks": [
+      "sensor_preset",
+      "topic_contract",
+      "node_imports",
+      "launch_params"
+    ],
+    "preview": {
+      "mode": "offline_replay_of_recorded_real_MORAI_camera_frames",
+      "source_dir": "/data/sensor_checks/261110_1280x960",
+      "render_ms": 11.26875402405858,
+      "valid_fraction": 0.912841796875,
+      "ground_z_m": -0.35,
+      "center_x_m": 1.5274999999999999,
+      "vehicle_mask": {
+        "x_min_m": -0.79,
+        "x_max_m": 3.8449999999999998,
+        "y_min_m": -0.946,
+        "y_max_m": 0.946
+      },
+      "calibrated": false,
+      "live_recheck": "ROS master stopped before final preview; no fresh frames received"
+    },
+    "preview_image": "docs/images/svm-261111-vehicle-geometry.png",
+    "live_nodes_left_running_by_this_task": false
+  }
+}

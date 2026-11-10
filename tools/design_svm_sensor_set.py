@@ -23,9 +23,9 @@
         --export-sensor-set config/VIP3_sensor_set_v2_svm.json \
         --template config/VIP3_sensor_set_v1_ros.json
 
-MORAI 카메라는 **핀홀**이다 (`f = w / (2*tan(fov/2))`). 진짜 어안(>=180 deg)이 아니라
-초광각 핀홀이므로 `drivable_bev` 의 호모그래피가 그대로 동작한다. 대신 화면 가장자리의
-지면 해상도가 급격히 떨어지는 것은 감수해야 한다 — 이 도구가 그걸 cm/px 로 보여준다.
+이 도구는 과거 **핀홀 후보**를 평가한다 (`f = w / (2*tan(fov/2))`). 현재 선택한
+MORAI FishEyeCamera에는 이 투영식을 적용하지 않는다. 현재 어안 SVM은 별도
+fisheye_svm.launch를 사용한다. 차량 제원과 노면 기준만 현재 공통 설정을 읽는다.
 """
 
 from __future__ import annotations
@@ -38,6 +38,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 # drivable_bev 패키지의 __init__ 이 model_grid_projection 을 통해
@@ -50,27 +51,16 @@ sys.path.insert(
 from drivable_bev.calibration import CameraCalibration, GroundPlane  # noqa: E402
 from drivable_bev.grid import BevGridSpec  # noqa: E402
 from drivable_bev.homography import build_homography  # noqa: E402
+from drivable_bev.vehicle_geometry import vehicle_geometry  # noqa: E402
 
-# 차량 제원 (2023 Hyundai Ioniq5 기준, base_link = 뒷바퀴축 중심).
-# ⚠ VIP3 가 실제로 스폰하는 차량으로 확인 전까지 잠정값이다.
-VEHICLE = {
-    "length_m": 4.635,
-    "width_m": 1.890,
-    "wheelbase_m": 3.000,
-    "rear_overhang_m": 0.790,
-}
+VEHICLE_REFERENCE = yaml.safe_load((REPO_ROOT /
+    'src/perception/drivable_bev/config/vehicles/2023_hyundai_ioniq5.yaml').read_text())
+VEHICLE = VEHICLE_REFERENCE['documented_spec']
 FRONT_BUMPER_X = VEHICLE["length_m"] - VEHICLE["rear_overhang_m"]   # +3.845
 REAR_BUMPER_X = -VEHICLE["rear_overhang_m"]                          # -0.790
-HALF_WIDTH = 0.5 * VEHICLE["width_m"]                                # 0.945
+HALF_WIDTH = 0.5 * VEHICLE["width_m"]                                # 0.946
 
-GROUND = GroundPlane(
-    frame_id="base_link",
-    model="plane",
-    z_at_origin_m=-0.35,
-    dz_dx=0.0,
-    dz_dy=0.0,
-    source="provisional_asmc_carryover_20260923",
-)
+GROUND = GroundPlane(**vehicle_geometry(VEHICLE_REFERENCE)['ground_plane'])
 
 # SVM 평가 격자. 주차면 하나가 2.5 x 5.0 m 이므로 좌우 한 칸 + 앞뒤 한 칸이 들어간다.
 SVM_GRID = BevGridSpec(-6.0, 8.0, -5.0, 5.0, 0.05)

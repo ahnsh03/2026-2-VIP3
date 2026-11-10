@@ -41,8 +41,9 @@ presets:
 
 frames:
   world: map
-  base: base_link          # MORAI ego 로컬 원점 = 뒷바퀴축 중심 (실측 확인 필요)
-  ground_z_at_base_m: -0.35  # 미검증 초기값. 실제 평면 대응점으로 측정할 것
+  base: base_link          # MORAI 26.R1.H3 asset: rear-axle midpoint
+  vehicle_geometry_file: src/perception/drivable_bev/config/vehicles/2023_hyundai_ioniq5.yaml
+  # Ground height and footprint are derived from this file, not duplicated here.
 
 # Active preset: four fisheye cameras only. IDs differ from v1.
 cameras:

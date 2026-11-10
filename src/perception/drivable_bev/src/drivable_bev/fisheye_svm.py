@@ -9,6 +9,7 @@ import math
 import cv2
 import numpy as np
 
+from .vehicle_geometry import resolve_svm_geometry
 
 VIEWS = ("front", "rear", "left", "right")
 
@@ -72,6 +73,7 @@ def select_frames(buffers, now, max_age, slop):
 
 class FisheyeSvm:
     def __init__(self, config):
+        config = resolve_svm_geometry(config)
         self.config = config
         self.size = int(config["output_size"])
         self.extent = float(config["extent_m"])
@@ -83,7 +85,9 @@ class FisheyeSvm:
         self.x = self.center_x + self.extent / 2 - (row + .5) * self.extent / self.size
         self.y = self.extent / 2 - (col + .5) * self.extent / self.size
         ground_z = float(config["ground_z_m"])
-        xyz = np.stack([self.x, self.y, np.full_like(self.x, ground_z)], axis=-1)
+        plane = config.get('ground_plane', {})
+        ground = ground_z + float(plane.get('dz_dx', 0)) * self.x + float(plane.get('dz_dy', 0)) * self.y
+        xyz = np.stack([self.x, self.y, ground], axis=-1)
         body = config["vehicle_mask"]
         self.body_mask = ((self.x >= body["x_min_m"]) & (self.x <= body["x_max_m"])
                           & (self.y >= body["y_min_m"]) & (self.y <= body["y_max_m"]))
@@ -125,7 +129,8 @@ class FisheyeSvm:
             fused += warped.astype(np.float32) * weight[..., None]
         fused /= np.maximum(self.weight_sum[..., None], 1e-6)
         result = np.clip(fused, 0, 255).astype(np.uint8)
-        result[self.body_mask] = (40, 40, 40)
+        fill = self.config.get('vehicle_geometry', {}).get('mask', {}).get('fill_bgr', (40, 40, 40))
+        result[self.body_mask] = fill
         return result
 
     def debug_image(self, image):

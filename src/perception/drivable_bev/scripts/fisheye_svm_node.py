@@ -20,6 +20,7 @@ class SvmNode:
     def __init__(self):
         self.config = rospy.get_param("~svm")
         self.svm = FisheyeSvm(self.config)
+        self.config = self.svm.config
         self.buffers = {v: deque(maxlen=10) for v in VIEWS}
         self.lock = threading.Lock()
         self.last_key = None
@@ -34,7 +35,10 @@ class SvmNode:
         self.subscribers = [rospy.Subscriber(self.config["cameras"][v]["topic"], CompressedImage,
                             partial(self.receive, v), queue_size=1, buff_size=4 * 1024 * 1024) for v in VIEWS]
         self.timer = rospy.Timer(rospy.Duration(1.0 / self.config["publish_hz"]), self.tick)
-        rospy.logwarn("SVM PREVIEW: lens K/D, ground height and occlusion require calibration; not a parking input")
+        rospy.logwarn("SVM PREVIEW: lens K/D, local ground plane and occlusion require calibration; not a parking input")
+        rospy.loginfo("SVM geometry: ground z=%.4fm, center x=%.4fm, body mask=%s; source=%s",
+                      self.config['ground_z_m'], self.config['center_x_m'], self.config['vehicle_mask'],
+                      self.config.get('ground_plane', {}).get('source', 'historical_config'))
 
     def receive(self, view, msg):
         arrived = time.monotonic()

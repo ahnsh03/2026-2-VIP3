@@ -1,0 +1,46 @@
+# Shared geometric reference for calibration, SVM and parking planning.
+vehicle_model: 2023_Hyundai_Ioniq5
+simulator_version: 26.R1.H3
+evidence: docs/analysis/vehicle-geometry-261111.json
+frame_id: base_link
+origin: rear_axle_midpoint
+axes: {x: forward, y: left, z: up}
+documented_spec:
+  source: https://help-morai-sim.scrollhelp.site/ko/morai-sim-drive/26.R1/vehicle-specification
+  length_m: 4.635
+  width_m: 1.892
+  height_m: 2.434
+  wheelbase_m: 3.000
+  front_overhang_m: 0.845
+  rear_overhang_m: 0.790
+  minimum_turning_radius_m: 5.87
+  maximum_wheel_angle_deg: 40.0
+  turning_radius_reference: undocumented_do_not_substitute_for_rear_axle_bicycle_radius
+asset_geometry:
+  source: hyundai_ioniq5.vehicle (v.R1.260701.H3)
+  wheel_radius_m: 0.36
+  wheelbase_m: 3.0
+  maximum_wheel_angle_deg: 40.0
+  # Serialized whole-vehicle bounding box, including protrusions/mirrors.
+  bounding_box_length_m: 4.635007858276367
+  bounding_box_width_m: 2.160834789276123
+  bounding_box_height_m: 1.6440463066101074
+  mesh_bottom_z_m: -0.3684999644756317
+  height_note: documented_height_differs_from_asset_bbox_do_not_use_as_camera_height
+ground_reference:
+  # Rounded stationary measurement; not the 0.36m wheel radius.
+  # Live TF minus the local collision-road surface: approximately 0.3513m.
+  base_link_height_m: 0.35
+  status: stationary_mesh_tf_verified_rounded_baseline
+  source: vehicle_geometry_261111_live_tf_and_kcity2025_collision_mesh
+  dz_dx: 0.0
+  dz_dy: 0.0
+  live_height_verified: true
+  scope: stationary_at_recorded_parking_location_not_dynamic_ride_height
+mask:
+  kind: axis_aligned_body_rectangle
+  width_source: documented_body_width
+  margin_m: 0.0
+  fill_bgr: [40, 40, 40]
+  includes_mirrors: false
+  represents_observed_free_space: false
