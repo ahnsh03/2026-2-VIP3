@@ -17,7 +17,6 @@ import json
 import math
 from pathlib import Path
 
-CAMERA_FRAMES = {1: "cam_front", 2: "cam_left", 3: "cam_right", 4: "cam_rear"}
 OTHER_FRAMES = {"Lidar3DList": "velodyne", "GPSList": "gps", "IMUList": "imu"}
 
 
@@ -38,14 +37,14 @@ def emit(frame, position, rotation_deg, note):
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--sensor-set", type=Path, default=Path("config/VIP3_sensor_set_v1_ros.json")
+        "--sensor-set", type=Path, default=Path("config/VIP3_sensor_set_261110_ros.json")
     )
     arguments = parser.parse_args()
     document = json.loads(arguments.sensor_set.read_text(encoding="utf-8"))
 
     for sensor in document.get("cameraList", []):
         sensor_id = int(sensor["m_SensorUniqueID"])
-        frame = CAMERA_FRAMES.get(sensor_id, "cam_{}".format(sensor_id))
+        frame = sensor["cc"]["rosConfig"]["frameID"]
         position = tuple(float(sensor["pos"][k]) for k in ("x", "y", "z"))
         rotation = tuple(
             float(sensor["rot"][k]) for k in ("roll", "pitch", "yaw")

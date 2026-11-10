@@ -7,6 +7,8 @@
 KATRI MGeo JSON 을 읽어 RViz `visualization_msgs/MarkerArray` 로 띄운다.
 **커스텀 메시지를 쓰지 않는다** — RViz 만 있으면 누구나 본다.
 
+**2026-11-10 갱신:** MORAI 제공 `parking_space_set.json`은 워크스페이스 데이터에 확보되어 있다. 실제 제공본이 있는 디렉터리를 `map_dir`로 지정하고, 기본 경로의 이전 배포본과 혼동하지 않는다. 강도균의 GT 경로 개발에는 이 제공본을 사용하며 [현재 역할·목표 계약](../../docs/roadmap.md)을 따른다. JSON 존재만으로 map/차량 좌표 정합이나 입구 방향까지 검증된 것은 아니다.
+
 ASMC `asmc_hd_map` 은 19,241줄이었고 대부분이 K-City 2025 대회용 경로 큐레이션과
 주행가능영역 A/B 연구였다. 여기는 그중 좌표계·크롭·오버레이 코어만 가져오고 나머지는
 새로 썼다.
@@ -60,7 +62,7 @@ MORAI 가 보내는 `GPSMessage.eastOffset/northOffset` 을 MGeo 원점과 비�
 | `/vip3_hd_map/global/stop_lines` | `map` | ○ | lane_type 530, 164개 |
 | `/vip3_hd_map/global/surface_markings` | `map` | ○ | 노면 표시 238 |
 | `/vip3_hd_map/global/crosswalks` | `map` | ○ | 횡단보도 58 |
-| `/vip3_hd_map/global/parking_spaces` | `map` | ○ | **현재 0개** (아래) |
+| `/vip3_hd_map/global/parking_spaces` | `map` | ○ | 지정한 `map_dir`의 제공 GT에서 로드 (아래) |
 | `/vip3_hd_map/local/*` | `base_link` | ✗ | ego 주변 `~local_radius_m` 크롭 |
 | `/vip3_hd_map/local/ego_context` | `base_link` | ✗ | 차체 footprint |
 | `/vip3_hd_map/debug/pose` | `map` | ✗ | 노드가 인식한 ego pose |
@@ -68,10 +70,9 @@ MORAI 가 보내는 `GPSMessage.eastOffset/northOffset` 을 MGeo 원점과 비�
 `Marker.DELETEALL` 을 매 발행마다 넣는다. 안 넣으면 ego 가 움직일 때 지난 프레임 마커가
 RViz 에 눌어붙는다.
 
-## 주차면 — 지금은 비어 있다
+## 주차면 — 제공 GT 디렉터리를 지정한다
 
-배포된 KATRI MGeo 에 `parking_space_set.json` 이 없다. 그런데 **원본 export 에는 있었다** —
-`global_info.json` 의 `mgeo_file_hash` 가 그 증거다 ([docs/katri-map.md](../../docs/katri-map.md) §1).
+초기 배포본에는 `parking_space_set.json`이 빠져 있었으나 이후 사용자가 MORAI 연구원에게 제공받았다. 워크스페이스의 `data/KATRI 맵(K-CITY 구간 한정) 주행 가능 영역 자료/mgeo_toolkit/data/KATRI/`가 해당 제공본 경로다. 과거의 빈 fallback을 제공본 대신 사용하지 않는다.
 
 로더는 세 단계로 찾는다:
 

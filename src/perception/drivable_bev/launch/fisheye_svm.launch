@@ -1,0 +1,8 @@
+<launch>
+  <arg name="config" default="$(find drivable_bev)/config/fisheye_svm_261110.yaml"/>
+  <arg name="save_dir" default=""/>
+  <node pkg="drivable_bev" type="fisheye_svm_node.py" name="fisheye_svm_preview" output="screen">
+    <rosparam command="load" file="$(arg config)" param="svm"/>
+    <param name="save_dir" value="$(arg save_dir)"/>
+  </node>
+</launch>

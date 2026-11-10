@@ -41,7 +41,7 @@ check_bridge_port() {
   local mode
   mode="$(docker inspect "$CONTAINER" --format '{{.HostConfig.NetworkMode}}')"
   if [ "$mode" = "host" ]; then
-    echo "[OK] host network mode — 컨테이너 포트가 곧 호스트 포트다"
+    echo "[INFO] host network mode — Docker Desktop에서는 Windows 도달 여부를 따로 확인"
   else
     docker inspect "$CONTAINER" --format '{{json .NetworkSettings.Ports}}' \
       | grep -q "\"${BRIDGE_PORT}/tcp\"" \
@@ -79,9 +79,10 @@ next_steps() {
 
 MORAI (Windows):
   Map            R_KR_PG_KATRI
-  Network        config/VIP3_network_v1.json  Import -> Connect
-  Sensor         config/VIP3_sensor_set_v1_ros.json  Import -> Connect
-  Ego Ctrl Cmd   ROS / /ctrl_cmd      <-- 아직 프리셋에 없다. docs/simulator.md §4
+  Network        config/VIP3_network_261110.json  Import -> Connect
+  Sensor         config/VIP3_sensor_set_261110_ros.json  Import -> Connect
+  Ego Ctrl Cmd   ROS / /ctrl_cmd (프리셋에 포함)
+  Local port     MORAI_BRIDGE_PORT 변경 시 프리셋의 접속 포트도 동일하게 변경
   Play
 
 확인:  ./scripts/docker_ros_up.sh verify 15

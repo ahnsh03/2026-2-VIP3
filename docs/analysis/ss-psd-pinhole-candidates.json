@@ -1,0 +1,363 @@
+{
+  "status": "hypothetical_projection_only_not_simulator_measurement",
+  "assumptions": {
+    "body_x_m": [
+      -0.79,
+      3.845
+    ],
+    "body_y_m": [
+      -0.945,
+      0.945
+    ],
+    "ground_z_m": -0.35,
+    "vehicle_mesh_occlusion_modelled": false,
+    "lens_verified": false,
+    "line_pixel_width_verified": false,
+    "note": "FOV fractions are upper bounds on these samples, not observed ground coverage. Corner regions are not sampled."
+  },
+  "sensor_file": "config/VIP3_sensor_set_v1_ros.json",
+  "candidate": [
+    {
+      "view": "front",
+      "translation_m": [
+        3.9,
+        0.0,
+        0.65
+      ],
+      "rotation_deg": [
+        0.0,
+        45.0,
+        0.0
+      ],
+      "width": 1280,
+      "height": 960,
+      "horizontal_fov_deg": 140.0
+    },
+    {
+      "view": "left",
+      "translation_m": [
+        2.4,
+        1.05,
+        0.95
+      ],
+      "rotation_deg": [
+        0.0,
+        55.0,
+        90.0
+      ],
+      "width": 1280,
+      "height": 960,
+      "horizontal_fov_deg": 140.0
+    },
+    {
+      "view": "right",
+      "translation_m": [
+        2.4,
+        -1.05,
+        0.95
+      ],
+      "rotation_deg": [
+        0.0,
+        55.0,
+        -90.0
+      ],
+      "width": 1280,
+      "height": 960,
+      "horizontal_fov_deg": 140.0
+    },
+    {
+      "view": "rear",
+      "translation_m": [
+        -0.85,
+        0.0,
+        0.65
+      ],
+      "rotation_deg": [
+        0.0,
+        45.0,
+        180.0
+      ],
+      "width": 1280,
+      "height": 960,
+      "horizontal_fov_deg": 140.0
+    }
+  ],
+  "offsets_m": {
+    "0.1": {
+      "v1": {
+        "left": {
+          "samples": 500,
+          "in_fov_fraction": 0.424,
+          "two_camera_fraction": 0.0
+        },
+        "right": {
+          "samples": 500,
+          "in_fov_fraction": 0.424,
+          "two_camera_fraction": 0.0
+        },
+        "front": {
+          "samples": 200,
+          "in_fov_fraction": 0.3,
+          "two_camera_fraction": 0.0
+        },
+        "rear": {
+          "samples": 200,
+          "in_fov_fraction": 0.0,
+          "two_camera_fraction": 0.0
+        }
+      },
+      "pinhole_candidate_140": {
+        "left": {
+          "samples": 500,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.066
+        },
+        "right": {
+          "samples": 500,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.066
+        },
+        "front": {
+          "samples": 200,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.66
+        },
+        "rear": {
+          "samples": 200,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.0
+        }
+      }
+    },
+    "0.2": {
+      "v1": {
+        "left": {
+          "samples": 500,
+          "in_fov_fraction": 0.482,
+          "two_camera_fraction": 0.0
+        },
+        "right": {
+          "samples": 500,
+          "in_fov_fraction": 0.482,
+          "two_camera_fraction": 0.0
+        },
+        "front": {
+          "samples": 200,
+          "in_fov_fraction": 0.29,
+          "two_camera_fraction": 0.0
+        },
+        "rear": {
+          "samples": 200,
+          "in_fov_fraction": 0.0,
+          "two_camera_fraction": 0.0
+        }
+      },
+      "pinhole_candidate_140": {
+        "left": {
+          "samples": 500,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.1
+        },
+        "right": {
+          "samples": 500,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.1
+        },
+        "front": {
+          "samples": 200,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.66
+        },
+        "rear": {
+          "samples": 200,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.0
+        }
+      }
+    },
+    "0.3": {
+      "v1": {
+        "left": {
+          "samples": 500,
+          "in_fov_fraction": 0.542,
+          "two_camera_fraction": 0.0
+        },
+        "right": {
+          "samples": 500,
+          "in_fov_fraction": 0.542,
+          "two_camera_fraction": 0.0
+        },
+        "front": {
+          "samples": 200,
+          "in_fov_fraction": 0.28,
+          "two_camera_fraction": 0.0
+        },
+        "rear": {
+          "samples": 200,
+          "in_fov_fraction": 0.0,
+          "two_camera_fraction": 0.0
+        }
+      },
+      "pinhole_candidate_140": {
+        "left": {
+          "samples": 500,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.126
+        },
+        "right": {
+          "samples": 500,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.126
+        },
+        "front": {
+          "samples": 200,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.66
+        },
+        "rear": {
+          "samples": 200,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.0
+        }
+      }
+    },
+    "0.5": {
+      "v1": {
+        "left": {
+          "samples": 500,
+          "in_fov_fraction": 0.66,
+          "two_camera_fraction": 0.0
+        },
+        "right": {
+          "samples": 500,
+          "in_fov_fraction": 0.66,
+          "two_camera_fraction": 0.0
+        },
+        "front": {
+          "samples": 200,
+          "in_fov_fraction": 0.26,
+          "two_camera_fraction": 0.0
+        },
+        "rear": {
+          "samples": 200,
+          "in_fov_fraction": 0.0,
+          "two_camera_fraction": 0.0
+        }
+      },
+      "pinhole_candidate_140": {
+        "left": {
+          "samples": 500,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.088
+        },
+        "right": {
+          "samples": 500,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.088
+        },
+        "front": {
+          "samples": 200,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.55
+        },
+        "rear": {
+          "samples": 200,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.0
+        }
+      }
+    },
+    "1.0": {
+      "v1": {
+        "left": {
+          "samples": 500,
+          "in_fov_fraction": 0.932,
+          "two_camera_fraction": 0.0
+        },
+        "right": {
+          "samples": 500,
+          "in_fov_fraction": 0.932,
+          "two_camera_fraction": 0.0
+        },
+        "front": {
+          "samples": 200,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.21
+        },
+        "rear": {
+          "samples": 200,
+          "in_fov_fraction": 0.0,
+          "two_camera_fraction": 0.0
+        }
+      },
+      "pinhole_candidate_140": {
+        "left": {
+          "samples": 500,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.0
+        },
+        "right": {
+          "samples": 500,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.0
+        },
+        "front": {
+          "samples": 200,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.22
+        },
+        "rear": {
+          "samples": 200,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.0
+        }
+      }
+    },
+    "2.0": {
+      "v1": {
+        "left": {
+          "samples": 500,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.0
+        },
+        "right": {
+          "samples": 500,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.0
+        },
+        "front": {
+          "samples": 200,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.11
+        },
+        "rear": {
+          "samples": 200,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.0
+        }
+      },
+      "pinhole_candidate_140": {
+        "left": {
+          "samples": 500,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.0
+        },
+        "right": {
+          "samples": 500,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.0
+        },
+        "front": {
+          "samples": 200,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.0
+        },
+        "rear": {
+          "samples": 200,
+          "in_fov_fraction": 1.0,
+          "two_camera_fraction": 0.0
+        }
+      }
+    }
+  }
+}

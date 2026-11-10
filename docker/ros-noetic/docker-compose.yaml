@@ -11,8 +11,9 @@ services:
     container_name: vip3-ros-noetic
     gpus: all
     ports:
-      - "9090:9090"   # MORAI rosbridge WebSocket (외부로 여는 유일한 포트)
+      - "127.0.0.1:${MORAI_BRIDGE_PORT:-9090}:${MORAI_BRIDGE_PORT:-9090}"
     environment:
+      - MORAI_BRIDGE_PORT=${MORAI_BRIDGE_PORT:-9090}
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=graphics,utility,compute
       # 호스트 $VIP3_DATA 가 여기에 마운트된다. 수집기는 컨테이너 로컬 폴백 대신

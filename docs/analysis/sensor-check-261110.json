@@ -1,0 +1,199 @@
+{
+  "profile": "runtime",
+  "topics_config": "config/vip3_topics.yaml",
+  "duration_seconds": 15.019982,
+  "min_messages": 2,
+  "slow_ratio": 0.6,
+  "topics": {
+    "/Ego_topic": {
+      "count": 667,
+      "rate_hz": 44.802,
+      "nominal_rate_hz": 50.0,
+      "nominal_rate_ratio": 0.896,
+      "arrival_intervals": {
+        "samples": 666,
+        "p50_ms": 27.138,
+        "p95_ms": 46.608,
+        "max_ms": 55.034,
+        "jitter_p95_ms": 27.09,
+        "gap_events": 74,
+        "long_gap_equivalent_periods": 74
+      },
+      "header_age_ms": {
+        "samples": 667,
+        "p50": 7.581,
+        "p95": 19.142,
+        "max": 25.468
+      },
+      "source_stamp_regressions": 0,
+      "slow": false,
+      "ok": true
+    },
+    "/cam_front/image_jpeg/compressed": {
+      "count": 149,
+      "rate_hz": 10.004,
+      "nominal_rate_hz": 10.0,
+      "nominal_rate_ratio": 1.0004,
+      "arrival_intervals": {
+        "samples": 148,
+        "p50_ms": 99.794,
+        "p95_ms": 140.348,
+        "max_ms": 147.179,
+        "jitter_p95_ms": 44.13,
+        "gap_events": 0,
+        "long_gap_equivalent_periods": 0
+      },
+      "header_age_ms": {
+        "samples": 149,
+        "p50": 14.627,
+        "p95": 22.433,
+        "max": 24.367
+      },
+      "source_stamp_regressions": 0,
+      "slow": false,
+      "ok": true
+    },
+    "/cam_left/image_jpeg/compressed": {
+      "count": 148,
+      "rate_hz": 9.998,
+      "nominal_rate_hz": 10.0,
+      "nominal_rate_ratio": 0.9998,
+      "arrival_intervals": {
+        "samples": 147,
+        "p50_ms": 100.01,
+        "p95_ms": 110.759,
+        "max_ms": 133.05,
+        "jitter_p95_ms": 14.449,
+        "gap_events": 0,
+        "long_gap_equivalent_periods": 0
+      },
+      "header_age_ms": {
+        "samples": 148,
+        "p50": 16.663,
+        "p95": 21.889,
+        "max": 27.4
+      },
+      "source_stamp_regressions": 0,
+      "slow": false,
+      "ok": true
+    },
+    "/cam_right/image_jpeg/compressed": {
+      "count": 148,
+      "rate_hz": 9.989,
+      "nominal_rate_hz": 10.0,
+      "nominal_rate_ratio": 0.9989,
+      "arrival_intervals": {
+        "samples": 147,
+        "p50_ms": 100.577,
+        "p95_ms": 108.514,
+        "max_ms": 135.103,
+        "jitter_p95_ms": 15.379,
+        "gap_events": 0,
+        "long_gap_equivalent_periods": 0
+      },
+      "header_age_ms": {
+        "samples": 148,
+        "p50": 11.084,
+        "p95": 18.535,
+        "max": 26.029
+      },
+      "source_stamp_regressions": 0,
+      "slow": false,
+      "ok": true
+    },
+    "/cam_rear/image_jpeg/compressed": {
+      "count": 149,
+      "rate_hz": 9.987,
+      "nominal_rate_hz": 10.0,
+      "nominal_rate_ratio": 0.9987,
+      "arrival_intervals": {
+        "samples": 148,
+        "p50_ms": 100.541,
+        "p95_ms": 138.254,
+        "max_ms": 152.162,
+        "jitter_p95_ms": 44.927,
+        "gap_events": 1,
+        "long_gap_equivalent_periods": 1
+      },
+      "header_age_ms": {
+        "samples": 149,
+        "p50": 13.049,
+        "p95": 21.594,
+        "max": 25.803
+      },
+      "source_stamp_regressions": 0,
+      "slow": false,
+      "ok": true
+    }
+  },
+  "rosbridge_clients": {
+    "available": true,
+    "count": 26,
+    "ok": true
+  },
+  "morai_msgs_schema": {
+    "expected": "morai_msgs 26.R1 (4c9be6f)",
+    "missing_fields": [],
+    "beta_drive_fields_present": [],
+    "ok": true
+  },
+  "slow_topics": [],
+  "missing_topics": [],
+  "ok": true,
+  "interpretation": {
+    "rosbridge_bandwidth": "rosbridge 는 CompressedImage 를 base64 JSON 으로 감싸 단일 WebSocket 으로 나른다. rate 미달은 MORAI 송신 cadence 가 아니라 rosbridge 처리량 포화일 가능성이 크다. 위 mitigation 을 순서대로 시도한다.",
+    "mitigation_order": [
+      "1) 컨테이너에 ujson 설치 확인: python3 -c 'import ujson' (rosbridge_library 가 자동으로 집어 쓴다)",
+      "2) 카메라 4대 sensorPeriod 0.05 -> 0.1 (20 Hz -> 10 Hz). 주차는 저속이라 10 Hz 로 충분하다",
+      "3) 전방·후방 해상도 1280x720 -> 640x480 으로 통일 (근거리 BEV 는 해상도보다 시야각이 중요하다)",
+      "4) 그래도 모자라면 그 작업에 필요한 카메라만 켠다"
+    ],
+    "nominal_rate_shortfall": "설정 주기 미달 자체가 센서 고장의 증거는 아니다. rosbridge 직렬화 포화와 WebSocket 지연을 먼저 의심한다",
+    "long_gap_equivalent_periods": "구독자가 본 긴 공백을 중앙 주기 단위로 환산한 값. jitter/burst 의 증거이지 드랍 프레임 수가 아니다",
+    "header_age_ms": "ROS publish -> subscriber 도착 지연(헤더 stamp 기준)"
+  },
+  "capture": {
+    "calibrated": false,
+    "clock": "header",
+    "span_ms": 0.9999275207519531,
+    "render_ms": 15.769887017086148,
+    "frames": {
+      "front": {
+        "stamp": 1794318523.994,
+        "frame_id": "cam_front"
+      },
+      "rear": {
+        "stamp": 1794318523.995,
+        "frame_id": "cam_rear"
+      },
+      "left": {
+        "stamp": 1794318523.995,
+        "frame_id": "cam_left"
+      },
+      "right": {
+        "stamp": 1794318523.995,
+        "frame_id": "cam_right"
+      }
+    }
+  },
+  "verification_date": "2026-11-10",
+  "svm_observed_hz": 5.0,
+  "runtime": {
+    "ros": "Noetic",
+    "python_opencv": "5.0.0",
+    "image_used": "asmc/ros-noetic:runtime-main-20261019",
+    "workspace_built": "VIP3 catkin workspace",
+    "bridge_port": 19090,
+    "canonical_vip3_image_rebuilt": false
+  },
+  "limitations": [
+    "Fisheye K/D and ground plane are uncalibrated initial guesses.",
+    "Snapshot is on a road; parking-slot corner accuracy and seam errors are not measured.",
+    "CtrlCmd ROS subscriber observed; no vehicle actuation test performed.",
+    "Legacy Capture Mode synchronization still assumes the v1 sensor layout; use ROS bag collection for this preset."
+  ],
+  "preset_sha256": {
+    "config/VIP3_sensor_set_261110_ros.json": "cfbd6ed81dafd8681e63540df851f0623575062e1cc91573b4642563ccb6a896",
+    "config/VIP3_network_261110.json": "8335f2da5d81e8edaa9d60874e00bcc601d0081a1cb63475a5f828ba7a727e4c"
+  }
+}

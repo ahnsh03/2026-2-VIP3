@@ -60,6 +60,9 @@ git -C ../external/baselines/TwinLiteNetPlus checkout 90f1b8695ae311d5123b05f853
 
 ## 4. Docker Desktop (Windows 최초 1회)
 
+**261110 센서 전환:** 현재 Import 파일과 4어안 SVM 실행법은 [sensors.md](sensors.md)의 현재 적용 절을 따른다. 9090이 Windows 예약 포트이면 `MORAI_BRIDGE_PORT=19090`으로 컨테이너를 시작하고 같은 포트의 로컬 프리셋을 생성한다. WebSocket Host 검증 때문에 외부·내부 포트를 동일하게 유지한다.
+
+
 1. Linux containers / WSL 2 모드
 2. **Settings → Resources → WSL Integration** — 쓰는 배포판 Enable
 

@@ -1,24 +1,31 @@
 # data_collection — 수집·rosbag·학습 데이터셋
 
 > **문서 역할:** 패키지 가이드 — 실행 절차
-> **담당:** 김동현 — 다만 **재학습이 결정된 뒤에 착수**한다 ([roadmap.md](../../docs/roadmap.md) §3)
+> **담당:** 김동현 — **ROS bridge 연결·수집을 즉시 병행 개발**한다 ([roadmap.md](../../docs/roadmap.md) §3)
+> **최종 수정:** 2026-11-10
 > **토픽 정본:** [config/vip3_topics.yaml](../../config/vip3_topics.yaml) · [docs/simulator.md](../../docs/simulator.md)
 
-MORAI 에서 데이터를 받아 TwinLiteNet+ 학습에 바로 쓸 수 있는 형태까지 만든다.
-ASMC 의 631줄짜리 문서에서 대회 전용·UDP·음영구간 연구 부분을 걷어낸 것이다.
+현재 목표는 MORAI 원본 카메라·상태·시간 정보를 기록하고 재생해 SVM·SS-PSD 개발에 제공하는 것이다. 기존 Capture/semantic-mask 도구는 TwinLite용으로 이식한 경로이며 **SS-PSD 방향 접점 라벨을 자동 생성하는 구현이 아니다.** SS-PSD 학습용 BEV·point/slot 라벨 변환은 [최신 설계](../../docs/ss-psd-sensor-bev-baseline.md)에 따라 추가한다.
+
+**261110 센서셋 적용:** `parking_raw`/`parking_gt` 및 `parking_core`는 새 4어안 구성으로 변경했다. 카메라는 모두 640×480·10Hz이고 LiDAR/GPS/IMU는 필수로 기다리지 않는다. 실제 수신 결과와 SVM 미리보기는 [센서 가이드](../../docs/sensors.md)를 따른다.
+
+**Capture Mode 이식 코드는 아직 v1 전용이다.** `capture_sync.CAMERAS`는 기존 ID·해상도와 GPS/IMU 파일을 기대하므로, 새 어안 export에 아래 `sync_capture_data.py` 경로를 그대로 사용하면 안 된다. 현재 새 센서셋 수집은 ROS `parking_raw` bag 경로를 사용한다. Capture Mode를 다시 쓸 때는 run의 센서셋별 ID/해상도/모달리티 어댑터를 추가한다.
 
 ## 경로가 두 개다 — 먼저 어느 쪽인지 정한다
 
 | 목적 | 경로 | 왜 |
 |---|---|---|
-| **학습 GT** (drivable/차선/주차선 마스크) | **Capture Mode** | MORAI 가 카메라마다 Intensity + **Semantic** + Instance + Depth PNG 를 무손실로 쓴다. 라벨이 공짜로 나온다 |
-| 연결 확인 · 가벼운 스냅샷 | `sync_collector` | ROS 토픽을 그대로 저장. 카메라는 JPEG 라 **라벨 원본으로 못 쓴다** |
+| **SS-PSD 수집** | **원본 rosbag → 시간 정렬 → SVM → 직접 주석** | 현재 우선 경로. BEV·방향 접점 라벨 변환은 개발 대상이며 카메라/상태 시각·설정 버전 보존 |
+| 기존 semantic-mask 학습 데이터 | **Capture Mode** | Intensity·Semantic·Instance·Depth 파일을 활용. 의미 마스크는 SS-PSD point/slot 라벨과 다름 |
+| 연결 확인 · 가벼운 스냅샷 | `sync_collector` | JPEG도 품질을 확인해 수동 주석 원본으로 사용할 수 있으나 동기화·압축 손실을 확인해야 함 |
 | 오프라인 반복 재생 | `rosbag` recorder/replay | 시뮬 없이 추론·BEV 를 반복 돌릴 때 |
 
 **Capture Mode 를 쓰면 Semantic 카메라를 따로 달 필요가 없다.** 장착된 RGB 카메라 4대
 각각에 대해 한 트리거로 네 장이 나온다.
 
-## 명령 6개 — 이 순서 그대로
+## 기존 Capture·semantic-mask 경로의 명령
+
+아래는 기존 구현의 사용법이다. SS-PSD 수집에는 원본 rosbag 재생을 먼저 확보하고 별도 BEV·point/slot 라벨 경로를 연결한다.
 
 ```bash
 # 0) 연결 확인 — /Ego_topic 만 받아 본다

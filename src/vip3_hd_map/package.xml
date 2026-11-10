@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>vip3_hd_map</name>
-  <version>0.1.0</version>
+  <version>0.2.0</version>
   <description>
     KATRI MGeo 로더와 RViz 시각화. 커스텀 메시지 없이
     visualization_msgs/MarkerArray 만 발행한다.

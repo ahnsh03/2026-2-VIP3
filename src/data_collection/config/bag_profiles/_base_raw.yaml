@@ -2,8 +2,8 @@
 kind: raw
 transport: rosbridge
 timestamp_mode: receive
-sensor_set: VIP3_sensor_set_v1_ros
-network_set: VIP3_network_v1
+sensor_set: VIP3_sensor_set_261110_ros
+network_set: VIP3_network_261110
 map: R_KR_PG_KATRI
 morai_msgs_branch: "26.R1 @ 4c9be6f"
 compression: none

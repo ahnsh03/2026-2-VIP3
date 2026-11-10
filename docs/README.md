@@ -9,11 +9,15 @@
 | [course.md](course.md) | 교과목 일정·평가·중간고사 | 안승현 |
 | [setup.md](setup.md) | 개발 환경 — WSL2 · Docker · 빌드 | 장원태 |
 | [simulator.md](simulator.md) | **MORAI 연결·토픽·진단** | 안승현·장원태 |
-| [sensors.md](sensors.md) | **센서셋 구성과 그 한계** | 강도균 |
+| [sensors.md](sensors.md) | **261110 센서셋·실기 수신·SVM 미리보기** — 이전 센서 기록 포함 | 안승현 (확정), 하수영·김동현 (연동) |
 | [msgs-26r1.md](msgs-26r1.md) | **morai_msgs 26.R1 필드·단위** | 안승현 |
 | [katri-map.md](katri-map.md) | **KATRI 맵에 무엇이 있고 없나** | 안승현 |
-| [roadmap.md](roadmap.md) | **역할 분담과 작업 계획** — 마일스톤·각자의 첫 과제 | 안승현 |
-| [presentations.md](presentations.md) | **발표 슬라이드 설계** — 대본 쓸 때 참고 | 안승현 |
+| [roadmap.md](roadmap.md) | **11/10 역할 분담·통합 순서** — GT/인지 목표 계약·첫 과제·남은 일정 | 팀 공동 |
+| [parking-five-week-plan.md](parking-five-week-plan.md) | **5주 계획 제안** — 팀 전체 75인시·개발자 가용 45인시, 논문·GT/인지 비교 | 팀 공동 검토 |
+| [parking-perception-svm-review.md](parking-perception-svm-review.md) | **DMPR-PS·SS-PSD 검토** — 추가 의견 검증, SVM 재설계 논문·근접 가시성 | 팀 공동 검토 |
+| [ss-psd-sensor-bev-baseline.md](ss-psd-sensor-bev-baseline.md) | **SS-PSD 채택·센서/BEV 설계** — 공식 클론, AVM-SLAM 기준, 근접 카메라 후보, 수집·라벨·학습 | 팀 공동 |
+| [morai-fisheye-sensor-trial.md](morai-fisheye-sensor-trial.md) | **MORAI 4어안 첫 시험안** — UI 설정값·조건부 XYZ·근접/겹침 검증·핀홀 코드의 한계 | 안승현·하수영·김동현 |
+| [presentations.md](presentations.md) | **발표 슬라이드 설계** — 개발자 실행 증거·결과를 반영 | 장원태 (제작·발표), 안승현 (공동 총괄) |
 | [related-work.md](related-work.md) | **자율주차 참고 목록** — 논문·코드·가중치·데이터셋 | 하수영 |
 | [porting-from-asmc.md](porting-from-asmc.md) | ASMC에서 가져온 것/안 가져온 것 | 안승현·장원태 |
 | [architecture.md](architecture.md) | 디렉터리·경로 오너십 | 안승현 |

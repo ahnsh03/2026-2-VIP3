@@ -3,6 +3,8 @@
 > **문서 역할:** 참고할 논문·코드·가중치·데이터셋 목록
 > **담당:** 하수영 (초안: 안승현, 2026-09-23)
 
+> **2026-11-10 선정 확정:** **SS-PSD(T-ITS 2025)를 주 기준선**으로 채택하고 공개 가중치와 직접 수집·라벨링한 MORAI 데이터의 추가 학습을 비교한다. DMPR-PS는 비교·참고용이다. 센서·SVM은 AVM-SLAM의 AVM 전처리를 기준으로 재설계한다. 아래 과거 목록보다 [SS-PSD 센서·BEV 설계](ss-psd-sensor-bev-baseline.md)와 [5주 계획](parking-five-week-plan.md)을 따른다.
+
 ## 0. 코드는 각자 저장소 밖에 받는다
 
 아래 저장소들은 **팀 저장소에 넣지 않는다.** 필요한 사람이 저장소 **밖**에 clone 해서
@@ -12,6 +14,7 @@
 ```bash
 mkdir -p ../external/parking && cd ../external/parking
 git clone --depth 1 https://github.com/Teoge/DMPR-PS.git
+git clone --depth 1 https://github.com/zzh362/CRPS-D.git  # SS-PSD 공식 저장소
 git clone --depth 1 https://github.com/qintonguav/e2e-parking-carla.git
 # … 필요한 것만
 ```

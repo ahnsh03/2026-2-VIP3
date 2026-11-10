@@ -41,6 +41,7 @@ if(CATKIN_ENABLE_TESTING)
   catkin_add_nosetests(test/test_lane_tracking.py)
   catkin_add_nosetests(test/test_spline_fitting.py)
   catkin_add_nosetests(test/test_rgb_bev.py)
+  catkin_add_nosetests(test/test_fisheye_svm.py)
 endif()
 
 catkin_install_python(PROGRAMS
@@ -48,6 +49,7 @@ catkin_install_python(PROGRAMS
   scripts/camera_bev_fusion_node.py
   scripts/camera_bev_visualizer_node.py
   scripts/rgb_bev_node.py
+  scripts/fisheye_svm_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

@@ -141,7 +141,7 @@ def parse_args(argv=None):
     parser.add_argument("--min-messages", type=int, default=2)
     parser.add_argument(
         "--profile", choices=("runtime", "full", "cameras"), default="runtime",
-        help="runtime=필수 8개 / full=+선택 토픽 / cameras=카메라 4대만",
+        help="runtime=현재 계약의 필수 토픽 / full=+선택 토픽 / cameras=카메라만",
     )
     parser.add_argument(
         "--topics-config", default=str(default_topics_config()),

@@ -5,9 +5,6 @@ required_topics:
   - /cam_left/image_jpeg/compressed
   - /cam_right/image_jpeg/compressed
   - /cam_rear/image_jpeg/compressed
-  - /velodyne_points
-  - /gps
-  - /imu
   - /Ego_topic
 optional_topics:
   - /tf
@@ -19,8 +16,5 @@ expected_types:
   /cam_left/image_jpeg/compressed: sensor_msgs/CompressedImage
   /cam_right/image_jpeg/compressed: sensor_msgs/CompressedImage
   /cam_rear/image_jpeg/compressed: sensor_msgs/CompressedImage
-  /velodyne_points: sensor_msgs/PointCloud2
-  /gps: morai_msgs/GPSMessage
-  /imu: sensor_msgs/Imu
   /Ego_topic: morai_msgs/EgoVehicleStatus
   /ctrl_cmd: morai_msgs/CtrlCmd
