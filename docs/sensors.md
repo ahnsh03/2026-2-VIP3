@@ -92,7 +92,17 @@ rqt_image_view /perception/svm/panel
 
 카메라 JSON의 z는 여전히 base_link 상대값이다. 전·후방 `z=0.30m`, 좌·우측 `z=0.70m`는 수평 지면 기준으로 대략 **0.65m / 1.05m 높이**다. JSON에 0.35m를 더해 센서를 이동시키지 않는다.
 
-현재 중앙 차체 표시는 **고정된 진회색 사각 마스크**이며 실제 차체 segmentation이 아니다. 마스크 범위는 `x=[−0.790, 3.845]m`, `y=[−0.946, 0.946]m`이고, 그 영역의 유효 마스크는 0이다. 이전 전방 끝 3.800m를 3.845m로 바로잡고, 화면 중심도 1.525m에서 **1.5275m**로 제원에서 계산하도록 바꿨다. 전폭 2.161m의 거울 포함 상자를 통째로 가리지 않으므로 사이드미러·범퍼 잔상은 별도 가림 검증이 필요하다. 마스크 밖 검은 영역도 투영 범위 밖이거나 관측이 없는 픽셀일 수 있다.
+투영 원본의 중앙 차체 영역은 **고정된 진회색 사각 마스크**이며 실제 차체 segmentation이 아니다. 마스크 범위는 `x=[−0.790, 3.845]m`, `y=[−0.946, 0.946]m`이고, 그 영역의 유효 마스크는 0이다. 이전 전방 끝 3.800m를 3.845m로 바로잡고, 화면 중심도 1.525m에서 **1.5275m**로 제원에서 계산하도록 바꿨다. 전폭 2.161m의 거울 포함 상자를 통째로 가리지 않으므로 사이드미러·범퍼 잔상은 별도 가림 검증이 필요하다. 마스크 밖 검은 영역도 투영 범위 밖이거나 관측이 없는 픽셀일 수 있다.
+
+**차량 탑뷰 표시 (2026-11-11):** 사용자가 제공한 `config/ioniq5_Top View.png`를 패키지의 [ioniq5_top_view.png](../src/perception/drivable_bev/config/vehicles/ioniq5_top_view.png)에 원본 그대로 복사해 기본 표시 이미지로 사용한다. 알파값 4 이하의 거의 투명한 여백을 제외해 외곽을 구하고, 전장 4.635m에 맞춰 원본 가로세로 비율을 유지한다. 차량 앞은 화면 위쪽이며 중심은 base_link의 전방 1.5275m다. 거울 포함 표시 폭은 약 2.16m, 512×512 / 10×10m SVM에서는 약 110×237픽셀이다. 차체 폭 1.892m에 거울까지 압축하지 않는다.
+
+차량 이미지는 `/perception/svm/preview/compressed`와 `/perception/svm/panel` 및 패널의 compressed 토픽에만 합성한다. 격자는 차량 이미지 아래에 그린다. `FisheyeSvm.render()`와 `/perception/svm/valid_mask`는 기존 기하 처리를 유지한다. 표시 이미지는 차체 segmentation이나 관측 데이터가 아니므로 인지 입력으로 사용하지 않는다. `save_dir` 지정 시 `svm_preview.png`에는 차량 표시가 들어가고, 새 `svm_projection.png`에는 차량 이미지·격자·문구를 합성하기 전의 미보정 투영을 저장한다. `capture.json`에 표시 이미지와 크기 정보를 기록한다.
+
+`roslaunch drivable_bev fisheye_svm.launch vehicle_overlay:=false`로 차량 그림을 끌 수 있고, `vehicle_image:=/절대경로/차량.png`로 앞쪽이 위를 향한 투명 PNG를 지정할 수 있다. 이미지를 읽지 못하면 경고 후 사각 마스크로 표시한다. Docker 재빌드는 필요 없다.
+
+아래는 **11월 10일 저장한 실제 카메라 4뷰를 독립 ROS master에서 재생한 결과**다. 재생용 시각을 새로 부여했으며 새 실시간 촬영이 아니다. 실제 launch·노드의 미리보기 저장을 확인하고, 차량 이미지 적용 전후 투영 및 유효 마스크가 동일한지 검사했다. 기존 fisheye 테스트 10개와 import·launch 정적 검사도 통과했다. 검증용 ROS 프로세스는 종료했다. [검증 기록](analysis/svm-vehicle-overlay-261111.json).
+
+![차량 탑뷰를 적용한 SVM — 저장 영상 ROS 재생, 미보정](images/svm-261111-vehicle-overlay.png)
 
 기존에 실행 중인 SVM은 설정을 자동으로 다시 읽지 않는다. **SVM 터미널만** `Ctrl+C` 후 `source devel/setup.bash && roslaunch drivable_bev fisheye_svm.launch`로 다시 시작하면 적용된다. bridge나 MORAI 센서 프리셋을 바꿀 필요는 없다.
 

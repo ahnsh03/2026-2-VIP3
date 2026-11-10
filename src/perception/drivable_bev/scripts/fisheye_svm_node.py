@@ -14,6 +14,7 @@ import yaml
 from sensor_msgs.msg import CompressedImage, Image
 
 from drivable_bev.fisheye_svm import CameraFrame, FisheyeSvm, VIEWS, select_frames
+from drivable_bev.vehicle_overlay import VehicleOverlay
 
 
 class SvmNode:
@@ -21,6 +22,13 @@ class SvmNode:
         self.config = rospy.get_param("~svm")
         self.svm = FisheyeSvm(self.config)
         self.config = self.svm.config
+        self.vehicle_overlay = None
+        if rospy.get_param("~vehicle_overlay", True):
+            try:
+                self.vehicle_overlay = VehicleOverlay(rospy.get_param("~vehicle_image", ""), self.config)
+                rospy.loginfo("SVM display vehicle: %s", self.vehicle_overlay.metadata)
+            except (ValueError, KeyError, cv2.error) as exc:
+                rospy.logwarn("SVM vehicle overlay unavailable; using body rectangle: %s", exc)
         self.buffers = {v: deque(maxlen=10) for v in VIEWS}
         self.lock = threading.Lock()
         self.last_key = None
@@ -89,10 +97,13 @@ class SvmNode:
         self.last_key = key
         started = time.perf_counter()
         images = {v: frames[v].image for v in VIEWS}
-        image = self.svm.render(images)
+        projection = self.svm.render(images)
+        image = self.display_image(projection)
+        grid_image = self.display_image(self.svm.debug_image(projection))
         # Preview topic also carries a warning so it cannot silently become training input.
-        cv2.putText(image, "UNCALIBRATED PREVIEW", (8, self.svm.size - 12),
-                    cv2.FONT_HERSHEY_SIMPLEX, .55, (0, 180, 255), 1, cv2.LINE_AA)
+        for display in (image, grid_image):
+            cv2.putText(display, "UNCALIBRATED PREVIEW", (8, self.svm.size - 12),
+                        cv2.FONT_HERSHEY_SIMPLEX, .55, (0, 180, 255), 1, cv2.LINE_AA)
         stamp = rospy.Time.from_sec(max(f.stamp for f in frames.values())) if clock == "header" else rospy.Time.now()
         self.send(self.preview, image, stamp)
         panel = np.zeros((580, 1180, 3), np.uint8)
@@ -101,7 +112,7 @@ class SvmNode:
             panel[y:y + 240, x:x + 320] = cv2.resize(images[view], (320, 240))
             cv2.putText(panel, view.upper(), (x + 8, y + 22), cv2.FONT_HERSHEY_SIMPLEX,
                         .6, (0, 220, 255), 2, cv2.LINE_AA)
-        panel[50:562, 660:1172] = cv2.resize(self.svm.debug_image(image), (512, 512))
+        panel[50:562, 660:1172] = cv2.resize(grid_image, (512, 512))
         elapsed = (time.perf_counter() - started) * 1000
         label = "SVM PREVIEW | UNCALIBRATED | sync {} {:.1f} ms | render {:.1f} ms".format(clock, span * 1000, elapsed)
         cv2.putText(panel, label, (10, 28), cv2.FONT_HERSHEY_SIMPLEX, .55, (0, 200, 255), 1, cv2.LINE_AA)
@@ -119,15 +130,20 @@ class SvmNode:
             for view in VIEWS:
                 cv2.imwrite(str(path / (view + ".png")), images[view])
             cv2.imwrite(str(path / "svm_preview.png"), image)
+            cv2.imwrite(str(path / "svm_projection.png"), projection)
             cv2.imwrite(str(path / "svm_panel.png"), panel)
             cv2.imwrite(str(path / "valid_mask.png"), self.svm.valid_mask)
             (path / "config.yaml").write_text(yaml.safe_dump(self.config, sort_keys=False))
             report = {"calibrated": False, "clock": clock, "span_ms": span * 1000,
+                      "vehicle_overlay": self.vehicle_overlay.metadata if self.vehicle_overlay else None,
                       "render_ms": elapsed, "frames": {v: {"stamp": f.stamp, "frame_id": f.frame_id}
                                                          for v, f in frames.items()}}
             (path / "capture.json").write_text(json.dumps(report, indent=2) + "\n")
             self.saved = True
             rospy.loginfo("SVM actual input and preview saved: %s", path)
+
+    def display_image(self, projection):
+        return self.vehicle_overlay.apply(projection) if self.vehicle_overlay else projection.copy()
 
     def send_raw_panel(self, panel, stamp):
         if not self.panel_raw.get_num_connections():
