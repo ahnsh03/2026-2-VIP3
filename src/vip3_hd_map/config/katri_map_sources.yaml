@@ -16,8 +16,8 @@ layers:
   crosswalk_set: crosswalk_set.json
 
 # 있으면 쓰고 없으면 조용히 넘어간다.
-#   parking_space_set  MORAI 원본에는 있었는데 우리가 못 받았다 (docs/katri-map.md §1).
-#                      받는 순간 코드 수정 없이 주차 레이어가 켜진다.
+#   parking_space_set  제공 GT는 패키지 data/katri/에 별도 보관한다.
+#                      현재 map_dir과 원점 정합을 확인한 뒤 함께 사용한다 (docs/system/data.md).
 #   object_set         정적 장애물·주차된 차량 배치일 가능성. 역시 미전달.
 #   lane_marking_set   같은 선을 더 잘게 쪼갠 파일. global_info 매니페스트에는 없다.
 optional_layers:
@@ -28,5 +28,5 @@ optional_layers:
   traffic_sign_set: traffic_sign_set.json
 
 # parking_space_set.json 이 없을 때 쓰는 손으로 적은 주차면. 스키마는 MORAI
-# ParkingSpace 와 같아서 원본이 도착하면 그대로 대체된다.
+# ParkingSpace 형식이다. 제공 GT와 혼용하지 않고 출처를 기록한다.
 manual_parking_spaces: vip3_parking_spaces.json

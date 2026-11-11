@@ -81,7 +81,7 @@ next_steps() {
   ./scripts/rosbridge.sh                 # 포그라운드 유지
 
 MORAI (Windows):
-  Map            R_KR_PG_KATRI
+  Map            R_KR_PR_K-city_2025
   Network        config/morai/261110_VIP3_Network_26.R1.H3.json  Import -> Connect
   Sensor         config/morai/261110_VIP3_Sensor_26.R1.H3.json  Import -> Connect
   Ego Ctrl Cmd   ROS / /ctrl_cmd (프리셋에 포함)

@@ -36,5 +36,5 @@ echo "  1) rosbridge 가 떠 있는가         ss -ltn | grep 9090" >&2
 echo "  2) MORAI Network 가 Connect 됐는가" >&2
 echo "  3) MORAI 가 Play 상태인가" >&2
 echo "  4) 센서 토픽이면 센서셋이 ROS(commType 3)로 Import 됐는가" >&2
-echo "  자세한 것은 docs/simulator.md §6" >&2
+echo "  자세한 것은 docs/commands.md#bridge" >&2
 exit 1

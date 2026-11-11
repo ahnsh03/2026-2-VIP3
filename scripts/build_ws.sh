@@ -5,7 +5,7 @@ cd "$(dirname "$(readlink -f "$0")")/.."
 
 if [[ ! -d src/morai_msgs && ! -L src/morai_msgs ]]; then
   echo "[build_ws] ERROR: src/morai_msgs 가 없습니다."
-  echo "  git submodule update --init --recursive   (docs/setup.md §2 참고)"
+  echo "  git submodule update --init --recursive   (docs/commands.md#setup 참고)"
   exit 1
 fi
 

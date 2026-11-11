@@ -77,7 +77,7 @@ PRESETS = {
         "rear": dict(width=1280, height=720, fov=90.0,
                      t=(-0.100, 0.000, 1.200), rot=(0.0, 2.0, 180.0)),
     },
-    # 권장 SVM 배치. 근거는 README / docs/sensors.md §5.
+    # 권장 SVM 배치. 근거는 README / docs/system/sensors.md.
     # 4:3 은 같은 수평 FOV 에서 수직 화각을 16:9 보다 6~8 deg 더 준다. 지면을
     # 얼마나 아래까지 보는지가 SVM 의 전부라 종횡비가 FOV 만큼 중요하다.
     "svm_v2": {

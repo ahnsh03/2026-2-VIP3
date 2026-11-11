@@ -49,7 +49,7 @@ done
 line; echo "5. 제어 채널"
 rostopic list 2>/dev/null | grep -qx /ctrl_cmd \
   && echo "   OK  /ctrl_cmd advertised" \
-  || echo "   MISSING  /ctrl_cmd — MORAI Network Settings 의 Ego Ctrl Cmd 를 ROS 로 켜야 한다 (docs/simulator.md §4)"
+  || echo "   MISSING  /ctrl_cmd — MORAI Network Settings 의 Ego Ctrl Cmd 를 ROS 로 켜야 한다 (docs/commands.md#bridge)"
 
 line; echo "6. 서비스"
 for s in /Service_MoraiEventCmd /Service_MoraiMapSpec; do

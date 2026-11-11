@@ -55,7 +55,7 @@ class GearNode:
         except rospy.ROSException:
             rospy.logerr(
                 "%s 가 없다. MORAI Network 설정에서 MoraiEventCmd 서비스가 켜져 "
-                "있는지 확인한다 (docs/simulator.md §3). 기어를 바꿀 수 없으므로 "
+                "있는지 확인한다 (docs/commands.md#bridge). 기어를 바꿀 수 없으므로 "
                 "자율주차도 불가능하다.",
                 self.service_name,
             )

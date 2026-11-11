@@ -1,0 +1,2 @@
+# Preserve the supplied GT bytes and SHA-256, including its original CRLF endings.
+src/vip3_hd_map/data/katri/parking_space_set.json -text whitespace=cr-at-eol

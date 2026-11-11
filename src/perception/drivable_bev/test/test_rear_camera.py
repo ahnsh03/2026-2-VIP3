@@ -81,7 +81,7 @@ class RearCameraGeometryTest(unittest.TestCase):
     def test_near_field_blind_disc_is_documented(self):
         """차 바로 주변이 사각인 것은 버그가 아니라 임시 센서셋의 성질이다.
 
-        docs/sensors.md §4 가 이 수치의 근거다. 센서셋을 개선하면 이 테스트의
+        test/fixtures/pinhole_cameras.yaml 가 이 수치의 근거다. 센서셋을 개선하면 이 테스트의
         상한을 올리고 문서도 같이 고친다.
         """
         stack = [
@@ -96,7 +96,7 @@ class RearCameraGeometryTest(unittest.TestCase):
         self.assertLess(
             union[near].mean(),
             0.30,
-            "근거리 가시율이 올라갔다면 센서셋이 바뀐 것이다. docs/sensors.md 를 갱신하라",
+            "근거리 가시율이 올라갔다면 센서셋이 바뀐 것이다. docs/system/sensors.md 를 갱신하라",
         )
 
     def test_rear_view_is_not_penalised_by_the_fusion_prior(self):

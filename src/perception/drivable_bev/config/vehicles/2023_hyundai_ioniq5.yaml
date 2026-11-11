@@ -1,7 +1,8 @@
 # Shared geometric reference for calibration, SVM and parking planning.
 vehicle_model: 2023_Hyundai_Ioniq5
 simulator_version: 26.R1.H3
-evidence: docs/analysis/vehicle-geometry-261111.json
+evidence: docs/system/sensors.md
+evidence_snapshot: a5d1665:docs/analysis/vehicle-geometry-261111.json
 frame_id: base_link
 origin: rear_axle_midpoint
 axes: {x: forward, y: left, z: up}
