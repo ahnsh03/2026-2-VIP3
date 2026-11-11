@@ -5,9 +5,9 @@
 여기서는 그것을 읽기만 한다 (센서셋이 바뀌면 YAML 한 곳만 고치면 된다).
 
 컨테이너 안에서:
-    ./scripts/verify_morai_topics.py --duration 8
+    python3 scripts/verify_morai_topics.py --duration 8
 ROS 없이 표만 확인할 때:
-    ./scripts/verify_morai_topics.py --list
+    python3 scripts/verify_morai_topics.py --list
 """
 
 import argparse
@@ -25,19 +25,16 @@ SLOW_RATIO = 0.6
 
 # 처리량이 모자랄 때 시도할 순서. 화면과 JSON 리포트에 그대로 찍는다.
 ROSBRIDGE_MITIGATION = (
-    "1) 컨테이너에 ujson 설치 확인: python3 -c 'import ujson'"
-    " (rosbridge_library 가 자동으로 집어 쓴다)",
-    "2) 카메라 4대 sensorPeriod 0.05 -> 0.1 (20 Hz -> 10 Hz)."
-    " 주차는 저속이라 10 Hz 로 충분하다",
-    "3) 전방·후방 해상도 1280x720 -> 640x480 으로 통일"
-    " (근거리 BEV 는 해상도보다 시야각이 중요하다)",
-    "4) 그래도 모자라면 그 작업에 필요한 카메라만 켠다",
+    "1) Play·센서 Connect·프리셋 확인: 현재 정본은 4대 모두 1280x960, 10 Hz",
+    "2) MORAI FPS와 호스트/컨테이너 CPU·전송 지연을 함께 확인하고 중복 viewer/녹화를 줄인다",
+    "3) 렌더 부하가 크면 SVM publish_hz부터 낮춘다. 카메라 4대 입력은 유지한다",
+    "4) 센서 해상도·주기를 바꾸려면 정본 프리셋, 토픽 계약, SVM K/해상도를 함께 갱신한다",
 )
 
 ROSBRIDGE_BANDWIDTH_NOTE = (
-    "rosbridge 는 CompressedImage 를 base64 JSON 으로 감싸 단일 WebSocket 으로"
-    " 나른다. rate 미달은 MORAI 송신 cadence 가 아니라 rosbridge 처리량 포화일"
-    " 가능성이 크다. 위 mitigation 을 순서대로 시도한다."
+    "rosbridge JSON 전송에는 CompressedImage base64 직렬화 비용이 있다. "
+    "수신 Hz만으로 MORAI FPS 저하, 전송 지연, 구독자 처리 지연을 구분할 수 없다. "
+    "시뮬 FPS·송신 시각·CPU 부하를 함께 확인한다."
 )
 
 # 26.R1 EgoVehicleStatus 스키마 게이트 (beta_drive 로 잘못 빌드한 것을 잡는다)
@@ -455,7 +452,7 @@ def main(argv=None):
             "구독자가 본 긴 공백을 중앙 주기 단위로 환산한 값. jitter/burst 의"
             " 증거이지 드랍 프레임 수가 아니다"
         ),
-        "header_age_ms": "ROS publish -> subscriber 도착 지연(헤더 stamp 기준)",
+        "header_age_ms": "헤더 시각과 수신 ROS 시각 차이; 두 시계가 일치할 때만 지연으로 해석",
     }
 
     if slow_topics:

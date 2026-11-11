@@ -20,10 +20,12 @@
   <depend>rospy</depend>
   <depend>sensor_msgs</depend>
   <depend>std_msgs</depend>
+  <depend>tf2_msgs</depend>
   <depend>visualization_msgs</depend>
 
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>python3-opencv</exec_depend>
+  <exec_depend>python3-scipy</exec_depend>
   <exec_depend>python3-yaml</exec_depend>
 
   <test_depend>python3-nose</test_depend>

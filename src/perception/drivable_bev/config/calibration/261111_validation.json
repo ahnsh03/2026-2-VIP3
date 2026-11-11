@@ -1,0 +1,142 @@
+{
+  "date": "2026-11-11",
+  "simulator": "26.R1.H3 (v.R1.260701.H3)",
+  "vehicle": "2023_Hyundai_ioniq5",
+  "map": "R_KR_PR_K-city_2025",
+  "sensor_preset": "261110_VIP3_Sensor_26.R1.H3.json",
+  "input_capture_sha256": "884966194ec4fa155b40f64c213351532a0c2914cf28c05b89101042eb15c4bf",
+  "image_source_span_ms": 34.00015830993652,
+  "tf_samples": 133,
+  "mount_rotation_check": {
+    "expected_convention": "Rz(yaw) Ry(pitch) Rx(roll), x forward y left z up",
+    "source_transforms": {
+      "cam_front": {
+        "stamp": 1794402999.99,
+        "parent": "/base_link",
+        "child": "cam_front",
+        "position": [
+          3.849999904632568,
+          0.0,
+          0.300000011920928
+        ],
+        "quaternion_xyzw": [
+          0.0,
+          0.300705760717391,
+          0.0,
+          0.9537169337272641
+        ]
+      },
+      "cam_rear": {
+        "stamp": 1794402999.99,
+        "parent": "/base_link",
+        "child": "cam_rear",
+        "position": [
+          -0.8000000119209291,
+          0.0,
+          0.300000011920928
+        ],
+        "quaternion_xyzw": [
+          -0.300705760717391,
+          -1.314426611997987e-08,
+          -0.9537169337272641,
+          -4.16882919296313e-08
+        ]
+      },
+      "cam_left": {
+        "stamp": 1794402999.99,
+        "parent": "/base_link",
+        "child": "cam_left",
+        "position": [
+          2.099999904632568,
+          1.049999952316284,
+          0.699999988079071
+        ],
+        "quaternion_xyzw": [
+          -0.270598083734512,
+          -0.270598083734512,
+          -0.653281450271606,
+          -0.653281450271606
+        ]
+      },
+      "cam_right": {
+        "stamp": 1794402999.99,
+        "parent": "/base_link",
+        "child": "cam_right",
+        "position": [
+          2.099999904632568,
+          -1.049999952316284,
+          0.699999988079071
+        ],
+        "quaternion_xyzw": [
+          -0.270598083734512,
+          0.270598083734512,
+          -0.653281450271606,
+          0.653281450271606
+        ]
+      }
+    },
+    "raw_rotation_errors_deg": {
+      "front": 3.6e-06,
+      "rear": 69.9999963,
+      "left": 62.7994344,
+      "right": 62.7994344
+    },
+    "after_quaternion_x_sign_adapter_max_error_deg": 7.1e-06,
+    "adapter": "morai_26r1_x_flipped",
+    "scope": "Measured this MORAI build and four nominal mounts; standard ROS quaternions must not be changed. Ego adaptation assumes the same serializer and is checked against visible map paint."
+  },
+  "lens_trial": {
+    "parameters": [
+      0.026869799935612077,
+      -0.04704604397904951,
+      0.014999999999749528
+    ],
+    "metrics": {
+      "train": {
+        "n": 291,
+        "rmse_before_px": 3.8162727108731507,
+        "rmse_after_px": 3.636419421476425,
+        "median_before_px": 1.0784863486507845,
+        "median_after_px": 0.3376255114778314
+      },
+      "validation": {
+        "n": 156,
+        "rmse_before_px": 5.150426420987049,
+        "rmse_after_px": 4.933018981824591,
+        "median_before_px": 1.8615506943659423,
+        "median_after_px": 0.9792656829213287
+      }
+    },
+    "source": "current capture, x-corrected MORAI TF, installed parking paint boundary",
+    "cameras": [
+      "rear",
+      "left",
+      "right"
+    ],
+    "not_front_validated": true,
+    "accepted": false,
+    "reason": "k2 hits upper bound; held-out edge RMSE improves only about 4%, and front ground is occluded by the car. Retain K/D initialization."
+  },
+  "runtime": {
+    "ground_normal_map": [
+      0,
+      0,
+      1
+    ],
+    "ground_assumption": "locally level map, fixed normal distance .35 m; not measured terrain or dynamic ride height",
+    "camera_rates_hz": [
+      9.995,
+      9.914,
+      10.04,
+      10.129
+    ],
+    "svm_rate_hz": 5.002,
+    "replay_pixel_exact": true
+  },
+  "limitations": [
+    "No claim of absolute parking-coordinate accuracy.",
+    "One current stationary capture; road is nonplanar and vertical obstacles cannot be stitched by a ground-plane model.",
+    "Lens trial uses inspected ground-only ROIs from rear/left/right and segment-level holdout, not unseen viewpoints.",
+    "No new nonzero distortion or empirical mount offsets were accepted."
+  ]
+}

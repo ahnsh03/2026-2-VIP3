@@ -95,7 +95,7 @@ echo "    Host port     : Docker publish 포트와 bridge 포트를 동일하게
 echo "    Ego Ctrl       : /ctrl_cmd  (morai_msgs/CtrlCmd, front_steer 사용)"
 echo "    Map/Scenario   : R_KR_PR_K-city_2025"
 echo ""
-echo "  검증: ./scripts/verify_morai_topics.py --duration 8"
+echo "  검증: python3 scripts/verify_morai_topics.py --duration 8"
 echo "=========================================="
 echo ""
 

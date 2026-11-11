@@ -10,6 +10,19 @@ vehicle_geometry_file: vehicles/2023_hyundai_ioniq5.yaml
 publish_hz: 5.0
 max_age_s: 0.5
 sync_slop_s: 0.06
+# This compensates body attitude and inter-camera capture times on a locally level
+# map surface. Road grade is NOT observable from body orientation alone.
+pose_compensation:
+  enabled: true
+  quaternion_convention: morai_26r1_x_flipped
+  topic: /tf
+  parent_frame: map
+  child_frame: base_link
+  max_age_s: 0.5
+  max_offset_s: 0.05
+  max_tilt_deg: 15.0
+  normal_map: [0.0, 0.0, 1.0]
+  ground_assumption: locally_level_map_surface_fixed_ride_height
 cameras:
   front:
     sensor_id: 1
