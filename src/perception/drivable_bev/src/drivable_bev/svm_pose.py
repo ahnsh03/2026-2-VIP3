@@ -106,13 +106,30 @@ def ground_plane_from_pose(pose, height_m, normal_map=(0., 0., 1.), max_tilt_deg
                 dz_dx=float(-body[0]/body[2]), dz_dy=float(-body[1]/body[2]))
 
 
+def offset_ground_plane(plane, offset_m=0.):
+    """Move the projection surface along its upward normal, leaving the axle fixed.
+
+    K-City parking paint is a mesh above the collision road. Its measured height
+    belongs to the projection surface, not to the vehicle's physical dimensions.
+    """
+    result = dict(plane)
+    z, a, b = (float(plane.get(key, 0.)) for key in
+               ('z_at_origin_m', 'dz_dx', 'dz_dy'))
+    if not np.isfinite([z, a, b, offset_m]).all() or z >= 0:
+        raise ValueError('projection surface must be finite and below base_link')
+    result['z_at_origin_m'] = z + float(offset_m)*math.sqrt(1+a*a+b*b)
+    if result['z_at_origin_m'] >= 0:
+        raise ValueError('offset projection surface must remain below base_link')
+    return result
+
+
 def relative_pose(reference, sample):
     """Transform body at sample time into body at the output reference time."""
     return (reference.rotation.T @ sample.rotation,
             reference.rotation.T @ (sample.position-reference.position))
 
 
-def projection_pose(samples, frames, now, config, height_m):
+def projection_pose(samples, frames, now, config, height_m, surface_offset_m=0.):
     """Find poses at ALL four camera stamps; partial compensation is not allowed."""
     if any(f.stamp <= 0 for f in frames.values()):
         return None, 'no image source timestamps'
@@ -128,6 +145,7 @@ def projection_pose(samples, frames, now, config, height_m):
         plane = ground_plane_from_pose(reference, height_m,
                                        config.get('normal_map', (0., 0., 1.)),
                                        float(config.get('max_tilt_deg', 15.)))
+        plane = offset_ground_plane(plane, surface_offset_m)
     except ValueError as exc:
         return None, str(exc)
     motion = {v: relative_pose(reference, poses[v]) for v in frames}

@@ -1,8 +1,4 @@
-"""Ground-plane fisheye preview. FOV alone is NOT a camera calibration.
-
-Uses the OpenCV fisheye theta polynomial. The shipped K/D are an explicit
-equidistant initialization, pending MORAI correspondence-based calibration.
-"""
+"""Ground-surface fisheye preview with versioned lens and mount corrections."""
 from dataclasses import dataclass
 import math
 
@@ -10,6 +6,7 @@ import cv2
 import numpy as np
 
 from .vehicle_geometry import resolve_svm_geometry
+from .svm_pose import offset_ground_plane
 
 VIEWS = ("front", "rear", "left", "right")
 
@@ -152,6 +149,8 @@ class FisheyeSvm:
         self.static_plane = dict(z_at_origin_m=float(config['ground_z_m']),
                                  dz_dx=float(config.get('ground_plane', {}).get('dz_dx', 0)),
                                  dz_dy=float(config.get('ground_plane', {}).get('dz_dy', 0)))
+        self.static_plane = offset_ground_plane(
+            self.static_plane, float(config.get('projection_surface_offset_m', 0.)))
         self._map_key = None
         self.set_projection()
 
