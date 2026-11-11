@@ -20,6 +20,7 @@ jobs:
           python tools/check_sensor_preset.py
           python tools/check_topic_contract.py
           python tools/check_launch_params.py
+          python tools/check_node_imports.py
       - name: Verify lens, coordinate, timing and calibration math
         env:
           PYTHONPATH: src/perception/drivable_bev/src:src/perception/camera_semantic_perception/src

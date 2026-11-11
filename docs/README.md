@@ -11,7 +11,9 @@
 | 5 | [시스템과 인터페이스](system/design.md) | 구현 상태, 좌표·단위, 연결할 인터페이스 |
 | 6 | [센서와 SVM](system/sensors.md) | 현재 센서셋, 차량 제원, 보정 상태 |
 | 7 | [SVM 보정·검증](system/svm-calibration.md) | 자세·렌즈·카메라 정합, 검증 결과와 남은 범위 |
-| 8 | [데이터와 평가](system/data.md) | 제공 GT, 직접 라벨링, 저장 위치, 평가 방법 |
+| 8 | [src 리팩토링 계획](project/src-refactoring.md) | 현황, 목표 패키지, 이동 순서·담당·완료 기준 |
+| 9 | [SVM 성능](system/svm-performance.md) | 최적화 전후 측정, 지연 로그·벤치마크 |
+| 10 | [데이터와 평가](system/data.md) | 제공 GT, 직접 라벨링, 저장 위치, 평가 방법 |
 
 ## 문서 관리
 

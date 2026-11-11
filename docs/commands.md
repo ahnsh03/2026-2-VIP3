@@ -111,6 +111,8 @@ vip3-ros-gui rqt-image /perception/svm/preview/compressed
 rqt_image_view --clear-config /perception/svm/valid_mask _image_transport:=raw
 ```
 
+기본 출력 상한은 **10Hz**다. 필요하면 `roslaunch drivable_bev fisheye_svm.launch publish_hz:=5`로 낮춘다. 센서 JSON이나 보정값을 바꿀 필요는 없다.
+
 `panel`은 네 원본과 SVM·격자를 합친 화면이다. 검은 화면이면 bridge 진단, JPEG 해상도/frame, 네 영상의 시각차를 먼저 확인한다. 헤드리스 환경에서는 아래 저장 결과로 확인한다.
 
 **기존 SVM을 Ctrl+C로 끝낸 뒤** 대체 실행한다. 같은 이름의 SVM 노드를 중복 실행하지 않는다.
@@ -144,6 +146,8 @@ roslaunch drivable_bev fisheye_svm.launch \
 rostopic echo /perception/svm/status
 rostopic hz /perception/svm/preview/compressed
 ```
+
+status의 `timing`에서 `input_age_ms`, `maps_ms`, `processing_ms`, `received_to_publish_ms`를 확인한다. 이 값은 로컬 수신 이후 시간이며 MORAI/네트워크/GUI 전체 지연이 아니다. 약 5초 주기 로그에도 출력한다. [성능 재현과 해석](system/svm-performance.md).
 
 `calibration_profile: 261111_kcity_1280x960_v1`, `projection_surface_offset_m: 0.01`이 현재 기본값이다. 화면의 `EDGE FIT | PREVIEW`로 적용 여부를 확인한다. 센서 JSON을 다시 Import할 필요는 없으며 SVM만 재시작한다.
 
