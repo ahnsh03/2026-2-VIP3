@@ -20,7 +20,7 @@ config/
 | bridge 접속·진단 주기 | `ros/rosbridge.env` |
 | SVM 보정·합성 | `src/perception/drivable_bev/config/fisheye_svm.yaml` |
 | 차량 제원·탑뷰 이미지 | 같은 패키지 `config/vehicles/` |
-| 제공 주차 GT | `src/vip3_hd_map/data/katri/` |
+| 제공 주차 GT | `src/vip3_parking/data/katri/` |
 | 수집·재생 프로파일 | `src/data_collection/config/` |
 
 패키지 전용 설정은 해당 패키지에 두고 루트에 사본을 만들지 않는다.
