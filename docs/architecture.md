@@ -36,7 +36,7 @@
 │   ├── ros-noetic/      ROS/SVM 실행 (rosbridge, RViz, OpenCV; 모델 환경은 별도)
 │   └── perception-train/ 학습 전용 (ROS 없음)
 ├── config/          파라미터 — 기계 정본
-│   ├── morai/              sensors.json · network.json (현재 Import 정본)
+│   ├── morai/              YYMMDD_VIP3_Sensor/Network_모라이버전.json
 │   ├── ros/                topics.yaml · rosbridge.env
 │   └── perception/         공유 학습 정책·선택 양식
 ├── scripts/         실행 진입점 (도커·rosbridge·학습·데이터셋)
@@ -95,7 +95,7 @@ MORAI (Windows)
 | **하수영 — 주업무 확정** | `src/perception/drivable_bev/`, `src/perception/slot_detector/`(예정). SVM·인지 전처리/후처리·가중치 연결. 차량 기준 입구·방향 출력까지 담당하는 안을 제안 |
 | **안승현 — 주업무 확정** | 센서 JSON 확정·공유, 전체 관리·MORAI 총괄·질의응답. 센서 기준·모듈 계약을 검토하며 별도 통합 구현 인력으로 계산하지 않음 |
 | **장원태 — 주업무 확정** | `docs/presentations.md`, 발표자료 제작·발표, 안승현과 공동 관리·질의응답. 별도 평가·학습 구현 인력으로 계산하지 않음 |
-| 공동 | `config/ros/topics.yaml`, `config/morai/network.json`, 센서 JSON·카메라 파라미터·static TF, `src/vip3_msgs/` |
+| 공동 | `config/ros/topics.yaml`, `config/morai/261110_VIP3_Network_26.R1.H3.json`, 센서 JSON·카메라 파라미터·static TF, `src/vip3_msgs/` |
 | 기존 공용 코드 | `docker/`, `src/vip3_bringup/`, `src/vip3_vehicle_state/`, `src/vip3_hd_map/`, 공통 `tools/`는 기존 담당과 인계하며 작업. MORAI 메시지 submodule의 버전을 임의로 바꾸지 않음 |
 | 전원 | `docs/` (연구노트는 각자 파일) |
 
@@ -107,7 +107,7 @@ MORAI (Windows)
 
 센서 위치·해상도·FOV 변경은 아래 파일을 함께 갱신한다.
 
-1. `config/morai/sensors.json` 및 `config/morai/network.json`
+1. `config/morai/261110_VIP3_Sensor_26.R1.H3.json` 및 `config/morai/261110_VIP3_Network_26.R1.H3.json`
 2. `config/ros/topics.yaml`
 3. `src/perception/drivable_bev/config/fisheye_svm.yaml`
 4. `src/vip3_bringup/launch/static_tf.launch` — `python3 tools/dump_static_tf.py`로 확인

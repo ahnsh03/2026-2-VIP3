@@ -1,0 +1,114 @@
+{
+  "mode": "reprocess_recorded_live_frames",
+  "source": "/data/sensor_checks/261111_mask_inspection",
+  "calibrated": false,
+  "target_front_x_m": 3.8449999999999998,
+  "target_rear_x_m": -0.79,
+  "old_geometry": {
+    "image": "/root/ws/src/perception/drivable_bev/config/vehicles/ioniq5_top_view.png",
+    "visualization_only": true,
+    "source_crop_xyxy": [
+      276,
+      165,
+      804,
+      1298
+    ],
+    "length_m": 4.635,
+    "center_x_m": 1.5274999999999999,
+    "width_with_mirrors_m": 2.1599999999999997,
+    "orientation": "front_up",
+    "size_px": [
+      110,
+      237
+    ]
+  },
+  "new_geometry": {
+    "image": "/root/ws/src/perception/drivable_bev/config/vehicles/ioniq5_top_view.png",
+    "visualization_only": true,
+    "source_crop_xyxy": [
+      276,
+      165,
+      804,
+      1298
+    ],
+    "length_m": 4.635,
+    "center_x_m": 1.5274999999999999,
+    "width_with_mirrors_m": 2.1599999999999997,
+    "orientation": "front_up",
+    "size_px": [
+      110.59200000000001,
+      237.312
+    ],
+    "placement": "metric_subpixel_supersampled",
+    "bounds_edge_px": [
+      200.704,
+      137.344,
+      311.29600000000005,
+      374.656
+    ],
+    "front_x_m": 3.8449999999999998,
+    "rear_x_m": -0.79
+  },
+  "old_alpha50_bounds": {
+    "alpha_threshold": 0.5,
+    "front_pixel_boundary_x_m": 3.81265625,
+    "rear_pixel_boundary_x_m": -0.7771875000000001
+  },
+  "new_alpha50_bounds": {
+    "alpha_threshold": 0.5,
+    "front_pixel_boundary_x_m": 3.8321875,
+    "rear_pixel_boundary_x_m": -0.7771875000000001
+  },
+  "old_front_placement_inset_m": 0.012812499999999893,
+  "old_rear_placement_offset_m": -0.006718750000000107,
+  "parking_stripe_per_camera_exploratory": {
+    "front": {
+      "points": 270,
+      "lateral_range_m": [
+        -3.486328125,
+        3.486328125
+      ],
+      "stripe_x_at_y0_m": 3.8932792965410132,
+      "slope_dx_dy": -0.005756807688699711,
+      "rms_to_line_m": 0.018123099623872777
+    },
+    "left": {
+      "points": 134,
+      "lateral_range_m": [
+        0.888671875,
+        3.486328125
+      ],
+      "stripe_x_at_y0_m": 3.87638801265056,
+      "slope_dx_dy": 0.008345490592152663,
+      "rms_to_line_m": 0.01696037934161803
+    },
+    "right": {
+      "points": 132,
+      "lateral_range_m": [
+        -3.486328125,
+        -0.869140625
+      ],
+      "stripe_x_at_y0_m": 3.8907123253281615,
+      "slope_dx_dy": -0.02521399104702277,
+      "rms_to_line_m": 0.038720848246810866
+    }
+  },
+  "limits": [
+    "Recorded frames, no new live pose in this review.",
+    "Raster rounding is only a centimetre-scale contribution, not proof of the full screenshot mismatch.",
+    "Per-camera stripe fits are approximate image measurements without GT correspondences.",
+    "Simulator top-view perspective and fisheye/ground-plane errors remain unverified."
+  ],
+  "validation": {
+    "fisheye_and_overlay_tests": 12,
+    "topic_monitor_tests": 8,
+    "static_checks": [
+      "sensor_preset",
+      "topic_contract",
+      "node_imports",
+      "launch_params"
+    ],
+    "bridge_restart": "PASS; monitor stays alive and logs every five seconds; clients=0, no MORAI input",
+    "svm_node_recorded_frame_replay": "PASS; projection and valid mask unchanged; preview matches updated overlay"
+  }
+}

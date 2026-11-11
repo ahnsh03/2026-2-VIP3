@@ -22,23 +22,39 @@ class VehicleOverlay:
         center_x = length / 2 - float(spec["rear_overhang_m"])
         self.size = int(config["output_size"])
         pixels_per_m = self.size / float(config["extent_m"])
-        height = max(1, int(round(length * pixels_per_m)))
+        height = length * pixels_per_m
         # Keep mirrors and the source aspect ratio instead of squeezing to body width.
-        width = max(1, int(round(height * sprite.shape[1] / sprite.shape[0])))
+        scale = height / sprite.shape[0]
+        width = scale * sprite.shape[1]
         alpha = sprite[:, :, 3:4] / 255.0
         premultiplied = np.concatenate((sprite[:, :, :3] * alpha, alpha), axis=2)
-        interpolation = cv2.INTER_AREA if height < sprite.shape[0] else cv2.INTER_LINEAR
-        resized = cv2.resize(premultiplied, (width, height), interpolation=interpolation)
         center_row = (float(config["center_x_m"]) + float(config["extent_m"]) / 2
                       - center_x) * pixels_per_m
-        top = int(round(center_row - height / 2))
-        left = int(round((self.size - width) / 2))
-        bottom, right = min(self.size, top + height), min(self.size, left + width)
-        dest_top, dest_left = max(0, top), max(0, left)
+        top = center_row - height / 2
+        left = (self.size - width) / 2
+        # Include the interpolation footprint, including for small sprites scaled up.
+        support = scale / 2
+        bottom = min(self.size, int(np.ceil(top + height + support)))
+        right = min(self.size, int(np.ceil(left + width + support)))
+        dest_top = max(0, int(np.floor(top - support)))
+        dest_left = max(0, int(np.floor(left - support)))
         if dest_top >= bottom or dest_left >= right:
             raise ValueError("vehicle overlay lies outside the SVM extent")
         self.roi = (slice(dest_top, bottom), slice(dest_left, right))
-        clipped = resized[dest_top-top:bottom-top, dest_left-left:right-left]
+        # Map source pixel centres to metric pixel boundaries without rounding the
+        # vehicle size or centre. Supersampling retains fractional boundary coverage.
+        # The ROI is cached once; per-frame apply() is still a small alpha blend.
+        supersample = 4
+        transform = np.array([
+            [scale, 0, left - dest_left + scale / 2],
+            [0, scale, top - dest_top + scale / 2]], dtype=np.float32) * supersample
+        transform[:, 2] -= .5
+        high_resolution = cv2.warpAffine(
+            premultiplied, transform,
+            ((right - dest_left) * supersample, (bottom - dest_top) * supersample),
+            flags=cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+        clipped = cv2.resize(high_resolution, (right - dest_left, bottom - dest_top),
+                             interpolation=cv2.INTER_AREA)
         self.color, self.alpha = clipped[:, :, :3], clipped[:, :, 3:4]
         self.metadata = {
             "image": str(image_path), "visualization_only": True,
@@ -46,6 +62,10 @@ class VehicleOverlay:
             "length_m": length, "center_x_m": center_x,
             "width_with_mirrors_m": length * sprite.shape[1] / sprite.shape[0],
             "orientation": "front_up", "size_px": [width, height],
+            "placement": "metric_subpixel_supersampled",
+            "bounds_edge_px": [left, top, left + width, top + height],
+            "front_x_m": center_x + length / 2,
+            "rear_x_m": center_x - length / 2,
         }
 
     def apply(self, image):

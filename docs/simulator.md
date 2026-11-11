@@ -10,8 +10,8 @@
 
 | 용도 | 파일 |
 |---|---|
-| MORAI Sensor Import | `config/morai/sensors.json` |
-| MORAI Network Import | `config/morai/network.json` |
+| MORAI Sensor Import | `config/morai/261110_VIP3_Sensor_26.R1.H3.json` |
+| MORAI Network Import | `config/morai/261110_VIP3_Network_26.R1.H3.json` |
 | 토픽·프레임·주기 계약 | `config/ros/topics.yaml` |
 | bridge 기본값 | `config/ros/rosbridge.env` |
 

@@ -1,12 +1,12 @@
 # 공유 설정과 로컬 자료
 
-팀원이 clone한 뒤 실행·검증하는 데 필요한 설정은 저장소에 둔다. MORAI Import 파일은 아래 두 개이며, 파일명에 날짜·v1/v2를 붙이지 않고 Git으로 버전을 관리한다.
+팀원이 clone한 뒤 실행·검증하는 데 필요한 설정은 저장소에 둔다. MORAI Import 파일은 아래 두 개이며, 파일명은 `YYMMDD_VIP3_Sensor_모라이버전.json` / `YYMMDD_VIP3_Network_모라이버전.json` 규칙을 따른다. 현재 `261110`은 원본 export 날짜이고 `26.R1.H3`는 MORAI 버전이다. 파일명만 정리하는 이번 변경에서 날짜를 새로 만들지 않는다.
 
 ```text
 config/
 ├── morai/
-│   ├── sensors.json        # 현재 4어안, 1280×960, 179°, 10 Hz, ROS 9090
-│   └── network.json        # 현재 ROS 네트워크, /ctrl_cmd 포함
+│   ├── 261110_VIP3_Sensor_26.R1.H3.json        # 현재 4어안, 1280×960, 179°, 10 Hz, ROS 9090
+│   └── 261110_VIP3_Network_26.R1.H3.json        # 현재 ROS 네트워크, /ctrl_cmd 포함
 ├── ros/
 │   ├── topics.yaml         # 토픽·프레임·센서 위치·주기 계약
 │   └── rosbridge.env       # 접속 기본값과 진단 주기
@@ -34,7 +34,9 @@ python3 tools/export_local_morai_presets.py --port 19090 --output-dir ../data/lo
 # 컨테이너 /root/ws에서는 --output-dir /data/local_morai
 ```
 
-생성되는 `sensors_local19090.json`, `network_local19090.json`을 Import한다. **공유 정본은 9090**이다. 동일한 값을 이미 불러온 MORAI는 이름 변경 때문에 재연결할 필요가 없다. 다음 Import부터 새 경로를 사용한다.
+생성되는 `261110_VIP3_Sensor_26.R1.H3_local19090.json`, `261110_VIP3_Network_26.R1.H3_local19090.json`을 Import한다. **공유 정본은 9090**이다. 동일한 값을 이미 불러온 MORAI는 이름 변경 때문에 재연결할 필요가 없다. 다음 Import부터 새 경로를 사용한다.
+
+새 버전을 적용하면 `config/ros/topics.yaml`의 `presets` 경로와 SVM의 `source_sensor_preset` 등을 함께 갱신하고 `tools/check_sensor_preset.py`를 실행한다. 이전 실행 프리셋은 현행 폴더에 쌓지 않고 Git 이력으로 보존한다.
 
 구형 v1/v2 센서·네트워크 JSON은 제거했다. 정리 전 마지막 상태 `217b5a3`에서 조사 목적으로만 복원한다.
 

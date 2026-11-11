@@ -8,9 +8,27 @@ import yaml
 
 from drivable_bev.fisheye_svm import CameraFrame, FisheyeSvm, VIEWS, project_fisheye, select_frames
 from drivable_bev.vehicle_geometry import load_svm_config, vehicle_geometry
+from drivable_bev.vehicle_overlay import VehicleOverlay
 
 
 class TestFisheyeSvm(unittest.TestCase):
+    def test_vehicle_overlay_preserves_fractional_metric_center_and_area(self):
+        config = load_svm_config(Path(__file__).resolve().parents[1] / 'config/fisheye_svm.yaml')
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'rectangle.png'
+            cv2.imwrite(str(path), np.full((40, 20, 4), 255, np.uint8))
+            overlay = VehicleOverlay(path, config)
+        alpha = np.zeros((512, 512), np.float32)
+        alpha[overlay.roi] = overlay.alpha[:, :, 0]
+        svm = FisheyeSvm(config)
+        centroid_x = float((svm.x * alpha).sum() / alpha.sum())
+        centroid_y = float((svm.y * alpha).sum() / alpha.sum())
+        # A half-pixel placement error is almost 1 cm at this resolution.
+        self.assertAlmostEqual(centroid_x, config['center_x_m'], delta=.002)
+        self.assertAlmostEqual(centroid_y, 0., delta=.002)
+        area = float(alpha.sum()) * (10 / 512) ** 2
+        self.assertAlmostEqual(area, 4.635 ** 2 / 2, delta=.02)
+
     def test_unmasked_debug_keeps_body_invalid_and_default_render_unchanged(self):
         config = load_svm_config(Path(__file__).resolve().parents[1] / 'config/fisheye_svm.yaml')
         svm = FisheyeSvm(config)

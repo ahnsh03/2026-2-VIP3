@@ -2,7 +2,7 @@
 
 > **문서 역할:** 현재 센서 설정·연동 절차·검증 근거
 > **담당:** 안승현 (센서셋 확정·공유) · 하수영 (SVM 연동) · 김동현 (통신·수집 연동)
-> **기계 정본:** `config/morai/sensors.json`, `config/morai/network.json`, `config/ros/topics.yaml`
+> **기계 정본:** `config/morai/261110_VIP3_Sensor_26.R1.H3.json`, `config/morai/261110_VIP3_Network_26.R1.H3.json`, `config/ros/topics.yaml`
 > **최종 수정:** 2026-11-11
 
 **SS-PSD 채택 이후 설계 기준:** [SS-PSD 센서·BEV 기준](ss-psd-sensor-bev-baseline.md). AVM-SLAM의 4카메라 합성 구조와 SS-PSD의 10×10m·512×512 입력을 적용할 계획이다. 초기 후보 수치는 연구 기록이며 현재 적용값은 아래 정본을 따른다.
@@ -33,8 +33,8 @@
 # 호스트: 팀 기본 실행 (9090)
 ./scripts/docker_ros_up.sh up
 # MORAI Import:
-#   config/morai/sensors.json
-#   config/morai/network.json
+#   config/morai/261110_VIP3_Sensor_26.R1.H3.json
+#   config/morai/261110_VIP3_Network_26.R1.H3.json
 # ROS Connect / Play
 ```
 
@@ -94,7 +94,7 @@ rqt_image_view /perception/svm/panel
 
 투영 원본의 중앙 차체 영역은 **고정된 진회색 사각 마스크**이며 실제 차체 segmentation이 아니다. 마스크 범위는 `x=[−0.790, 3.845]m`, `y=[−0.946, 0.946]m`이고, 그 영역의 유효 마스크는 0이다. 이전 전방 끝 3.800m를 3.845m로 바로잡고, 화면 중심도 1.525m에서 **1.5275m**로 제원에서 계산하도록 바꿨다. 전폭 2.161m의 거울 포함 상자를 통째로 가리지 않으므로 사이드미러·범퍼 잔상은 별도 가림 검증이 필요하다. 마스크 밖 검은 영역도 투영 범위 밖이거나 관측이 없는 픽셀일 수 있다.
 
-**차량 탑뷰 표시 (2026-11-11):** 사용자가 제공한 원본은 로컬 `data/reference/vehicles/`에 보존하고, 패키지의 [ioniq5_top_view.png](../src/perception/drivable_bev/config/vehicles/ioniq5_top_view.png)를 팀 공유용 기본 표시 이미지로 사용한다. 알파값 4 이하의 거의 투명한 여백을 제외해 외곽을 구하고, 전장 4.635m에 맞춰 원본 가로세로 비율을 유지한다. 차량 앞은 화면 위쪽이며 중심은 base_link의 전방 1.5275m다. 거울 포함 표시 폭은 약 2.16m, 512×512 / 10×10m SVM에서는 약 110×237픽셀이다. 차체 폭 1.892m에 거울까지 압축하지 않는다.
+**차량 탑뷰 표시 (2026-11-11):** 사용자가 제공한 원본은 로컬 `data/reference/vehicles/`에 보존하고, 패키지의 [ioniq5_top_view.png](../src/perception/drivable_bev/config/vehicles/ioniq5_top_view.png)를 팀 공유용 기본 표시 이미지로 사용한다. 알파값 4 이하의 거의 투명한 여백을 제외해 외곽을 구하고, 전장 4.635m에 맞춰 원본 가로세로 비율을 유지한다. 차량 앞은 화면 위쪽이며 중심은 base_link의 전방 1.5275m다. 거울 포함 표시 폭은 약 2.16m다. 현재는 512×512 / 10×10m SVM에서 기하 크기 110.592×237.312픽셀을 소수점 좌표로 배치하고 경계 픽셀의 알파를 계산한다. 차체 폭 1.892m에 거울까지 압축하지 않는다.
 
 차량 이미지는 `/perception/svm/preview/compressed`와 `/perception/svm/panel` 및 패널의 compressed 토픽에만 합성한다. 격자는 차량 이미지 아래에 그린다. `FisheyeSvm.render()`와 `/perception/svm/valid_mask`는 기존 기하 처리를 유지한다. 표시 이미지는 차체 segmentation이나 관측 데이터가 아니므로 인지 입력으로 사용하지 않는다. `save_dir` 지정 시 `svm_preview.png`에는 차량 표시가 들어가고, 새 `svm_projection.png`에는 차량 이미지·격자·문구를 합성하기 전의 미보정 투영을 저장한다. `capture.json`에 표시 이미지와 크기 정보를 기록한다.
 
@@ -104,7 +104,7 @@ rqt_image_view /perception/svm/panel
 
 사각형 색칠, 차체 내부 제외, 광선의 차체 가림 제외를 모두 끈 **진단용 투영**과 기본 표시를 비교했다. 차체 이미지는 지면으로 늘어나며 중앙에 미관측 검은 영역이 남는다. 이 영상은 실제 차체 탑뷰나 주행 가능 영역이 아니다.
 
-차량 그림 중심은 x=1.5275m이고 외곽은 제원의 앞·뒤 위치와 맞는다. 10m/512픽셀에서 그림의 전장은 237픽셀=4.6289m, 거울 포함 폭은 110픽셀=2.1484m다. 목표 전장 4.635m와의 차이 약 6.1mm, 표시 폭 2.16m와의 차이 약 11.6mm는 한 픽셀(19.5mm) 이내의 반올림이다. 이는 표시 크기 검증이며 렌즈·주차선 스케일 보정 완료를 뜻하지 않는다.
+이 최초 검사에서는 정수 픽셀로 표시한 전장이 237픽셀=4.6289m, 거울 포함 폭이 110픽셀=2.1484m였다. 전장 차이 약 6.1mm는 전체 길이의 반올림만 설명하며 앞범퍼 위치나 주차선 정합을 보증하지 않는다. 아래 추가 검토에서 앞끝 배치의 편향도 발견해 수정했다.
 
 ```bash
 # 마스크와 차량 그림을 모두 끄고 확인
@@ -118,6 +118,20 @@ roslaunch drivable_bev fisheye_svm.launch vehicle_mask:=false vehicle_overlay:=f
 4뷰 헤더 차이 34.0ms의 실제 수신 묶음으로 확인했다. 설정 정리 후 SVM·BEV 80개, bag 10개, 진단 7개 테스트와 정적 검사 4개를 통과했으며 독립 ROS에서 마스크 해제 launch도 검증했다. 마지막 실시간 재검사 시점에는 사용자 ROS master가 종료돼 있었으며, 앞선 실시간 캡처와 구분한다. [수치 기록](analysis/svm-mask-inspection-261111.json), 원본 4뷰와 비교 출력은 로컬 `/data/sensor_checks/261111_mask_inspection/`에 있다.
 
 ![실시간 마스크 제거·제원 외곽·차량 이미지 비교](images/svm-261111-mask-inspection.png)
+
+### 앞범퍼가 짧아 보이는 현상 추가 검토
+
+정수 반올림은 크기뿐 아니라 배치에도 영향을 줬다. 기존 코드의 그림 앞 경계는 `x=3.83219m`로 제원 `3.845m`보다 **1.28cm 안쪽**, 뒤 경계는 `−0.79672m`로 제원 `−0.790m`보다 약 0.67cm 바깥이었다. 알파 50% 이상인 선명한 픽셀의 앞끝은 `3.81266m`였으므로 그림 앞쪽이 더 짧아 보일 수 있었다.
+
+그림을 균일 배율로 소수점 좌표에 배치하고 초기화 시 4배 표본화 후 축소하도록 수정했다. 전장·폭·원점·지면·K/D·카메라 자세는 바꾸지 않았다. 모델상의 그림 앞·뒤 끝은 정확히 `3.845m / −0.790m`이고, 저장 영상에서 알파 50% 픽셀의 앞끝은 `3.83219m`로 약 **1픽셀(1.95cm)** 전방으로 이동했다. 같은 기준의 뒤끝은 그대로다. 이것은 표시 오차의 수정이며 차량 전체를 길게 늘린 보정이 아니다.
+
+첨부된 시뮬 탑뷰와의 차이 전체를 이 원인으로 확정할 수는 없다. 저장 영상의 전방 가로 주차선을 뷰별로 근사 피팅하면 전방·좌·우 카메라에서 서로 다른 위치·기울기가 나온다. 이 계산은 GT 오차 측정이 아니며, 시뮬 탑뷰의 원근과 현재 미보정 렌즈·지면 투영을 분리하려면 같은 시각의 차량 자세와 도색 메시/GT 대응점이 필요하다. 추가 실기 시도에서는 bridge 정상 기동 후에도 연결 클라이언트 0, 카메라·Ego 미수신이어서 **아래 비교는 기존 실제 4뷰의 재처리 결과**로 기록한다.
+
+![앞범퍼 배치 수정 전후와 마스크 해제 — 저장 영상 재처리](images/svm-261111-front-alignment.png)
+
+[수치·한계 기록](analysis/svm-front-alignment-261111.json). 원본과 확대 비교는 로컬 `/data/sensor_checks/261111_front_alignment_review/`에 있다.
+
+이번 재기동에서 `config/ros/topics.yaml` 이동 후 진단 노드가 `config/scripts`에서 모듈을 찾던 오류도 수정했다. 이제 코드 위치에서 공유 스크립트를 찾으므로 YAML 폴더 깊이에 의존하지 않는다. 실제 bridge 기동과 5초 주기 MISSING 로그를 확인했으며, 이는 MORAI 수신 성공과 구분한다.
 
 기존에 실행 중인 SVM은 설정을 자동으로 다시 읽지 않는다. **SVM 터미널만** `Ctrl+C` 후 `source devel/setup.bash && roslaunch drivable_bev fisheye_svm.launch`로 다시 시작하면 적용된다. bridge나 MORAI 센서 프리셋을 바꿀 필요는 없다.
 

@@ -2,7 +2,7 @@
 # Vehicle geometry is loaded separately; lens and occlusion still require calibration.
 # Preview only; do not train/evaluate SS-PSD with this output before calibration.
 calibration_status: uncalibrated_equidistant_initialization
-source_sensor_preset: config/morai/sensors.json
+source_sensor_preset: config/morai/261110_VIP3_Sensor_26.R1.H3.json
 projection_model: opencv_fisheye
 output_size: 512
 extent_m: 10.0

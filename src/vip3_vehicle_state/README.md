@@ -21,7 +21,7 @@ roslaunch vip3_vehicle_state vehicle_state.launch
 | 선택 | `map → base_link` TF (`~publish_map_tf`, **기본 false**) |
 
 **TF 는 기본으로 끈다.** MORAI 가 `/tf` 로 `map→base_link` 를 50 Hz 로 이미 쏜다
-(`config/morai/network.json` 의 TF2Publisher). 둘 다 켜면 RViz 에서 떨린다. 노드가 켜질 때 경고한다.
+(`config/morai/261110_VIP3_Network_26.R1.H3.json` 의 TF2Publisher). 둘 다 켜면 RViz 에서 떨린다. 노드가 켜질 때 경고한다.
 
 주요 파라미터:
 

@@ -60,7 +60,7 @@ python3 tools/export_local_morai_presets.py --port 19090 --output-dir ../data/lo
 # 이후 위의 up / build-ws 실행
 ```
 
-기본 포트에서는 `config/morai/sensors.json`과 `config/morai/network.json`을 MORAI에 Import한다. 19090 예외를 쓰면 `../data/local_morai`에 생성된 두 사본을 Import한다. WebSocket 검증 때문에 외부·내부·MORAI 접속 포트는 동일해야 한다.
+기본 포트에서는 `config/morai/261110_VIP3_Sensor_26.R1.H3.json`과 `config/morai/261110_VIP3_Network_26.R1.H3.json`을 MORAI에 Import한다. 19090 예외를 쓰면 `../data/local_morai`에 생성된 두 사본을 Import한다. WebSocket 검증 때문에 외부·내부·MORAI 접속 포트는 동일해야 한다.
 
 ## 4. 직접 노드 실행
 

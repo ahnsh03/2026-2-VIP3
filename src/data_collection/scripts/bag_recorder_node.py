@@ -332,8 +332,8 @@ class BagRecorderNode(object):
         bridge_configuration = {
             "transport": "rosbridge",
             "url": str(rospy.get_param("~bridge_url", "ws://127.0.0.1:9090")),
-            "network_set": self.profile.get("network_set", "config/morai/network.json"),
-            "sensor_set": self.profile.get("sensor_set", "config/morai/sensors.json"),
+            "network_set": self.profile.get("network_set", "config/morai/261110_VIP3_Network_26.R1.H3.json"),
+            "sensor_set": self.profile.get("sensor_set", "config/morai/261110_VIP3_Sensor_26.R1.H3.json"),
             "morai_msgs_branch": "26.R1 @ 4c9be6f",
             "rosbridge_websocket": rospy.get_param("/rosbridge_websocket", {}),
         }

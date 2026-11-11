@@ -79,13 +79,22 @@ def format_report(entries, rows, clients, elapsed):
     return "\n".join(lines)
 
 
+def verifier_directory():
+    """Locate shared code independently of where a caller stores its topic YAML."""
+    for parent in Path(__file__).resolve().parents:
+        scripts = parent / 'scripts'
+        if (scripts / 'verify_morai_topics.py').is_file():
+            return scripts
+    raise RuntimeError('Cannot locate workspace scripts/verify_morai_topics.py')
+
+
 def main():
     import rospy
     from rosbridge_msgs.msg import ConnectedClients
 
     args = parse_args(rospy.myargv()[1:])
     # The verifier and monitor both use the workspace's single topic contract.
-    sys.path.insert(0, str(args.topics_config.resolve().parents[1] / "scripts"))
+    sys.path.insert(0, str(verifier_directory()))
     from verify_morai_topics import SLOW_RATIO, load_topic_table, select_topics
 
     entries = select_topics(load_topic_table(args.topics_config), args.profile)

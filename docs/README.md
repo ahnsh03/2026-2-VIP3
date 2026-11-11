@@ -30,7 +30,7 @@
 
 같은 값이 여러 곳에 생겼을 때 **위쪽을 믿는다.**
 
-1. **기계 정본** — `config/morai/sensors.json`, `config/morai/network.json`,
+1. **기계 정본** — `config/morai/261110_VIP3_Sensor_26.R1.H3.json`, `config/morai/261110_VIP3_Network_26.R1.H3.json`,
    `src/morai_msgs/msg/*.msg`
 2. **팀 계약** — `config/ros/topics.yaml` (토픽·프레임·단위)
 3. **문서** — `docs/*.md`

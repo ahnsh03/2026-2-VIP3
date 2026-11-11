@@ -10,7 +10,7 @@ VIP3는 UDP를 쓰지 않는다. MORAI Sensor 설정을 전부 ROS로 바꾸고 
         --output "../data/local_morai/sensors_candidate.json"
 
 주의: `--comm-type`(ROS를 가리키는 MORAI enum 값)은 시뮬레이터 UI에서 한 번
-확인한다. 네트워크 설정(config/morai/network.json)의 ROS 항목이 netType/commType=3을
+확인한다. 네트워크 설정(config/morai/261110_VIP3_Network_26.R1.H3.json)의 ROS 항목이 netType/commType=3을
 쓰므로 기본값도 3이다. UI에서 ROS로 저장한 센서셋과 값이 다르면 그 값을 넘긴다.
 """
 

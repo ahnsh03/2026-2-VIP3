@@ -4,10 +4,18 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
-from morai_topic_monitor import TopicWindow, format_report, positive_float
+from morai_topic_monitor import TopicWindow, format_report, positive_float, verifier_directory
 
 
 class TopicMonitorTest(unittest.TestCase):
+    def test_shared_verifier_is_found_with_nested_topic_config(self):
+        directory = verifier_directory()
+        self.assertTrue((directory / 'verify_morai_topics.py').is_file())
+        config = directory.parent / 'config/ros/topics.yaml'
+        self.assertTrue(config.is_file())
+        # The old assumption would point at config/scripts, which does not exist.
+        self.assertNotEqual(directory, config.parents[1] / 'scripts')
+
     def report(self, window, now, nominal=10):
         return window.snapshot(now, nominal, stale_after=2, slow_ratio=0.6)
 

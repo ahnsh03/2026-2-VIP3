@@ -2,6 +2,8 @@
 """Check the active sensor JSON, ROS contract and SVM poses for configuration drift."""
 import json
 import math
+import re
+from datetime import datetime
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
@@ -12,9 +14,18 @@ import yaml
 def main():
     root = Path(__file__).resolve().parents[1]
     contract = yaml.safe_load((root / 'config/ros/topics.yaml').read_text())
+    versions = []
+    for key, kind in (('sensors', 'Sensor'), ('network', 'Network')):
+        path = Path(contract['presets'][key])
+        match = re.fullmatch(r'(\d{6})_VIP3_' + kind + r'_(.+)\.json', path.name)
+        assert match, 'preset filename must be YYMMDD_VIP3_' + kind + '_MORAI-version.json'
+        datetime.strptime(match.group(1), '%y%m%d')
+        versions.append(match.group(2))
+    assert versions[0] == versions[1], 'Sensor/Network MORAI versions must match; export dates may differ'
     preset = json.loads((root / contract['presets']['sensors']).read_text())
     svm_path = root / 'src/perception/drivable_bev/config/fisheye_svm.yaml'
     svm = yaml.safe_load(svm_path.read_text())
+    assert svm['source_sensor_preset'] == contract['presets']['sensors']
     vehicle_path = (svm_path.parent / svm['vehicle_geometry_file']).resolve()
     assert vehicle_path == (root / contract['frames']['vehicle_geometry_file']).resolve()
     vehicle = yaml.safe_load(vehicle_path.read_text())
