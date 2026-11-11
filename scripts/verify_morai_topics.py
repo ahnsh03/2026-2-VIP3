@@ -5,9 +5,9 @@
 여기서는 그것을 읽기만 한다 (센서셋이 바뀌면 YAML 한 곳만 고치면 된다).
 
 컨테이너 안에서:
-    ./scripts/verify_morai_topics.py --duration 8
+    python3 scripts/verify_morai_topics.py --duration 8
 ROS 없이 표만 확인할 때:
-    ./scripts/verify_morai_topics.py --list
+    python3 scripts/verify_morai_topics.py --list
 """
 
 import argparse
