@@ -25,6 +25,66 @@ def optical_rotation(rotation_deg):
     return np.array([[0, -1, 0], [0, 0, -1], [1, 0, 0]]) @ (rz @ ry @ rx).T
 
 
+def camera_transform(camera):
+    """Nominal MORAI mount plus a separately versioned calibration correction."""
+    correction = camera.get('correction', {})
+    position = np.asarray(camera['translation_m'], dtype=float) + np.asarray(
+        correction.get('translation_m', [0, 0, 0]), dtype=float)
+    angles = np.asarray(camera['rotation_deg'], dtype=float) + np.asarray(
+        correction.get('rotation_deg', [0, 0, 0]), dtype=float)
+    if position.shape != (3,) or angles.shape != (3,) or not np.isfinite(np.r_[position, angles]).all():
+        raise ValueError('camera mount and correction must be finite xyz/rpy')
+    return position, optical_rotation(angles)
+
+
+def validate_lens(camera):
+    k, d = np.asarray(camera['K'], float), np.asarray(camera['D'], float)
+    if (k.shape != (3, 3) or d.shape != (4,) or not np.isfinite(k).all()
+            or not np.isfinite(d).all() or k[0, 0] <= 0 or k[1, 1] <= 0
+            or not np.allclose(k[2], [0, 0, 1]) or k[0, 1] != 0 or k[1, 0] != 0):
+        raise ValueError('finite zero-skew fisheye K and four distortion coefficients required')
+    limit = float(camera['max_ray_angle_deg'])
+    if not 0 < limit < 90:
+        raise ValueError('fisheye projection requires max ray angle in (0, 90)')
+    t2 = np.linspace(0, math.radians(limit), 256) ** 2
+    derivative = 1 + t2*(3*d[0] + t2*(5*d[1] + t2*(7*d[2] + t2*9*d[3])))
+    if np.min(derivative) <= .05:
+        raise ValueError('fisheye distortion must be monotonic over the usable lens')
+
+
+def pixels_to_ground(pixels, camera, plane):
+    """Inverse lens and rigid transform; return XY and valid ray/plane intersections."""
+    validate_lens(camera)
+    pixels = np.asarray(pixels, dtype=float).reshape(-1, 2)
+    k, d = np.asarray(camera['K'], float), np.asarray(camera['D'], float)
+    xy = (pixels - [k[0, 2], k[1, 2]])/[k[0, 0], k[1, 1]]
+    radius = np.linalg.norm(xy, axis=1)
+    limit = math.radians(camera['max_ray_angle_deg'])
+    theta = np.minimum(radius, limit)
+    # OpenCV 4.2 undistortPoints clamps distorted radius to pi/2. Invert the
+    # monotonic polynomial directly so valid positive-D edge rays still round-trip.
+    for _ in range(12):
+        t2 = theta*theta
+        value = theta*(1+t2*(d[0]+t2*(d[1]+t2*(d[2]+t2*d[3]))))
+        derivative = 1+t2*(3*d[0]+t2*(5*d[1]+t2*(7*d[2]+t2*9*d[3])))
+        theta = np.clip(theta-(value-radius)/derivative, 0, limit)
+    t2 = theta*theta
+    converged = np.abs(theta*(1+t2*(d[0]+t2*(d[1]+t2*(d[2]+t2*d[3]))))-radius) < 1e-8
+    scale = np.divide(np.sin(theta), radius, out=np.ones_like(theta), where=radius > 1e-12)
+    position, rotation = camera_transform(camera)
+    rays = np.c_[xy*scale[:, None], np.cos(theta)] @ rotation
+    normal = np.array([-plane.get('dz_dx', 0.), -plane.get('dz_dy', 0.), 1.])
+    denominator = rays @ normal
+    distance = np.divide(plane['z_at_origin_m'] - position @ normal, denominator,
+                         out=np.full(len(pixels), np.nan), where=np.abs(denominator) > 1e-9)
+    xyz = position + distance[:, None]*rays
+    valid = (converged & (distance > 0) & np.isfinite(xyz).all(axis=1)
+             & (theta < math.radians(camera['max_ray_angle_deg']))
+             & (pixels[:, 0] >= 0) & (pixels[:, 0] < camera['width'])
+             & (pixels[:, 1] >= 0) & (pixels[:, 1] < camera['height']))
+    return xyz[:, :2], valid
+
+
 def project_fisheye(points_optical, intrinsic, distortion):
     """Project forward rays using OpenCV's fisheye model, returning (uv, theta)."""
     points = np.asarray(points_optical, dtype=np.float64)
@@ -84,19 +144,54 @@ class FisheyeSvm:
         row, col = np.mgrid[:self.size, :self.size]
         self.x = self.center_x + self.extent / 2 - (row + .5) * self.extent / self.size
         self.y = self.extent / 2 - (col + .5) * self.extent / self.size
-        ground_z = float(config["ground_z_m"])
-        plane = config.get('ground_plane', {})
-        ground = ground_z + float(plane.get('dz_dx', 0)) * self.x + float(plane.get('dz_dy', 0)) * self.y
-        xyz = np.stack([self.x, self.y, ground], axis=-1)
         body = config["vehicle_mask"]
         self.body_mask = ((self.x >= body["x_min_m"]) & (self.x <= body["x_max_m"])
                           & (self.y >= body["y_min_m"]) & (self.y <= body["y_max_m"]))
+        for camera in config['cameras'].values():
+            validate_lens(camera)
+        self.static_plane = dict(z_at_origin_m=float(config['ground_z_m']),
+                                 dz_dx=float(config.get('ground_plane', {}).get('dz_dx', 0)),
+                                 dz_dy=float(config.get('ground_plane', {}).get('dz_dy', 0)))
+        self._map_key = None
+        self.set_projection()
+
+    def set_projection(self, plane=None, motion=None):
+        """Rebuild maps for an explicit surface and per-camera timestamp transforms.
+
+        Motion maps each camera's body frame into the output reference body.
+        Exact repeated transforms reuse maps; no stale attitude quantization.
+        """
+        plane = dict(self.static_plane if plane is None else plane)
+        parameters = np.array([plane['z_at_origin_m'], plane.get('dz_dx', 0), plane.get('dz_dy', 0)])
+        if not np.isfinite(parameters).all() or parameters[0] >= 0:
+            raise ValueError('ground plane must be finite and below base_link')
+        motion = motion or {v: (np.eye(3), np.zeros(3)) for v in VIEWS}
+        key = tuple(parameters) + tuple(float(n) for v in VIEWS for a in motion[v]
+                                        for n in np.asarray(a).ravel())
+        if key == self._map_key:
+            return False
+        self.active_plane = plane
+        config = self.config
+        body = config['vehicle_mask']
+        ground = parameters[0] + parameters[1]*self.x + parameters[2]*self.y
+        xyz = np.stack([self.x, self.y, ground], axis=-1)
         self.maps = {}
         self.unmasked_weights = {}
         for view in VIEWS:
             camera = config["cameras"][view]
             width, height = int(camera["width"]), int(camera["height"])
-            optical = (xyz - camera["translation_m"]) @ optical_rotation(camera["rotation_deg"]).T
+            position, rotation = camera_transform(camera)
+            delta_r, delta_t = (np.asarray(a, dtype=float) for a in motion[view])
+            if (delta_r.shape != (3, 3) or delta_t.shape != (3,)
+                    or not np.isfinite(delta_r).all() or not np.isfinite(delta_t).all()
+                    or not np.allclose(delta_r.T @ delta_r, np.eye(3), atol=1e-5)
+                    or np.linalg.det(delta_r) < .99):
+                raise ValueError('camera motion must be a finite rigid transform')
+            mount_position = position.copy()
+            source_xyz = (xyz - delta_t) @ delta_r
+            position = delta_r @ position + delta_t
+            rotation = rotation @ delta_r.T
+            optical = (xyz - position) @ rotation.T
             uv, theta = project_fisheye(optical, camera["K"], camera["D"])
             limit = math.radians(float(camera["max_ray_angle_deg"]))
             valid = ((optical[..., 2] > 0) & (theta < limit) & (uv[..., 0] >= 1)
@@ -110,10 +205,11 @@ class FisheyeSvm:
             valid &= ~self.body_mask
             # Approximate body-occlusion test sampled along the ground ray.
             # It cannot replace visibility validation against the actual vehicle mesh.
-            position = np.asarray(camera["translation_m"])
             for fraction in (.05, .15, .3, .5, .75):
-                qx = position[0] + fraction * (self.x - position[0])
-                qy = position[1] + fraction * (self.y - position[1])
+                # Occlusion belongs to the body at image capture time, not the
+                # reference body (which may already have moved past this camera).
+                qx = mount_position[0] + fraction * (source_xyz[..., 0] - mount_position[0])
+                qy = mount_position[1] + fraction * (source_xyz[..., 1] - mount_position[1])
                 valid &= ~((qx > body["x_min_m"]) & (qx < body["x_max_m"])
                            & (qy > body["y_min_m"]) & (qy < body["y_max_m"]))
             weight = (lens_weight * valid).astype(np.float32)
@@ -121,6 +217,8 @@ class FisheyeSvm:
         self.weight_sum = sum(item[2] for item in self.maps.values())
         self.unmasked_weight_sum = sum(self.unmasked_weights.values())
         self.valid_mask = ((self.weight_sum > 1e-6) & ~self.body_mask).astype(np.uint8) * 255
+        self._map_key = key
+        return True
 
     def render(self, images, apply_vehicle_mask=True):
         """Disabling the mask reveals body-distorted samples for display inspection only."""

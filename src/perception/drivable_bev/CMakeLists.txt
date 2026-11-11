@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
+  tf2_msgs
   visualization_msgs
 )
 
@@ -25,6 +26,7 @@ catkin_package(
     rospy
     sensor_msgs
     std_msgs
+    tf2_msgs
     visualization_msgs
 )
 
@@ -42,6 +44,8 @@ if(CATKIN_ENABLE_TESTING)
   catkin_add_nosetests(test/test_spline_fitting.py)
   catkin_add_nosetests(test/test_rgb_bev.py)
   catkin_add_nosetests(test/test_fisheye_svm.py)
+  catkin_add_nosetests(test/test_svm_pose.py)
+  catkin_add_nosetests(test/test_svm_calibration.py)
 endif()
 
 catkin_install_python(PROGRAMS

@@ -129,11 +129,47 @@ roslaunch drivable_bev fisheye_svm.launch \
 | `svm_panel.png`, `svm_preview.png` | 사람이 보는 진단 결과 |
 | `svm_projection.png` | 그림·문구 없는 투영; 차체 마스크는 적용 |
 | `svm_unmasked.png` | `vehicle_mask:=false`에서만 저장하는 마스크 해제 투영 |
-| `valid_mask.png`, `config.yaml`, `capture.json` | 유효 영역·설정·영상 시각 |
+| `valid_mask.png`, `config.yaml`, `capture.json` | 유효 영역·설정·영상 시각·보간 자세·투영 상태 |
 
 현재는 **미보정 preview**이며 clean BEV 학습/인지 토픽은 아직 없다. 마스크를 꺼도 차체 영역이 관측 가능한 지면으로 바뀌지 않는다. 기본 차량 그림을 다시 보려면 첫 명령으로 재시작한다.
 
 호스트 저장소 루트에서도 `./scripts/docker_ros_up.sh bridge`, `svm`, `view`를 **각 터미널에서 하나씩** 실행할 수 있다.
+
+<a id="svm-calibration"></a>
+### SVM 자세·렌즈·정합 검사
+
+**컨테이너 `/root/ws`**, SVM 실행 중 상태 확인:
+
+```bash
+rostopic echo /perception/svm/status
+rostopic hz /perception/svm/preview/compressed
+```
+
+`pose compensated`는 자세·촬영 시차 반영을 뜻하며 렌즈/지면 보정 완료 판정이 아니다. 현재 MORAI quaternion 어댑터와 지면 가정은 [보정 문서](system/svm-calibration.md)에 설명했다.
+
+앞에서 저장한 묶음을 **새 출력 경로**로 재생한다. 첫 명령은 저장된 평면·카메라 상대 자세를 그대로 적용하고, 두 번째는 정적 투영과 비교한다.
+
+```bash
+python3 tools/replay_fisheye_svm.py /data/svm_checks/no_mask_01 \
+  --output-dir /data/svm_checks/replay_01
+python3 tools/replay_fisheye_svm.py /data/svm_checks/no_mask_01 --static \
+  --output-dir /data/svm_checks/static_01
+```
+
+각 카메라의 `*_warped.png`, `svm_projection.png`, `valid_mask.png`와 재생 조건을 저장한다. 이전 캡처에 `projection_state`가 없으면 `--static`만 가능하다.
+
+실측 대응점 JSON을 준비한 뒤 후보를 추정한다. **아래 observations.json은 직접 작성해야 하는 입력**이며 형식·분할 규칙은 보정 문서를 따른다.
+
+```bash
+python3 tools/calibrate_fisheye_svm.py \
+  --observations /data/calibration/observations.json \
+  --output /data/calibration/candidate.yaml \
+  --report /data/calibration/report.json
+# 후보 파일이 생성된 경우 기존 SVM을 Ctrl+C로 종료한 뒤 비교 실행
+roslaunch drivable_bev fisheye_svm.launch config:=/data/calibration/candidate.yaml
+```
+
+원본 설정과 기존 결과는 덮어쓰지 않는다. 기준 미달이면 report만 생성하고 종료 코드 2를 반환한다. 통과 후보도 다른 위치에서 검증한 뒤 정본에 반영한다.
 
 <a id="collection"></a>
 ## 4. 원본 수집·감사·재생 — 김동현

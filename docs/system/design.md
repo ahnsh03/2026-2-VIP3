@@ -5,7 +5,7 @@
 ```text
 MORAI 26.R1.H3 (K-City 2025, Ioniq5)
   └─ ROS WebSocket → rosbridge (기본 9090)
-       ├─ 4 × CompressedImage → fisheye_svm → 진단 panel/preview/valid_mask
+       ├─ 4 × CompressedImage → fisheye_svm → 진단 panel/preview/valid_mask/status
        ├─ EgoVehicleStatus → vip3_vehicle_state → state/odom
        ├─ 카메라·ego·TF → data_collection → bag / 재생
        └─ event service ↔ vip3_gear
@@ -19,7 +19,7 @@ MORAI 26.R1.H3 (K-City 2025, Ioniq5)
 | 구현 상태 | 입출력 | 책임 |
 |---|---|---|
 | 구현 | `/cam_{front,rear,left,right}/image_jpeg/compressed`, `sensor_msgs/CompressedImage` | MORAI→SVM·수집 |
-| 구현 | `/perception/svm/preview/compressed`, `panel`, `panel/compressed`, `valid_mask` | SVM 진단 |
+| 구현 | `/perception/svm/preview/compressed`, `panel`, `panel/compressed`, `valid_mask`, `status` | SVM 진단·보정 상태 |
 | 구현 | `/Ego_topic` → `/vehicle/state` (`vip3_msgs/VehicleState`), `/vehicle/odom` | 상태 변환 |
 | 구현 | `/vip3_gear/set_gear` (`vip3_msgs/SetGear`), `/vehicle/gear` | 기어 소유자 |
 | 구현 | `/vip3_hd_map/global/*`, `/local/*`, `/debug/pose` | MGeo 시각화; 좌표 정합 보증 아님 |
