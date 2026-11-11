@@ -2,7 +2,7 @@
 
 ## 제공 GT와 좌표
 
-MORAI 연구원이 제공한 [parking_space_set.json](../../src/vip3_hd_map/data/katri/parking_space_set.json)은 **31개 레코드**다. 원본을 수정하지 않고 [출처·해시](../../src/vip3_hd_map/data/katri/README.md)를 함께 공유한다. 이 데이터는 **제어 선행 개발과 평가**에 사용한다. 센서 영상에 실제 보이는 접점·가림 상태를 자동으로 설명하는 학습 라벨은 아니다.
+MORAI 연구원이 제공한 [parking_space_set.json](../../src/vip3_parking/data/katri/parking_space_set.json)은 **31개 레코드**다. 원본을 수정하지 않고 [출처·해시](../../src/vip3_parking/data/katri/README.md)를 함께 공유한다. 이 데이터는 **제어 선행 개발과 평가**에 사용한다. 센서 영상에 실제 보이는 접점·가림 상태를 자동으로 설명하는 학습 라벨은 아니다.
 
 `idx`로 주차면을 선택한다. 배열 순번과 ID 끝자리를 혼동하지 않는다. 후보는 다음과 같다. 길이는 제공 polygon의 마주 보는 변 길이를 평균한 참고값이다.
 
@@ -16,7 +16,7 @@ MORAI 연구원이 제공한 [parking_space_set.json](../../src/vip3_hd_map/data
 
 모든 레코드의 `width=2.5`, `length=5`, `angle=90`, `parking_direction=null`이므로 실제 크기·heading·입구를 이 필드로 확정하지 않는다. **points로 형상을 구하고 입구 방향은 시뮬에서 결정**한다. 일부 긴 polygon은 개별 주차칸으로 자동 분할하지 않는다.
 
-좌표 주의: 과거 전체 KATRI 도로망의 UTM 원점은 `[302459.942, 4122635.537, 28.991]`이고, 설치된 K-City 2025의 MapSpec offset은 `[302595, 4124145, 0]`이다. 서로 다른 자료를 같은 `map`으로 간주해 합치지 않는다. 주차 GT와 현재 차량·씬의 정합은 별도 확인 대상이다. 기존 MGeo 로더는 입력 좌표를 표시할 뿐 자동으로 올바른 변환을 추정하지 않는다.
+좌표 주의: 과거 전체 KATRI 도로망의 UTM 원점은 `[302459.942, 4122635.537, 28.991]`이고, 설치된 K-City 2025의 MapSpec offset은 `[302595, 4124145, 0]`이다. 서로 다른 자료를 같은 `map`으로 간주해 합치지 않는다. 주차 GT와 현재 차량·씬의 정합은 별도 확인 대상이다. `vip3_parking.gt.load_spaces()`는 제공 좌표를 그대로 읽는다. `frames.py`는 양쪽 CRS와 원점을 명시했을 때만 변환하며, 이 별도 GT에 과거 도로망 원점을 자동 적용하지 않는다.
 
 첫 칸을 확정할 때 ID, 입구 두 점, 방향, 시작 pose, 좌표 변환 근거, 후륜축 목표 pose를 함께 기록한다. 차량을 칸에 세운 pose로 **차량 크기의 사각형을 만드는 것은 주차칸 경계 측정이 아니다**.
 
@@ -37,7 +37,7 @@ MORAI 연구원이 제공한 [parking_space_set.json](../../src/vip3_hd_map/data
 | 자료 | 위치 | 관리 |
 |---|---|---|
 | 실행 프리셋·토픽·차량 이미지·보정 설정 | repo `config/`, 패키지 `config/` | 팀 Git |
-| 작은 제공 주차 GT·출처 | repo `src/vip3_hd_map/data/katri/` | 팀 Git, 원본 불변 |
+| 작은 제공 주차 GT·출처 | repo `src/vip3_parking/data/katri/` | 팀 Git, 원본 불변 |
 | bag | `$VIP3_DATA/rosbags/raw/<run_id>/` | `bags/`, metadata·summary; Git 제외 |
 | 캡처·학습 데이터·실험 산출물 | `$VIP3_DATA` | 호스트 `../data`, 컨테이너 `/data` |
 | 개인 포트 변경본 | `../data/local_morai/` | 도구로 생성; 공유 정본은 9090 |
@@ -48,7 +48,7 @@ raw run은 덮어쓰지 않는다. 분석 결과는 원본 run 밖의 별도 디
 
 ## 평가 구현과 한계
 
-[parking_eval.py](../../src/vip3_eval/src/parking_eval.py)는 ROS 없는 평가 함수다. `evaluate_parking()`에 최종 pose, 목표 polygon, 시간, 충돌 수를 전달한다. 후륜축 pose이면 `ref_to_center_m=1.5275`를 명시한다. 기본값 0은 차량 중심 pose일 때만 맞다.
+[evaluation.py](../../src/vip3_parking/src/vip3_parking/evaluation.py)는 ROS 없는 평가 함수다. `evaluate_parking()`에 최종 pose, 목표 polygon, 시간, 충돌 수를 전달한다. 후륜축 pose이면 `ref_to_center_m=1.5275`를 명시한다. 기본값 0은 차량 중심 pose일 때만 맞다.
 
 주 지표는 `success_in_slot`(차량 외곽이 칸 안 + 무충돌), 횡·종·방향 오차, 최소 경계 여유, 소요 시간이다. `success_tsr`는 코드에 남아 있는 느슨한 보조 기준이며 최종 성공률과 혼용하지 않는다. 현재 함수는 polygon을 최소 외접 직사각형으로 평가하고 points 기반 방향은 180° 대칭으로 처리한다. **비직사각형 칸의 정확한 포함 판정·전방 진입 여부·최종 정지 속도는 별도로 확인**한다.
 

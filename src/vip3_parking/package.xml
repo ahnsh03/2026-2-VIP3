@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>vip3_parking</name>
+  <version>0.1.0</version>
+  <description>
+    자율주차의 차량 상태·기어 인터페이스, 제공 GT, 좌표 변환과 결과 평가.
+    경로 생성과 추종은 후속 구현이다.
+  </description>
+
+  <maintainer email="AIM2026.003@gmail.com">2026-2-VIP3</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>geometry_msgs</depend>
+  <depend>morai_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>vip3_msgs</depend>
+
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+
+  <test_depend>python3-nose</test_depend>
+</package>

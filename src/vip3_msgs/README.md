@@ -18,8 +18,8 @@ VIP3 팀 내부 ROS 메시지·서비스. **최소 집합만 둔다.**
 
 | 타입 | 쓰는 곳 | 왜 커스텀인가 |
 |---|---|---|
-| `msg/VehicleState.msg` | `vip3_vehicle_state` → `/vehicle/state` | `valid` 플래그 + `source` 출처 + 2D 상태(x, y, yaw, speed, acceleration, yaw_rate)를 한 메시지로 묶은 것. `nav_msgs/Odometry` 에는 "이 값 믿어도 되나"를 나타내는 필드가 없어서 stale/무효 구분이 불가능하다. 자세한 pose/twist 가 필요하면 `/vehicle/odom` 을 쓴다. |
-| `srv/SetGear.srv` | `vip3_vehicle_state/vip3_gear_node` | 기어 변경은 스택에서 가장 위험한 쓰기다. 동기 응답(성공/실패 + 실제 기어)이 필요한데 `std_srvs` 에 정수 요청 서비스가 없다. 토픽으로 하면 늦게 연결된 publisher 의 첫 메시지가 조용히 버려진다(후진 명령 유실 = 주차 실패). |
+| `msg/VehicleState.msg` | `vip3_parking` → `/vehicle/state` | `valid` 플래그 + `source` 출처 + 2D 상태(x, y, yaw, speed, acceleration, yaw_rate)를 한 메시지로 묶은 것. `nav_msgs/Odometry` 에는 "이 값 믿어도 되나"를 나타내는 필드가 없어서 stale/무효 구분이 불가능하다. 자세한 pose/twist 가 필요하면 `/vehicle/odom` 을 쓴다. |
+| `srv/SetGear.srv` | `vip3_parking/gear_node.py` | 기어 변경은 스택에서 가장 위험한 쓰기다. 동기 응답(성공/실패 + 실제 기어)이 필요한데 `std_srvs` 에 정수 요청 서비스가 없다. 토픽으로 하면 늦게 연결된 publisher 의 첫 메시지가 조용히 버려진다(후진 명령 유실 = 주차 실패). |
 
 `VehicleState.source` 의 `SOURCE_EGO_STATUS=2` 가 **VIP3 의 기본값**이다
 (ASMC 에서는 개발 전용이었다). `SOURCE_GPS_IMU=1` 은 보조 경로다.

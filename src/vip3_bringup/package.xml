@@ -2,7 +2,7 @@
 <package format="2">
   <name>vip3_bringup</name>
   <version>0.1.0</version>
-  <description>VIP3 기동 런치 모음 — static TF, 차량 상태, 선택적 HD map 시각화.</description>
+  <description>VIP3 기동 런치 모음 — rosbridge, static TF, 주차용 차량 상태·기어.</description>
 
   <maintainer email="AIM2026.003@gmail.com">2026-2-VIP3</maintainer>
   <license>MIT</license>
@@ -10,8 +10,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <exec_depend>tf2_ros</exec_depend>
-  <exec_depend>vip3_vehicle_state</exec_depend>
-  <exec_depend>vip3_hd_map</exec_depend>
+  <exec_depend>vip3_parking</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>rosbridge_server</exec_depend>
   <exec_depend>rosbridge_msgs</exec_depend>

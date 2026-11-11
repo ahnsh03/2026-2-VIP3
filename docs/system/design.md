@@ -6,12 +6,12 @@
 MORAI 26.R1.H3 (K-City 2025, Ioniq5)
   └─ ROS WebSocket → rosbridge (기본 9090)
        ├─ 4 × CompressedImage → fisheye_svm → 진단 panel/preview/valid_mask/status
-       ├─ EgoVehicleStatus → vip3_vehicle_state → state/odom
+       ├─ EgoVehicleStatus → vip3_parking → state/odom
        ├─ 카메라·ego·TF → data_collection → bag / 재생
        └─ event service ↔ vip3_gear
 
 연결할 경로: clean BEV → SS-PSD → 주차 목표 → 경로·추종 → /ctrl_cmd
-개발·평가 경로: 제공 주차 GT → 별도 목표 어댑터 → 같은 경로·추종
+개발·평가 경로: vip3_parking의 제공 GT → 목표 어댑터(예정) → 같은 경로·추종
 ```
 
 아래 표의 **예정 토픽은 아직 발행되지 않는다**. 실행 명령을 만들어진 것처럼 기재하지 않는다.
@@ -22,7 +22,6 @@ MORAI 26.R1.H3 (K-City 2025, Ioniq5)
 | 구현 | `/perception/svm/preview/compressed`, `panel`, `panel/compressed`, `valid_mask`, `status` | SVM 진단·보정 상태 |
 | 구현 | `/Ego_topic` → `/vehicle/state` (`vip3_msgs/VehicleState`), `/vehicle/odom` | 상태 변환 |
 | 구현 | `/vip3_gear/set_gear` (`vip3_msgs/SetGear`), `/vehicle/gear` | 기어 소유자 |
-| 구현 | `/vip3_hd_map/global/*`, `/local/*`, `/debug/pose` | MGeo 시각화; 좌표 정합 보증 아님 |
 | 예정 | `/parking/bev/image`, BGR `Image` 512² + valid mask·metric 설정 | clean BEV·시각 보존 |
 | 예정 | 검출 슬롯: 입구 두 점, 안쪽 방향, confidence, stamp, `base_link` | 검출 메시지 타입은 생산자·소비자 합의 후 확정 |
 | 예정 | `/parking/goal_gt`, `/parking/goal_perception` → `/parking/goal`, `PoseStamped` | 출처를 명시적으로 선택; 후륜축 목표, `map` |

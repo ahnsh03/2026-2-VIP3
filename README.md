@@ -31,9 +31,9 @@ MORAI Import/Connect/Play 이후 별도 터미널에서 SVM을 실행한다. 자
 
 ## 현재 구현
 
-4어안 수신, SVM 미리보기·차량 그림, bridge 상태 로그, bag 수집·재생, 차량 상태·기어 노드, MGeo 시각화, 주차 평가 함수가 있다. **렌즈·지면 정합, clean BEV, SS-PSD ROS 노드, 주차 경로·추종 통합은 남은 작업**이다.
+4어안 수신, SVM 미리보기·차량 그림, bridge 상태 로그, bag 수집·재생, 차량 상태·기어 노드, 제공 GT 검사, 주차 평가 함수가 있다. **렌즈·지면 정합, clean BEV, SS-PSD ROS 노드, 주차 경로·추종 통합은 남은 작업**이다.
 
-제공 [주차 GT 31개](src/vip3_hd_map/data/katri/README.md)는 제어 선행 개발과 평가에 사용한다. 최종 인지 입력을 GT로 대신하지 않는다. 이전 TwinLite·핀홀 BEV 코드는 선택 도구로 남아 있으며 현재 베이스라인과 구분한다.
+제공 [주차 GT 31개](src/vip3_parking/data/katri/README.md)는 제어 선행 개발과 평가에 사용한다. 최종 인지 입력을 GT로 대신하지 않는다. 이전 TwinLite·핀홀 BEV 코드는 선택 도구로 남아 있으며 현재 베이스라인과 구분한다.
 
 ## 저장소 구조
 

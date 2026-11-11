@@ -1,4 +1,4 @@
-name: SVM geometry and configuration
+name: Parking geometry and configuration
 on:
   push:
     branches: [main]
@@ -27,3 +27,7 @@ jobs:
         run: |
           python -m unittest discover -s src/perception/drivable_bev/test -p 'test_fisheye_svm.py'
           python -m unittest discover -s src/perception/drivable_bev/test -p 'test_svm*.py'
+      - name: Verify parking state, GT preservation, coordinates and evaluation
+        env:
+          PYTHONPATH: src/vip3_parking/src
+        run: python -m unittest discover -s src/vip3_parking/test

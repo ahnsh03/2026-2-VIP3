@@ -11,20 +11,14 @@
   <arg name="vehicle_state" default="true"/>
   <arg name="gear_node" default="true"/>
   <arg name="publish_map_tf" default="false"/>   <!-- MORAI 가 /tf 를 이미 쏜다 -->
-  <arg name="hd_map" default="false"/>
-  <arg name="rviz" default="false"/>
 
   <include if="$(arg static_tf)"
            file="$(find vip3_bringup)/launch/static_tf.launch"/>
 
   <include if="$(arg vehicle_state)"
-           file="$(find vip3_vehicle_state)/launch/vehicle_state.launch">
+           file="$(find vip3_parking)/launch/vehicle.launch">
     <arg name="publish_map_tf" value="$(arg publish_map_tf)"/>
     <arg name="start_gear_node" value="$(arg gear_node)"/>
   </include>
 
-  <include if="$(arg hd_map)"
-           file="$(find vip3_hd_map)/launch/katri_map_viz.launch">
-    <arg name="rviz" value="$(arg rviz)"/>
-  </include>
 </launch>

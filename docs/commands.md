@@ -230,13 +230,15 @@ roslaunch data_collection sync_collector.launch \
 `parking_core`는 5Hz latest-timer snapshot이며 정확한 네 영상 동기화를 보장하지 않는다. 현 센서셋에 없는 LiDAR/GPS/IMU를 기다리는 다른 프로파일을 기본으로 쓰지 않는다.
 
 <a id="packages"></a>
-## 5. 상태·기어·지도·평가 — 강도균·김동현
+## 5. 주차: 상태·기어·GT·평가 — 강도균·김동현
 
 ### 상태 관측
 
+패키지 통합 이전 checkout을 사용했다면 컨테이너에서 `./scripts/build_ws.sh` 후 `source devel/setup.bash`를 한 번 실행한다. 상태·기어·GT·평가 코드는 `vip3_parking`에 모였으며 `/vehicle/*`, `/vip3_gear/set_gear` 이름은 유지한다.
+
 ```bash
 # 컨테이너: 관측만, External 모드 전환 없음
-roslaunch vip3_vehicle_state vehicle_state.launch start_gear_node:=false
+roslaunch vip3_parking vehicle.launch start_gear_node:=false
 rostopic echo -n 1 /vehicle/state
 rostopic echo -n 1 /vehicle/odom
 ```
@@ -245,9 +247,9 @@ rostopic echo -n 1 /vehicle/odom
 
 ```bash
 # 대체 실행: 기어 서비스까지 켬. 기본값은 External 제어 모드 전환 요청
-roslaunch vip3_vehicle_state vehicle_state.launch
+roslaunch vip3_parking vehicle.launch
 # External로 전환하지 않고 기어 노드를 준비할 때
-roslaunch vip3_vehicle_state vehicle_state.launch set_external_on_start:=false
+roslaunch vip3_parking vehicle.launch set_external_on_start:=false
 ```
 
 정차 상태에서 기어를 명시적으로 바꾸는 예:
@@ -262,7 +264,7 @@ rosservice call /vip3_gear/set_gear "{gear: 1}"  # P
 ### bringup과 TF
 
 ```bash
-# 상태 관측을 bringup으로 켜는 대안; 위 vehicle_state와 중복 실행하지 않음
+# 상태 관측을 bringup으로 켜는 대안; 위 vehicle.launch와 중복 실행하지 않음
 roslaunch vip3_bringup vip3_bringup.launch static_tf:=false gear_node:=false
 # MORAI가 카메라 TF를 발행하지 않는 별도 환경에서만
 roslaunch vip3_bringup static_tf.launch
@@ -270,32 +272,22 @@ roslaunch vip3_bringup static_tf.launch
 
 현재 MORAI의 `map→base_link`를 사용하며 `publish_map_tf` 기본값은 false다. 카메라 static TF도 같은 transform을 중복 발행하지 않는다. SVM만 볼 때는 이 bringup이 필요 없다.
 
-### GT 읽기와 지도 표시
+### GT 읽기
 
 ```bash
-# 호스트 저장소 루트 또는 컨테이너, ROS 없이도 가능 (NumPy 필요)
-python3 src/vip3_hd_map/scripts/inspect_katri_mgeo.py \
-  --map-dir src/vip3_hd_map/data/katri --check
+# 호스트 저장소 루트 또는 컨테이너, ROS·전체 도로망 없이 실행
+python3 tools/inspect_parking_gt.py
+python3 tools/inspect_parking_gt.py --id A5256W000008 --id A5256W000009
 ```
 
-주차면 31개를 확인한다. **GT-only 폴더는 전체 지도 RViz에 필요한 global_info/도로 레이어를 대신하지 않는다.** 전체 MGeo 자료를 갖춘 경우에만 다음을 쓴다. 과거 KATRI와 현재 K-City 2025의 원점 차이는 [데이터 문서](system/data.md)를 먼저 확인한다.
-
-```bash
-# 컨테이너, 해당 전체 맵 자료가 /data에 있을 때만
-roslaunch vip3_hd_map katri_map_viz.launch \
-  map_dir:="/data/KATRI 맵 데이터 자료" pose_source:=ego_status rviz:=false
-# 별도 GUI 터미널
-vip3-ros-gui rviz -d /root/ws/src/vip3_hd_map/rviz/katri_map_viz.rviz
-```
-
-`local_radius_m:=15.0`으로 근처만 볼 수 있다. `pose_source:=gps_imu`는 별도 GPS/IMU 센서를 추가·검증한 경우에만 사용하며 현재 센서셋에서는 동작 입력이 없다. 서로 다른 원점의 GT와 도로망을 검증 없이 한 폴더에 합치지 않는다.
+원본 해시·31개 레코드 수·points 기반 크기와 방향을 확인한다. `--id`는 배열 순번이 아닌 정확한 `idx`다. 출력 angle은 180° 대칭인 긴 변 방향이며 입구/전방 진입을 정하지 않는다. 제공 좌표는 변경하지 않으므로 차량 pose와의 정합은 [데이터 문서](system/data.md)에 따라 확인한다. 전체 도로망·차선·RViz 지도 표시는 제거했다.
 
 ### 평가 함수와 메시지
 
-`vip3_eval`은 launch/ROS 노드가 없는 Python 모듈이다. 실제 결과 데이터에 `evaluate_parking()`을 호출한다. 다음은 실행 확인용 테스트이며 실제 주차 성능 평가가 아니다.
+`vip3_parking.evaluation`은 ROS 없는 평가 모듈이다. 실제 결과 데이터에 `evaluate_parking()`을 호출한다. 다음은 실행 확인용 테스트이며 실제 주차 성능 평가가 아니다.
 
 ```bash
-PYTHONPATH=src/vip3_eval/src python3 -m unittest discover -s src/vip3_eval/test
+PYTHONPATH=src/vip3_parking/src python3 -m unittest discover -s src/vip3_parking/test
 rosmsg show vip3_msgs/VehicleState
 rossrv show vip3_msgs/SetGear
 rosmsg show morai_msgs/CtrlCmd
