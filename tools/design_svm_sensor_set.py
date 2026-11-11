@@ -8,24 +8,24 @@
 이 도구는 `drivable_bev` 런타임과 **같은 캘리브레이션 코드**로 후보 배치를 평가한다.
 따라서 여기서 좋게 나온 값은 BEV 에서도 같게 나온다.
 
-    # 현재 센서셋 평가
-    python3 tools/design_svm_sensor_set.py --sensor-set config/VIP3_sensor_set_v1_ros.json
+    # Git에서 복원한 과거 핀홀 센서셋 평가
+    python3 tools/design_svm_sensor_set.py --sensor-set /tmp/old-sensors.json
 
     # 제안 SVM 배치 평가 + 비교 + 그림
     python3 tools/design_svm_sensor_set.py --preset svm_v2 \
-        --compare config/VIP3_sensor_set_v1_ros.json --image /tmp/svm.png
+        --compare /tmp/old-sensors.json --image /tmp/svm.png
 
     # FOV·pitch 격자 탐색
     python3 tools/design_svm_sensor_set.py --sweep
 
     # MORAI 센서셋 JSON 으로 내보내기 (기존 파일을 템플릿으로 삼는다)
     python3 tools/design_svm_sensor_set.py --preset svm_v2 \
-        --export-sensor-set config/VIP3_sensor_set_v2_svm.json \
-        --template config/VIP3_sensor_set_v1_ros.json
+        --export-sensor-set /tmp/pinhole-candidate.json \
+        --template /tmp/old-sensors.json
 
-MORAI 카메라는 **핀홀**이다 (`f = w / (2*tan(fov/2))`). 진짜 어안(>=180 deg)이 아니라
-초광각 핀홀이므로 `drivable_bev` 의 호모그래피가 그대로 동작한다. 대신 화면 가장자리의
-지면 해상도가 급격히 떨어지는 것은 감수해야 한다 — 이 도구가 그걸 cm/px 로 보여준다.
+이 도구는 과거 **핀홀 후보**를 평가한다 (`f = w / (2*tan(fov/2))`). 현재 선택한
+MORAI FishEyeCamera에는 이 투영식을 적용하지 않는다. 현재 어안 SVM은 별도
+fisheye_svm.launch를 사용한다. 차량 제원과 노면 기준만 현재 공통 설정을 읽는다.
 """
 
 from __future__ import annotations
@@ -38,6 +38,7 @@ import sys
 from pathlib import Path
 
 import numpy as np
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 # drivable_bev 패키지의 __init__ 이 model_grid_projection 을 통해
@@ -50,34 +51,23 @@ sys.path.insert(
 from drivable_bev.calibration import CameraCalibration, GroundPlane  # noqa: E402
 from drivable_bev.grid import BevGridSpec  # noqa: E402
 from drivable_bev.homography import build_homography  # noqa: E402
+from drivable_bev.vehicle_geometry import vehicle_geometry  # noqa: E402
 
-# 차량 제원 (2023 Hyundai Ioniq5 기준, base_link = 뒷바퀴축 중심).
-# ⚠ VIP3 가 실제로 스폰하는 차량으로 확인 전까지 잠정값이다.
-VEHICLE = {
-    "length_m": 4.635,
-    "width_m": 1.890,
-    "wheelbase_m": 3.000,
-    "rear_overhang_m": 0.790,
-}
+VEHICLE_REFERENCE = yaml.safe_load((REPO_ROOT /
+    'src/perception/drivable_bev/config/vehicles/2023_hyundai_ioniq5.yaml').read_text())
+VEHICLE = VEHICLE_REFERENCE['documented_spec']
 FRONT_BUMPER_X = VEHICLE["length_m"] - VEHICLE["rear_overhang_m"]   # +3.845
 REAR_BUMPER_X = -VEHICLE["rear_overhang_m"]                          # -0.790
-HALF_WIDTH = 0.5 * VEHICLE["width_m"]                                # 0.945
+HALF_WIDTH = 0.5 * VEHICLE["width_m"]                                # 0.946
 
-GROUND = GroundPlane(
-    frame_id="base_link",
-    model="plane",
-    z_at_origin_m=-0.35,
-    dz_dx=0.0,
-    dz_dy=0.0,
-    source="provisional_asmc_carryover_20260923",
-)
+GROUND = GroundPlane(**vehicle_geometry(VEHICLE_REFERENCE)['ground_plane'])
 
 # SVM 평가 격자. 주차면 하나가 2.5 x 5.0 m 이므로 좌우 한 칸 + 앞뒤 한 칸이 들어간다.
 SVM_GRID = BevGridSpec(-6.0, 8.0, -5.0, 5.0, 0.05)
 
 PRESETS = {
-    # 지금 쓰는 임시 센서셋 (비교 기준)
-    "current": {
+    # 과거 임시 핀홀 센서셋 (비교 기준)
+    "legacy_v1": {
         "front": dict(width=1280, height=720, fov=90.0,
                       t=(1.900, 0.000, 1.200), rot=(0.0, 2.0, 0.0)),
         "left": dict(width=640, height=480, fov=130.0,
@@ -87,7 +77,7 @@ PRESETS = {
         "rear": dict(width=1280, height=720, fov=90.0,
                      t=(-0.100, 0.000, 1.200), rot=(0.0, 2.0, 180.0)),
     },
-    # 권장 SVM 배치. 근거는 README / docs/sensors.md §5.
+    # 권장 SVM 배치. 근거는 README / docs/system/sensors.md.
     # 4:3 은 같은 수평 FOV 에서 수직 화각을 16:9 보다 6~8 deg 더 준다. 지면을
     # 얼마나 아래까지 보는지가 SVM 의 전부라 종횡비가 FOV 만큼 중요하다.
     "svm_v2": {
@@ -211,6 +201,8 @@ def cameras_from_preset(preset: dict) -> dict:
 
 def cameras_from_sensor_set(path: Path) -> dict:
     document = json.loads(Path(path).read_text(encoding="utf-8"))
+    if any(row['cc'].get('modelType') == 2 for row in document.get('cameraList', [])):
+        raise ValueError('Historical pinhole tool cannot evaluate the current fisheye preset')
     names = {1: "front", 2: "left", 3: "right", 4: "rear"}
     cameras = {}
     for sensor in document.get("cameraList", []):
@@ -559,8 +551,7 @@ def main() -> None:
     parser.add_argument("--sweep", action="store_true")
     parser.add_argument("--image", type=Path)
     parser.add_argument("--export-sensor-set", type=Path)
-    parser.add_argument("--template", type=Path,
-                        default=REPO_ROOT / "config" / "VIP3_sensor_set_v1_ros.json")
+    parser.add_argument("--template", type=Path, help="Explicit historical pinhole template for export")
     arguments = parser.parse_args()
 
     if arguments.sweep:
@@ -575,7 +566,7 @@ def main() -> None:
         target = (f"preset: {arguments.preset}",
                   cameras_from_preset(PRESETS[arguments.preset]))
     else:
-        target = ("preset: current (임시 센서셋)", cameras_from_preset(PRESETS["current"]))
+        parser.error("Choose an explicit historical --preset or --sensor-set; current MORAI uses fisheye_svm.launch")
 
     if arguments.compare:
         report(f"[비교 기준] {arguments.compare}",
@@ -586,8 +577,8 @@ def main() -> None:
     if arguments.image:
         render(result, target[1], arguments.image)
     if arguments.export_sensor_set:
-        if not arguments.preset:
-            parser.error("--export-sensor-set 은 --preset 과 함께 쓴다")
+        if not arguments.preset or not arguments.template:
+            parser.error("--export-sensor-set requires --preset and an explicit --template")
         export_sensor_set(PRESETS[arguments.preset], arguments.template,
                           arguments.export_sensor_set)
 

@@ -6,11 +6,11 @@ VIP3는 UDP를 쓰지 않는다. MORAI Sensor 설정을 전부 ROS로 바꾸고 
 
 사용법:
     python3 tools/make_ros_sensor_set.py \
-        --input  "../data/VIP3_sensor_set_v1.json" \
-        --output "config/VIP3_sensor_set_v1_ros.json"
+        --input  "../data/reference/morai_exports/261110/261110_VIP3_Sensor_26.R1.H3.json" \
+        --output "../data/local_morai/sensors_candidate.json"
 
 주의: `--comm-type`(ROS를 가리키는 MORAI enum 값)은 시뮬레이터 UI에서 한 번
-확인한다. 네트워크 설정(VIP3_network_v1.json)의 ROS 항목이 netType/commType=3을
+확인한다. 네트워크 설정(config/morai/261110_VIP3_Network_26.R1.H3.json)의 ROS 항목이 netType/commType=3을
 쓰므로 기본값도 3이다. UI에서 ROS로 저장한 센서셋과 값이 다르면 그 값을 넘긴다.
 """
 
@@ -20,16 +20,14 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import yaml
 
 
 # m_SensorUniqueID -> (역할, MORAI Topic 필드, frame_id)
-# 카메라 Topic 은 MORAI 가 `/compressed` 를 붙여 CompressedImage 로 발행한다.
-CAMERA_PLAN = {
-    1: ("front", "/cam_front/image_jpeg", "cam_front"),
-    2: ("left", "/cam_left/image_jpeg", "cam_left"),
-    3: ("right", "/cam_right/image_jpeg", "cam_right"),
-    4: ("rear", "/cam_rear/image_jpeg", "cam_rear"),
-}
+# IDs and full topic names follow the current contract, including the rear camera ID.
+CONTRACT = yaml.safe_load((Path(__file__).resolve().parents[1] / 'config/ros/topics.yaml').read_text())
+CAMERA_PLAN = {camera['sensor_id']: (view, camera['topic'], camera['frame_id'])
+               for view, camera in CONTRACT['cameras'].items()}
 
 # 리스트 이름 -> (설정 키, 기본 Topic, 기본 frame_id)
 OTHER_PLAN = {

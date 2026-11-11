@@ -64,6 +64,8 @@ def main() -> int:
         tree = ET.parse(launch).getroot()
         args = {a.get("name"): (a.get("default") or a.get("value") or "")
                 for a in tree.iter("arg")}
+        required_args = {a.get("name") for a in tree.findall("arg")
+                         if a.get("default") is None and a.get("value") is None}
         for node in tree.iter("node"):
             script = node.get("type", "")
             if not script.endswith(".py"):
@@ -87,7 +89,8 @@ def main() -> int:
                     namespace = (rosparam.get("ns") or "").strip("/")
                     for key in document:
                         given.add("{}/{}".format(namespace, key) if namespace else str(key))
-                elif rosparam.get("file"):
+                elif rosparam.get("file") and not any(
+                        '$(arg {})'.format(name) in rosparam.get('file') for name in required_args):
                     errors.append("{}: rosparam file 을 찾을 수 없다 -> {}".format(
                         launch.relative_to(REPO_ROOT), rosparam.get("file")))
             missing = sorted(read - given)

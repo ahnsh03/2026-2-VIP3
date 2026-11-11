@@ -90,7 +90,7 @@ class KatriMapVizNode:
         if missing:
             rospy.logwarn(
                 "원본 export 에 있었으나 전달되지 않은 파일 %d 개: %s — "
-                "MORAI 에 요청할 것 (docs/katri-map.md §1)",
+                "MORAI 에 요청할 것 (docs/system/data.md)",
                 len(missing),
                 [row["file"] for row in missing],
             )
@@ -402,7 +402,7 @@ class KatriMapVizNode:
         if delta > 1.0:
             rospy.logerr(
                 "GPS 원점과 MGeo 원점이 %.1f m 다르다. GPS (%.3f, %.3f) vs MGeo "
-                "(%.3f, %.3f). 맵과 차량이 다른 좌표계에 있다 (docs/katri-map.md §3).",
+                "(%.3f, %.3f). 맵과 차량이 다른 좌표계에 있다 (docs/system/data.md).",
                 delta,
                 offsets[0],
                 offsets[1],
@@ -428,7 +428,7 @@ class KatriMapVizNode:
                 rospy.logwarn(
                     "첫 ego pose (%.1f, %.1f) 가 가장 가까운 링크에서 %.1f m 떨어져 있다. "
                     "/Ego_topic 의 원점이 MGeo local frame 과 다를 수 있다 "
-                    "(docs/katri-map.md §3).",
+                    "(docs/system/data.md).",
                     ego_xy[0],
                     ego_xy[1],
                     distance,

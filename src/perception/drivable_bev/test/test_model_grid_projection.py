@@ -16,7 +16,7 @@ class ModelGridProjectionTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         _, cls.cameras = load_calibration_snapshot(
-            PACKAGE_ROOT / "config" / "cameras_vip3_v1.yaml"
+            PACKAGE_ROOT / "test" / "fixtures" / "pinhole_cameras.yaml"
         )
 
     def _single_point(self, view, ground_xy, source_mask):

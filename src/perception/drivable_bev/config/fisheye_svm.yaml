@@ -1,0 +1,133 @@
+# INITIAL GUESS, NOT MORAI calibration: f=width/FOV_rad, D=0.
+# Vehicle geometry is loaded separately; lens and occlusion still require calibration.
+# Preview only; do not train/evaluate SS-PSD with this output before calibration.
+calibration_status: uncalibrated_equidistant_initialization
+source_sensor_preset: config/morai/261110_VIP3_Sensor_26.R1.H3.json
+projection_model: opencv_fisheye
+output_size: 512
+extent_m: 10.0
+vehicle_geometry_file: vehicles/2023_hyundai_ioniq5.yaml
+publish_hz: 5.0
+max_age_s: 0.5
+sync_slop_s: 0.06
+cameras:
+  front:
+    sensor_id: 1
+    topic: /cam_front/image_jpeg/compressed
+    frame_id: cam_front
+    width: 1280
+    height: 960
+    translation_m:
+    - 3.85
+    - 0.0
+    - 0.3
+    rotation_deg:
+    - 0.0
+    - 35.0
+    - 0.0
+    K:
+    - - 409.71283674159423
+      - 0
+      - 640.0
+    - - 0
+      - 409.71283674159423
+      - 480.0
+    - - 0
+      - 0
+      - 1
+    D:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    max_ray_angle_deg: 89.5
+  rear:
+    sensor_id: 2
+    topic: /cam_rear/image_jpeg/compressed
+    frame_id: cam_rear
+    width: 1280
+    height: 960
+    translation_m:
+    - -0.8
+    - 0.0
+    - 0.3
+    rotation_deg:
+    - 0.0
+    - 35.0
+    - 180.0
+    K:
+    - - 409.71283674159423
+      - 0
+      - 640.0
+    - - 0
+      - 409.71283674159423
+      - 480.0
+    - - 0
+      - 0
+      - 1
+    D:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    max_ray_angle_deg: 89.5
+  left:
+    sensor_id: 3
+    topic: /cam_left/image_jpeg/compressed
+    frame_id: cam_left
+    width: 1280
+    height: 960
+    translation_m:
+    - 2.1
+    - 1.05
+    - 0.7
+    rotation_deg:
+    - 0.0
+    - 45.0
+    - 90.0
+    K:
+    - - 409.71283674159423
+      - 0
+      - 640.0
+    - - 0
+      - 409.71283674159423
+      - 480.0
+    - - 0
+      - 0
+      - 1
+    D:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    max_ray_angle_deg: 89.5
+  right:
+    sensor_id: 4
+    topic: /cam_right/image_jpeg/compressed
+    frame_id: cam_right
+    width: 1280
+    height: 960
+    translation_m:
+    - 2.1
+    - -1.05
+    - 0.7
+    rotation_deg:
+    - 0.0
+    - 45.0
+    - 270.0
+    K:
+    - - 409.71283674159423
+      - 0
+      - 640.0
+    - - 0
+      - 409.71283674159423
+      - 480.0
+    - - 0
+      - 0
+      - 1
+    D:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    max_ray_angle_deg: 89.5

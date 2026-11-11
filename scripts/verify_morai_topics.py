@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """MORAI rosbridge 토픽 수신을 세고, 누락·저속 토픽이 있으면 실패로 끝낸다.
 
-기대 토픽/주기 표는 이 파일에 적지 않는다. 정본은 config/vip3_topics.yaml 이고
+기대 토픽/주기 표는 이 파일에 적지 않는다. 정본은 config/ros/topics.yaml 이고
 여기서는 그것을 읽기만 한다 (센서셋이 바뀌면 YAML 한 곳만 고치면 된다).
 
 컨테이너 안에서:
@@ -46,8 +46,8 @@ EGO_FORBIDDEN_FIELDS = ("wheel_angle",)
 
 
 def default_topics_config():
-    """<repo>/config/vip3_topics.yaml. 컨테이너(/root/ws)와 호스트 clone 모두에서 동작."""
-    return Path(__file__).resolve().parent.parent / "config" / "vip3_topics.yaml"
+    """<repo>/config/ros/topics.yaml. 컨테이너(/root/ws)와 호스트 clone 모두에서 동작."""
+    return Path(__file__).resolve().parent.parent / "config" / "ros" / "topics.yaml"
 
 
 def _hz_from_period(period):
@@ -61,7 +61,7 @@ def _hz_from_period(period):
 
 
 def load_topic_table(config_path):
-    """vip3_topics.yaml -> 검증용 토픽 표.
+    """topics.yaml -> 검증용 토픽 표.
 
     rospy 없이 동작한다(호스트에서 --list 로 확인 가능).
     반환: [{name, topic, msg_type, nominal_hz, groups}] 순서 고정.
@@ -141,11 +141,11 @@ def parse_args(argv=None):
     parser.add_argument("--min-messages", type=int, default=2)
     parser.add_argument(
         "--profile", choices=("runtime", "full", "cameras"), default="runtime",
-        help="runtime=필수 8개 / full=+선택 토픽 / cameras=카메라 4대만",
+        help="runtime=현재 계약의 필수 토픽 / full=+선택 토픽 / cameras=카메라만",
     )
     parser.add_argument(
         "--topics-config", default=str(default_topics_config()),
-        help="토픽·주기 정본 YAML (기본: config/vip3_topics.yaml)",
+        help="토픽·주기 정본 YAML (기본: config/ros/topics.yaml)",
     )
     parser.add_argument(
         "--required-topic", action="append", dest="required_topics",

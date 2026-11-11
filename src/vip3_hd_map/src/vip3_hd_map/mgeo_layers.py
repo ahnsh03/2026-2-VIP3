@@ -34,7 +34,7 @@ from .io_mgeo import load_json, sha256_file
 
 # ---------------------------------------------------------------------------
 # NGII 코드 라벨. 측정 근거가 확실한 것만 확정 라벨을 주고, 나머지는 UNVERIFIED_ 를
-# 붙여 정직하게 둔다. 근거는 docs/map 의 KATRI MGeo 문서와 inspect_katri_mgeo.py 출력.
+# 붙여 정직하게 둔다. 근거는 docs/system/data.md와 inspect_katri_mgeo.py 출력.
 # ---------------------------------------------------------------------------
 LANE_TYPE_LABEL = {
     501: ("center_line", "중앙선"),                    # yellow solid, 최대 1146 m

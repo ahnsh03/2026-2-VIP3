@@ -1,0 +1,59 @@
+# 현재 센서와 SVM
+
+## 실행 정본
+
+- MORAI Import: [센서](../../config/morai/261110_VIP3_Sensor_26.R1.H3.json), [네트워크](../../config/morai/261110_VIP3_Network_26.R1.H3.json)
+- 토픽·프레임 계약: [topics.yaml](../../config/ros/topics.yaml)
+- 합성 설정: [fisheye_svm.yaml](../../src/perception/drivable_bev/config/fisheye_svm.yaml)
+- 차량 치수·지면: [2023_hyundai_ioniq5.yaml](../../src/perception/drivable_bev/config/vehicles/2023_hyundai_ioniq5.yaml)
+- 차량 그림: [ioniq5_top_view.png](../../src/perception/drivable_bev/config/vehicles/ioniq5_top_view.png)
+
+프리셋 이름은 **`YYMMDD_VIP3_Sensor/Network_모라이버전.json`**을 따른다. `261110`은 현재 export 날짜다. 새 버전으로 바꾸면 참조 경로도 갱신하고 이전 실행 프리셋은 Git 이력에만 남긴다. PC별 주소·포트 변경본은 로컬 `data/local_morai/`에 생성한다.
+
+## 카메라 배치
+
+공통: **FishEyeCamera, 1280×960, Horizontal FOV 179°, 10Hz, JPEG 품질 90**. 현재 센서셋에는 LiDAR·GPS·IMU가 없다. 아래 위치는 지면이 아니라 `base_link` 기준이며, 회전은 MORAI UI의 Roll/Pitch/Yaw(deg)다.
+
+| ID / view | x, y, z (m) | Roll, Pitch, Yaw | frame |
+|---|---|---|---|
+| 1 front | 3.85, 0, 0.30 | 0, 35, 0 | `cam_front` |
+| 2 rear | −0.80, 0, 0.30 | 0, 35, 180 | `cam_rear` |
+| 3 left | 2.10, 1.05, 0.70 | 0, 45, 90 | `cam_left` |
+| 4 right | 2.10, −1.05, 0.70 | 0, 45, 270 | `cam_right` |
+
+각 입력은 `/cam_<view>/image_jpeg/compressed`다. 카메라 수만으로 차량 바로 옆 지면의 관측을 보장할 수 없으므로 네 모서리, 차체 옆 선, 겹침 구간을 확인한다.
+
+## 차량 치수와 검증 범위
+
+| 항목 | 적용 값 |
+|---|---:|
+| 전장 / 차체 폭 | 4.635 / 1.892m |
+| 휠베이스 / 전방·후방 오버행 | 3.000 / 0.845·0.790m |
+| 차체 x 범위 / y 범위 | [−0.790, 3.845] / ±0.946m |
+| 차량 중심 x | 1.5275m |
+| base_link의 지면 위 높이 | 0.35m; 현재 지면 z=−0.35m |
+| 최대 휠 각 / 제원 최소 회전 반경 | 40° / 5.87m |
+
+2026-11-11 설치된 `hyundai_ioniq5.vehicle`(v.R1.260701.H3)와 K-City 2025 collision mesh를 읽고, 정차 TF 222표본의 위치와 지면을 대조했다. 그 장소의 높이는 약 **0.3513m**여서 0.35m를 반올림 기준으로 사용한다. **휠 반경 0.36m와는 다른 값**이며, 다른 위치의 경사·주행 중 차체 높이까지 검증한 값은 아니다.
+
+제원표 높이 2.434m와 설치 에셋 bbox 높이 약 1.644m는 불일치한다. 센서 높이에 전고를 사용하지 않는다. 에셋 전체 bbox 폭 약 2.161m에는 거울 등 돌출부가 포함되므로 차체 마스크 폭과 구분한다. 최소 회전 반경의 측정 기준은 명확하지 않아 후륜축 자전거 모델 반경과 그대로 동일시하지 않는다.
+
+원자료 출처는 차량 YAML에 남겼다. 상세 로컬 측정 보고서는 `docs/experiments/261110-261111-svm/analysis/vehicle-geometry-261111.json`, 공유 이력은 정리 이전 커밋 `a5d1665`의 `docs/analysis/vehicle-geometry-261111.json`에서 확인할 수 있다.
+
+## SVM 상태와 다음 보정
+
+현재 출력은 **10×10m, 512×512, 목표 5Hz**다. 차량 중심 x=1.5275m를 영상 중심에 둔다. 픽셀 중심 `(row, col)`의 차량 좌표는 다음과 같다.
+
+```text
+x = 1.5275 + 5 − (row + 0.5) × 10 / 512
+y =          5 − (col + 0.5) × 10 / 512
+```
+
+렌즈는 OpenCV fisheye 모델, 초기 K의 f≈409.7128px, D=0이다. **MORAI 렌즈를 실측 보정한 값이 아니다.** 차체 마스크는 위 차체 직사각형이며 차량 그림은 시각화용이다. 그림·마스크를 꺼도 valid mask의 차량 관측 불가 영역은 유지한다.
+
+차량 그림은 물리 치수와 후륜축 기준으로 배치하고 픽셀 반올림 오차를 줄였다. 이전 전방 범퍼 배치 보정은 그림 정렬에 대한 수정이며, 시뮬 주차선과 SVM 지면 좌표의 정합 완료를 뜻하지 않는다.
+
+1. [마스크·그림 해제 명령](../commands.md#svm)으로 앞·뒤·옆 주차선을 확인한다.
+2. 가까운 지면 대응점을 각 뷰와 겹침 구간에서 고르고 위치 잔차를 m 단위로 남긴다. 원근이 있는 시뮬 탑뷰 화면의 겉보기 크기만으로 차체를 늘리지 않는다.
+3. 카메라 K/D·pitch·지면 평면을 검토하고, 보정에 쓰지 않은 지점에서도 오차를 확인한다. 시각화 그림과 투영 파라미터 변경을 분리해 기록한다.
+4. 보정 버전과 입력 시각을 보존하는 clean BEV export/ROS 토픽을 추가한 후 SS-PSD 입력으로 연결한다.

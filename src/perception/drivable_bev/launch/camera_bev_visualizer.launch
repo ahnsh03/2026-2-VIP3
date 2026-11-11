@@ -5,7 +5,8 @@
   <arg name="secondary_head" default="lane"/>
   <arg name="publish_per_view_mosaic" default="true"/>
   <arg name="bev_grid_config" default="$(find drivable_bev)/config/bev_grid.yaml"/>
-  <arg name="camera_config" default="$(find drivable_bev)/config/cameras_vip3_v1.yaml"/>
+  <!-- Legacy pinhole path: supply an explicit calibrated pinhole config. Use fisheye_svm.launch for MORAI. -->
+  <arg name="camera_config"/>
   <arg name="visualization_config"
        default="$(find drivable_bev)/config/visualization.yaml"/>
 

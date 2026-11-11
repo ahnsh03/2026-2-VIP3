@@ -4,7 +4,7 @@
 계산은 전부 `vip3_vehicle_state` 라이브러리(rospy 비의존)에 있고 여기는 배선만 한다.
 
 TF 주의: MORAI 가 `/tf` 로 map->base_link 를 50 Hz 로 이미 쏜다
-(VIP3_network_v1.json 의 TF2Publisher). 그래서 `~publish_map_tf` 기본값은 false 다.
+(config/morai/261110_VIP3_Network_26.R1.H3.json 의 TF2Publisher). 그래서 `~publish_map_tf` 기본값은 false 다.
 켜면 같은 변환을 두 곳에서 쏘게 되어 RViz 에서 떨림이 생긴다 — 노드가 경고한다.
 """
 

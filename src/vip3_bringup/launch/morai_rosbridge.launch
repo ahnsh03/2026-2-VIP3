@@ -1,0 +1,22 @@
+<launch>
+  <arg name="port" default="9090"/>
+  <arg name="address" default="0.0.0.0"/>
+  <arg name="max_message_size" default="100000000"/>
+  <arg name="fragment_timeout" default="60"/>
+  <arg name="unregister_timeout" default="10"/>
+  <arg name="monitor" default="true"/>
+  <arg name="monitor_interval" default="5"/>
+  <arg name="monitor_stale_after" default="2"/>
+  <arg name="topics_config" default="$(optenv VIP3_WS_ROOT /root/ws)/config/ros/topics.yaml"/>
+
+  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+    <arg name="port" value="$(arg port)"/>
+    <arg name="address" value="$(arg address)"/>
+    <arg name="max_message_size" value="$(arg max_message_size)"/>
+    <arg name="fragment_timeout" value="$(arg fragment_timeout)"/>
+    <arg name="unregister_timeout" value="$(arg unregister_timeout)"/>
+  </include>
+  <node if="$(arg monitor)" pkg="vip3_bringup" type="morai_topic_monitor.py"
+        name="vip3_morai_topic_monitor" output="screen" required="true"
+        args="--topics-config &quot;$(arg topics_config)&quot; --interval $(arg monitor_interval) --stale-after $(arg monitor_stale_after)"/>
+</launch>

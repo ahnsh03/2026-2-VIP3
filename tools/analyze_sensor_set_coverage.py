@@ -12,7 +12,7 @@
 
 사용법:
     python3 tools/analyze_sensor_set_coverage.py \
-        --sensor-set "../data/VIP3_sensor_set_v1.json" \
+        --sensor-set "/tmp/old-sensors.json" \
         --image /tmp/coverage.png
 
 렌즈 왜곡(fisheye)은 모델링하지 않는다. 핀홀 FOV 기준이므로 fisheye 후보를 볼 때는
@@ -92,6 +92,8 @@ class Camera:
 
 def load_cameras(path: Path, names: dict[int, str]) -> list[Camera]:
     document = json.loads(Path(path).read_text(encoding="utf-8"))
+    if any(row['cc'].get('modelType') == 2 for row in document.get('cameraList', [])):
+        raise ValueError('Pinhole coverage cannot evaluate the current fisheye preset')
     cameras = []
     for sensor in document.get("cameraList", []):
         sensor_id = int(sensor["m_SensorUniqueID"])

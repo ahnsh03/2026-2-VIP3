@@ -86,12 +86,14 @@ echo "  VIP3_WS_ROOT   : $VIP3_WS_ROOT"
 echo "  ROS_MASTER_URI : $ROS_MASTER_URI"
 echo "  Listening      : ${BRIDGE_BIND}:${BRIDGE_PORT}"
 echo "  morai_msgs     : 26.R1 (4c9be6f)"
+echo "  Sensor logs    : ${MORAI_TOPIC_MONITOR}, every ${MORAI_TOPIC_LOG_INTERVAL}s (receive Hz / last receipt)"
 echo ""
 echo "  MORAI(Windows) 설정:"
 echo "    Network Setup  : ROS,  ws://127.0.0.1:${BRIDGE_PORT}  → Connect"
-echo "    Sensor  Setup  : VIP3_sensor_set_v1 (전 센서 ROS, 토픽 명시)"
+echo "    Sensor  Setup  : config/morai/261110_VIP3_Sensor_26.R1.H3.json (4 fisheye cameras)"
+echo "    Host port     : Docker publish 포트와 bridge 포트를 동일하게 사용"
 echo "    Ego Ctrl       : /ctrl_cmd  (morai_msgs/CtrlCmd, front_steer 사용)"
-echo "    Map/Scenario   : R_KR_PG_KATRI"
+echo "    Map/Scenario   : R_KR_PR_K-city_2025"
 echo ""
 echo "  검증: ./scripts/verify_morai_topics.py --duration 8"
 echo "=========================================="
@@ -100,26 +102,16 @@ echo ""
 _ensure_rosbridge
 _ensure_morai_msgs
 
-if ! rostopic list >/dev/null 2>&1; then
-  echo "[rosbridge] roscore 기동 중..."
-  roscore &
-  ROSCORE_PID=$!
-  for _ in $(seq 1 15); do
-    rostopic list >/dev/null 2>&1 && break
-    sleep 1
-  done
-  if ! rostopic list >/dev/null 2>&1; then
-    echo "[rosbridge] ERROR: roscore 기동 실패."
-    kill "$ROSCORE_PID" 2>/dev/null || true
-    exit 1
-  fi
-  echo "[rosbridge] roscore 준비 완료."
-fi
-
+# roslaunch owns the bridge and monitor, and starts a master if needed. Ctrl+C
+# stops this launch's children; an already-running external master is preserved.
 echo "rosbridge 기동 (port ${BRIDGE_PORT})..."
-exec roslaunch rosbridge_server rosbridge_websocket.launch \
+exec roslaunch vip3_bringup morai_rosbridge.launch \
   port:="${BRIDGE_PORT}" \
   address:="${BRIDGE_BIND}" \
   max_message_size:="${MORAI_ROSBRIDGE_MAX_MESSAGE_SIZE:-100000000}" \
   fragment_timeout:="${MORAI_ROSBRIDGE_FRAGMENT_TIMEOUT:-60}" \
-  unregister_timeout:="${MORAI_ROSBRIDGE_UNREGISTER_TIMEOUT:-10}"
+  unregister_timeout:="${MORAI_ROSBRIDGE_UNREGISTER_TIMEOUT:-10}" \
+  monitor:="${MORAI_TOPIC_MONITOR}" \
+  monitor_interval:="${MORAI_TOPIC_LOG_INTERVAL}" \
+  monitor_stale_after:="${MORAI_TOPIC_STALE_AFTER}" \
+  topics_config:="${VIP3_WS_ROOT}/config/ros/topics.yaml"

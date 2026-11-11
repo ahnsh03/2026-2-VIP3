@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""저장소의 ROS 토픽 문자열이 `config/vip3_topics.yaml` 계약과 맞는지 검사한다.
+"""저장소의 ROS 토픽 문자열이 `config/ros/topics.yaml` 계약과 맞는지 검사한다.
 
 ASMC 에서 이식할 때 가장 조용히 틀리는 것이 토픽 이름이다. 노드는 멀쩡히 뜨고
 구독만 안 돼서 시뮬레이터를 켜기 전에는 알 수가 없다.
@@ -31,7 +31,7 @@ from pathlib import Path
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-CONTRACT = REPO_ROOT / "config" / "vip3_topics.yaml"
+CONTRACT = REPO_ROOT / "config" / "ros" / "topics.yaml"
 SELF = Path(__file__).resolve()
 
 SEARCH_DIRS = ("src", "scripts", "tools")
@@ -53,7 +53,7 @@ NOT_TOPICS = {"/use_sim_time", "/rosbridge_websocket", "/clock", "/rosout"}
 
 FORBIDDEN = {
     "/image_jpeg/compressed": "ASMC 전방 카메라. VIP3 는 /cam_front/image_jpeg/compressed",
-    "/cam_extra/image_jpeg/compressed": "ASMC 하향 카메라. VIP3 4번은 후방이다",
+    "/cam_extra/image_jpeg/compressed": "ASMC 하향 카메라. VIP3는 방향별 cam_* 토픽을 쓴다",
     "/velodyne_points_instance": "Instance LiDAR GT. VIP3 센서셋에 없다",
     "/Competition_topic": "대회 전용",
     "/lidar3D": "MORAI 기본 이름. VIP3 는 /velodyne_points 로 통일",
@@ -71,6 +71,8 @@ def contract_topics() -> set:
             topics.add(topic[: -len("/compressed")])
     for sensor in (document.get("sensors") or {}).values():
         topics.add(sensor["topic"])
+    for sensor in (document.get("reserved_sensors") or {}).values():
+        topics.add(sensor["topic"])
     network = document.get("network") or {}
     for group in ("subscribe", "publish", "missing"):
         for entry in (network.get(group) or {}).values():
@@ -85,15 +87,19 @@ def contract_topics() -> set:
 
 
 def network_preset_topics() -> set:
-    """VIP3_network_v1.json 에 실제로 설정된 토픽. MORAI 가 아는 이름이므로 허용한다."""
-    path = REPO_ROOT / "config" / "VIP3_network_v1.json"
+    """현재 네트워크 프리셋에 실제로 설정된 ROS 토픽. MORAI 가 아는 이름이므로 허용한다."""
+    contract = yaml.safe_load(CONTRACT.read_text(encoding="utf-8"))
+    path = REPO_ROOT / contract["presets"]["network"]
     if not path.is_file():
         return set()
     document = json.loads(path.read_text(encoding="utf-8"))
     topics = set()
     for ego in document.get("egoNetworkData", []):
         for info in ego.get("listEgoNetworkInfo", []):
-            topic = ((info.get("config") or {}).get("rosConfig") or {}).get("Topic", "")
+            config = info.get("EgoCtrlConfig") if info.get("PUBSUB_TYPE") == 771 else info.get("config")
+            if not config or config.get("commType") != 3:
+                continue
+            topic = (config.get("rosConfig") or {}).get("Topic", "")
             if topic.startswith("/") and topic != "/dafault_topic":
                 topics.add(topic)
     return topics
@@ -139,7 +145,8 @@ def scan_code() -> dict:
 def scan_sensor_sets() -> dict:
     """센서셋 JSON 의 rosConfig.Topic 만 구조로 읽는다 (ros2NativeConfig 는 무시)."""
     found = {}
-    for path in sorted((REPO_ROOT / "config").glob("VIP3_sensor_set_*.json")):
+    contract = yaml.safe_load(CONTRACT.read_text(encoding="utf-8"))
+    for path in [REPO_ROOT / contract['presets']['sensors']]:
         document = json.loads(path.read_text(encoding="utf-8"))
         for key in ("cameraList", "Lidar3DList", "GPSList", "IMUList"):
             for sensor in document.get(key, []):

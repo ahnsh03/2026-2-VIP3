@@ -5,7 +5,7 @@ ASMC drivable_bev 는 전방 3대로만 돌았다. VIP3 는 후방 카메라를 
 핵심 뷰다. 이 파일은 "후방이 조용히 빈 BEV 를 내보내는" 회귀를 잡는다.
 
 여기서 깨지면 의심할 곳은 세 군데다.
-  1. cameras_vip3_v1.yaml 의 rear rotation_deg yaw 값 (180 이어야 한다)
+  1. pinhole_cameras.yaml 의 rear rotation_deg yaw 값 (180 이어야 한다)
   2. ground_plane.z_at_origin_m 부호
   3. MORAI pitch 부호 규약 (양수 = 렌즈 아래)
 """
@@ -25,7 +25,7 @@ from drivable_bev.homography import build_homography
 from drivable_bev.projector import CameraBevProjector
 
 PACKAGE_ROOT = Path(__file__).resolve().parents[1]
-SNAPSHOT = PACKAGE_ROOT / "config" / "cameras_vip3_v1.yaml"
+SNAPSHOT = PACKAGE_ROOT / "test" / "fixtures" / "pinhole_cameras.yaml"
 GRID = BevGridSpec(-10.0, 10.0, -8.0, 8.0, 0.05)
 
 
@@ -81,7 +81,7 @@ class RearCameraGeometryTest(unittest.TestCase):
     def test_near_field_blind_disc_is_documented(self):
         """차 바로 주변이 사각인 것은 버그가 아니라 임시 센서셋의 성질이다.
 
-        docs/sensors.md §4 가 이 수치의 근거다. 센서셋을 개선하면 이 테스트의
+        test/fixtures/pinhole_cameras.yaml 가 이 수치의 근거다. 센서셋을 개선하면 이 테스트의
         상한을 올리고 문서도 같이 고친다.
         """
         stack = [
@@ -96,7 +96,7 @@ class RearCameraGeometryTest(unittest.TestCase):
         self.assertLess(
             union[near].mean(),
             0.30,
-            "근거리 가시율이 올라갔다면 센서셋이 바뀐 것이다. docs/sensors.md 를 갱신하라",
+            "근거리 가시율이 올라갔다면 센서셋이 바뀐 것이다. docs/system/sensors.md 를 갱신하라",
         )
 
     def test_rear_view_is_not_penalised_by_the_fusion_prior(self):

@@ -4,8 +4,8 @@
 ASMC 원본은 Instance LiDAR(`/velodyne_points_instance`) 스키마 검사가 큰 비중이었다.
 VIP3 센서셋에는 Instance LiDAR 가 없으므로 그 부분은 전부 걷어냈다.
 
-카메라 목표 rate 는 `--camera-min-hz` 로 준다. 기본 8 Hz 인 이유는 rosbridge 가
-20 Hz x 4대를 못 버틸 가능성이 높아서다 (docs/simulator.md §5). 실측한 뒤 올린다.
+카메라 목표 rate 는 `--camera-min-hz` 로 준다. 현재 4어안 설정은 각 10 Hz이며
+기본 검사 하한은 8 Hz다 (docs/commands.md#bridge). 실제 수신 조건과 함께 해석한다.
 """
 
 from __future__ import print_function
@@ -21,9 +21,9 @@ import sys
 import rosbag
 
 
-# RGB <-> Semantic 시각 정합 검사. semantic 카메라는 강도균 파트가 붙인 뒤에만 존재하므로
-# 한쪽이 없으면 그 쌍은 조용히 건너뛴다 (semantic_gt bag 에서만 검사된다).
-# 토픽 이름은 config/vip3_topics.yaml 과 bag_profiles/semantic_gt.yaml 을 따른다.
+# RGB <-> Semantic 시각 정합 검사. 현재 센서셋에는 semantic 카메라가 없으며,
+# 한쪽이 없으면 그 쌍은 건너뛴다 (기존 semantic_gt bag용 선택 검사).
+# 토픽 이름은 config/ros/topics.yaml 과 bag_profiles/semantic_gt.yaml 을 따른다.
 VIEWS = ("front", "left", "right", "rear")
 PAIR_LIMITS_MS = {
     "rgb_sem_{}".format(view): (
@@ -199,7 +199,7 @@ def main():
     parser.add_argument("--strict", action="store_true", help="exit 2 when any applicable gate fails")
     parser.add_argument(
         "--camera-min-hz", type=float, default=8.0,
-        help="카메라 rate 게이트 (기본 8). rosbridge 실측 뒤 올린다 — docs/simulator.md 5절",
+        help="카메라 rate 게이트 (기본 8). rosbridge 실측 뒤 올린다 — docs/commands.md#bridge",
     )
     args = parser.parse_args()
     try:

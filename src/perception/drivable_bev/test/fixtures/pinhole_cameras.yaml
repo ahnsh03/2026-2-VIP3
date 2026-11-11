@@ -1,0 +1,86 @@
+# Test-only pinhole geometry. Not a MORAI import or current calibration.
+source_sensor_set: synthetic_sensor.json
+ground_plane:
+  frame_id: base_link
+  model: plane
+  z_at_origin_m: -0.35
+  dz_dx: 0.0
+  dz_dy: 0.0
+  source: synthetic_pinhole_regression
+cameras:
+  front:
+    sensor_id: 1
+    width: 1280
+    height: 720
+    horizontal_fov_deg: 90.0
+    translation_m:
+    - 1.9
+    - 0.0
+    - 1.2
+    rotation_deg:
+    - 0.0
+    - 2.0
+    - 0.0
+    topics:
+      image: /cam_front/image_jpeg/compressed
+      drivable: /perception/camera/front/drivable/probability
+      lane: /perception/camera/front/lane/probability
+      road_marking: /perception/camera/front/road_marking/class_id
+      road_marking_confidence: /perception/camera/front/road_marking/confidence
+  left:
+    sensor_id: 2
+    width: 640
+    height: 480
+    horizontal_fov_deg: 130.0
+    translation_m:
+    - 1.15
+    - 0.65
+    - 1.2
+    rotation_deg:
+    - 0.0
+    - 10.0
+    - 70.0
+    topics:
+      image: /cam_left/image_jpeg/compressed
+      drivable: /perception/camera/left/drivable/probability
+      lane: /perception/camera/left/lane/probability
+      road_marking: /perception/camera/left/road_marking/class_id
+      road_marking_confidence: /perception/camera/left/road_marking/confidence
+  right:
+    sensor_id: 3
+    width: 640
+    height: 480
+    horizontal_fov_deg: 130.0
+    translation_m:
+    - 1.15
+    - -0.65
+    - 1.2
+    rotation_deg:
+    - 0.0
+    - 10.0
+    - -70.0
+    topics:
+      image: /cam_right/image_jpeg/compressed
+      drivable: /perception/camera/right/drivable/probability
+      lane: /perception/camera/right/lane/probability
+      road_marking: /perception/camera/right/road_marking/class_id
+      road_marking_confidence: /perception/camera/right/road_marking/confidence
+  rear:
+    sensor_id: 4
+    width: 1280
+    height: 720
+    horizontal_fov_deg: 90.0
+    translation_m:
+    - -0.1
+    - 0.0
+    - 1.2
+    rotation_deg:
+    - 0.0
+    - 2.0
+    - 180.0
+    topics:
+      image: /cam_rear/image_jpeg/compressed
+      drivable: /perception/camera/rear/drivable/probability
+      lane: /perception/camera/rear/lane/probability
+      road_marking: /perception/camera/rear/road_marking/class_id
+      road_marking_confidence: /perception/camera/rear/road_marking/confidence

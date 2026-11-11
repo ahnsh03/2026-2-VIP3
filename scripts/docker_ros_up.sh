@@ -7,12 +7,13 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 COMPOSE_FILE="$REPO_ROOT/docker/ros-noetic/docker-compose.yaml"
 HOSTNET_FILE="$REPO_ROOT/docker/ros-noetic/docker-compose.hostnet.yaml"
 RTX50_FILE="$REPO_ROOT/docker/ros-noetic/docker-compose.rtx50.yaml"
-CONTAINER="vip3-ros-noetic"
+export VIP3_CONTAINER_NAME="${VIP3_CONTAINER_NAME:-vip3-parking-ros}"
+export VIP3_IMAGE="${VIP3_IMAGE:-vip3/parking-ros:noetic}"
+CONTAINER="$VIP3_CONTAINER_NAME"
 BRIDGE_PORT="${MORAI_BRIDGE_PORT:-9090}"
 
 export VIP3="${VIP3:-$REPO_ROOT}"
 export VIP3_DATA="${VIP3_DATA:-$(dirname "$REPO_ROOT")/data}"
-export TWINLITE_SOURCE="${TWINLITE_SOURCE:-$(dirname "$REPO_ROOT")/external/baselines/TwinLiteNetPlus}"
 mkdir -p "$VIP3_DATA"
 
 COMPOSE=(docker compose -f "$COMPOSE_FILE")
@@ -38,10 +39,12 @@ show_status() {
 # "컨테이너의 9090 이 호스트에서 보이는가" 하나다.
 check_bridge_port() {
   require_running
-  local mode
+  local mode actual_port
+  actual_port="$(docker exec "$CONTAINER" printenv MORAI_BRIDGE_PORT 2>/dev/null || true)"
+  BRIDGE_PORT="${actual_port:-$BRIDGE_PORT}"
   mode="$(docker inspect "$CONTAINER" --format '{{.HostConfig.NetworkMode}}')"
   if [ "$mode" = "host" ]; then
-    echo "[OK] host network mode — 컨테이너 포트가 곧 호스트 포트다"
+    echo "[INFO] host network mode — Docker Desktop에서는 Windows 도달 여부를 따로 확인"
   else
     docker inspect "$CONTAINER" --format '{{json .NetworkSettings.Ports}}' \
       | grep -q "\"${BRIDGE_PORT}/tcp\"" \
@@ -70,43 +73,55 @@ verify_topics() {
 }
 
 next_steps() {
-  cat <<'EOF'
+  cat <<EOF
 
 [다음] 컨테이너 터미널에서 rosbridge 를 띄우고 MORAI 를 연결한다.
-  docker exec -it vip3-ros-noetic bash
+  docker exec -it ${CONTAINER} bash
   cd /root/ws && ./scripts/build_ws.sh && source devel/setup.bash
   ./scripts/rosbridge.sh                 # 포그라운드 유지
 
 MORAI (Windows):
-  Map            R_KR_PG_KATRI
-  Network        config/VIP3_network_v1.json  Import -> Connect
-  Sensor         config/VIP3_sensor_set_v1_ros.json  Import -> Connect
-  Ego Ctrl Cmd   ROS / /ctrl_cmd      <-- 아직 프리셋에 없다. docs/simulator.md §4
+  Map            R_KR_PR_K-city_2025
+  Network        config/morai/261110_VIP3_Network_26.R1.H3.json  Import -> Connect
+  Sensor         config/morai/261110_VIP3_Sensor_26.R1.H3.json  Import -> Connect
+  Ego Ctrl Cmd   ROS / /ctrl_cmd (프리셋에 포함)
+  Local port     MORAI_BRIDGE_PORT 변경 시 프리셋의 접속 포트도 동일하게 변경
   Play
 
 확인:  ./scripts/docker_ros_up.sh verify 15
 EOF
 }
 
-cmd="${1:-up}"
+cmd="${1:-help}"
 echo "[DATA]     $VIP3_DATA -> /data (rw)"
-echo "[TWINLITE] $TWINLITE_SOURCE -> /opt/baselines/TwinLiteNetPlus (ro)"
+echo "[IMAGE]    $VIP3_IMAGE"
+echo "[NAME]     $CONTAINER"
 case "$cmd" in
   config)   "${COMPOSE[@]}" config ;;
   build)    "${COMPOSE[@]}" build ;;
-  up)       "${COMPOSE[@]}" up -d --force-recreate; show_status; next_steps ;;
+  up)       "${COMPOSE[@]}" up -d --no-build; show_status; next_steps ;;
   up-hostnet)
             "${COMPOSE_HOSTNET[@]}" up -d --force-recreate; show_status; next_steps ;;
-  rebuild)  "${COMPOSE[@]}" build --no-cache
-            "${COMPOSE[@]}" up -d --force-recreate; show_status ;;
+  rebuild)  "${COMPOSE[@]}" build --no-cache ;;
   build-rtx50)
-            "${COMPOSE[@]}" build
+            docker build -t vip3/ros-noetic:dev -f "$REPO_ROOT/docker/ros-noetic/Dockerfile.legacy-twinlite" "$REPO_ROOT/docker/ros-noetic"
             "${COMPOSE_RTX50[@]}" build ;;
   up-rtx50) "${COMPOSE_RTX50[@]}" up -d --force-recreate; show_status; next_steps ;;
   status)   show_status ;;
   check)    check_bridge_port ;;
   verify)   verify_topics "${2:-15}" ;;
   shell)    require_running; docker exec -it "$CONTAINER" bash ;;
+  build-ws) require_running; docker exec -it "$CONTAINER" bash -lc './scripts/build_ws.sh -j2 -l2' ;;
+  bridge)   require_running; docker exec -it "$CONTAINER" bash -lc './scripts/rosbridge.sh' ;;
+  svm)      require_running; docker exec -it "$CONTAINER" bash -lc 'source devel/setup.bash && exec roslaunch drivable_bev fisheye_svm.launch' ;;
+  view)     require_running; docker exec -it "$CONTAINER" vip3-ros-gui rqt-image /perception/svm/panel ;;
+  stop)     "${COMPOSE[@]}" stop ;;
+  help|-h|--help)
+    echo "빌드만: $0 build | rebuild (컨테이너 생성 없음)"
+    echo "직접 실행: $0 up -> build-ws -> bridge / svm / view (각 터미널)"
+    echo "관리: $0 config | status | check | verify [초] | shell | stop | down"
+    echo "이름 변경: export VIP3_CONTAINER_NAME=원하는이름"
+    ;;
   down)     "${COMPOSE[@]}" down ;;
   *)
     echo "사용법: $0 {build|up|up-hostnet|rebuild|build-rtx50|up-rtx50|status|check|verify [초]|shell|down|config}"

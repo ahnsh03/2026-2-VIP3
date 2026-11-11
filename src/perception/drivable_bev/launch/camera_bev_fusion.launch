@@ -3,7 +3,8 @@
   <arg name="views" default="front, left, right, rear"/>
   <arg name="secondary_head" default="lane"/>
   <arg name="bev_grid_config" default="$(find drivable_bev)/config/bev_grid.yaml"/>
-  <arg name="camera_config" default="$(find drivable_bev)/config/cameras_vip3_v1.yaml"/>
+  <!-- Legacy pinhole path: supply an explicit calibrated pinhole config. Use fisheye_svm.launch for MORAI. -->
+  <arg name="camera_config"/>
 
   <node pkg="drivable_bev" type="camera_bev_fusion_node.py"
         name="camera_bev_fusion" output="screen" required="true">

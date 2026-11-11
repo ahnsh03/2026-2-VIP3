@@ -41,7 +41,7 @@ from twinlite_morai import (  # noqa: E402
 
 
 # 학습/집계 대상 뷰. VIP3는 front/left/right/rear 4대를 공유 가중치로 학습한다.
-# 카메라를 추가하면 여기 한 곳만 고치면 된다(config/vip3_topics.yaml 과 동기화할 것).
+# 카메라를 추가하면 여기 한 곳만 고치면 된다(config/ros/topics.yaml 과 동기화할 것).
 VIEWS = ("all", "front", "left", "right", "rear")
 
 
