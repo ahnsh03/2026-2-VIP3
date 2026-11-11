@@ -85,16 +85,21 @@ def pixels_to_ground(pixels, camera, plane):
 def project_fisheye(points_optical, intrinsic, distortion):
     """Project forward rays using OpenCV's fisheye model, returning (uv, theta)."""
     points = np.asarray(points_optical, dtype=np.float64)
-    radius = np.linalg.norm(points[..., :2], axis=-1)
-    theta = np.arctan2(radius, points[..., 2])
+    u, v, theta = _project_components(points[..., 0], points[..., 1], points[..., 2],
+                                       intrinsic, distortion)
+    return np.stack((u, v), axis=-1), theta
+
+
+def _project_components(x, y, z, intrinsic, distortion):
+    """Same double-precision lens formula without an H x W x 3 temporary."""
+    radius = np.sqrt(x*x + y*y)
+    theta = np.arctan2(radius, z)
     t2 = theta * theta
     k1, k2, k3, k4 = distortion
     distorted = theta * (1 + t2 * (k1 + t2 * (k2 + t2 * (k3 + t2 * k4))))
     scale = np.divide(distorted, radius, out=np.zeros_like(radius), where=radius > 1e-12)
-    uv = points[..., :2] * scale[..., None]
-    uv[..., 0] = uv[..., 0] * intrinsic[0][0] + intrinsic[0][2]
-    uv[..., 1] = uv[..., 1] * intrinsic[1][1] + intrinsic[1][2]
-    return uv, theta
+    return (x*scale*intrinsic[0][0] + intrinsic[0][2],
+            y*scale*intrinsic[1][1] + intrinsic[1][2], theta)
 
 
 @dataclass
@@ -141,6 +146,7 @@ class FisheyeSvm:
         row, col = np.mgrid[:self.size, :self.size]
         self.x = self.center_x + self.extent / 2 - (row + .5) * self.extent / self.size
         self.y = self.extent / 2 - (col + .5) * self.extent / self.size
+        self._x_column, self._y_row = self.x[:, :1], self.y[:1, :]
         body = config["vehicle_mask"]
         self.body_mask = ((self.x >= body["x_min_m"]) & (self.x <= body["x_max_m"])
                           & (self.y >= body["y_min_m"]) & (self.y <= body["y_max_m"]))
@@ -172,8 +178,14 @@ class FisheyeSvm:
         self.active_plane = plane
         config = self.config
         body = config['vehicle_mask']
-        ground = parameters[0] + parameters[1]*self.x + parameters[2]*self.y
-        xyz = np.stack([self.x, self.y, ground], axis=-1)
+        # A ground plane and a rigid transform compose into three affine
+        # functions of X/Y. Evaluate those directly on separable row/column
+        # grids: exact at every output pixel, with no coarse-grid interpolation.
+        z0, a, b = parameters
+        basis = np.array([[1., 0.], [0., 1.], [a, b]])
+        origin = np.array([0., 0., z0])
+        def affine(coefficients, constant):
+            return coefficients[0]*self._x_column + coefficients[1]*self._y_row + constant
         self.maps = {}
         self.unmasked_weights = {}
         for view in VIEWS:
@@ -187,32 +199,35 @@ class FisheyeSvm:
                     or np.linalg.det(delta_r) < .99):
                 raise ValueError('camera motion must be a finite rigid transform')
             mount_position = position.copy()
-            source_xyz = (xyz - delta_t) @ delta_r
+            source_basis = delta_r.T @ basis
+            source_origin = (origin - delta_t) @ delta_r
             position = delta_r @ position + delta_t
             rotation = rotation @ delta_r.T
-            optical = (xyz - position) @ rotation.T
-            uv, theta = project_fisheye(optical, camera["K"], camera["D"])
+            optical_basis = rotation @ basis
+            optical_origin = rotation @ (origin - position)
+            ox, oy, oz = [affine(optical_basis[i], optical_origin[i]) for i in range(3)]
+            u, v, theta = _project_components(ox, oy, oz, camera["K"], camera["D"])
             limit = math.radians(float(camera["max_ray_angle_deg"]))
-            valid = ((optical[..., 2] > 0) & (theta < limit) & (uv[..., 0] >= 1)
-                     & (uv[..., 0] < width - 2) & (uv[..., 1] >= 1)
-                     & (uv[..., 1] < height - 2))
-            edge = np.minimum.reduce([uv[..., 0], width - 1 - uv[..., 0],
-                                      uv[..., 1], height - 1 - uv[..., 1]])
+            valid = ((oz > 0) & (theta < limit) & (u >= 1)
+                     & (u < width - 2) & (v >= 1) & (v < height - 2))
+            edge = np.minimum(np.minimum(u, width - 1 - u), np.minimum(v, height - 1 - v))
             lens_weight = np.clip(edge / 25, 0, 1) * np.clip(1 - theta / limit, 0, 1) ** 2
             # Diagnostic only: show the sampled image even where the body hides the ground.
             self.unmasked_weights[view] = (lens_weight * valid).astype(np.float32)
             valid &= ~self.body_mask
+            source_x = affine(source_basis[0], source_origin[0]) - mount_position[0]
+            source_y = affine(source_basis[1], source_origin[1]) - mount_position[1]
             # Approximate body-occlusion test sampled along the ground ray.
             # It cannot replace visibility validation against the actual vehicle mesh.
             for fraction in (.05, .15, .3, .5, .75):
                 # Occlusion belongs to the body at image capture time, not the
                 # reference body (which may already have moved past this camera).
-                qx = mount_position[0] + fraction * (source_xyz[..., 0] - mount_position[0])
-                qy = mount_position[1] + fraction * (source_xyz[..., 1] - mount_position[1])
+                qx = mount_position[0] + fraction * source_x
+                qy = mount_position[1] + fraction * source_y
                 valid &= ~((qx > body["x_min_m"]) & (qx < body["x_max_m"])
                            & (qy > body["y_min_m"]) & (qy < body["y_max_m"]))
             weight = (lens_weight * valid).astype(np.float32)
-            self.maps[view] = (uv[..., 0].astype(np.float32), uv[..., 1].astype(np.float32), weight)
+            self.maps[view] = (u.astype(np.float32), v.astype(np.float32), weight)
         self.weight_sum = sum(item[2] for item in self.maps.values())
         self.unmasked_weight_sum = sum(self.unmasked_weights.values())
         self.valid_mask = ((self.weight_sum > 1e-6) & ~self.body_mask).astype(np.uint8) * 255

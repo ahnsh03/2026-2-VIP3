@@ -45,6 +45,7 @@ if(CATKIN_ENABLE_TESTING)
   catkin_add_nosetests(test/test_rgb_bev.py)
   catkin_add_nosetests(test/test_fisheye_svm.py)
   catkin_add_nosetests(test/test_svm_pose.py)
+  catkin_add_nosetests(test/test_svm_input.py)
   catkin_add_nosetests(test/test_svm_calibration.py)
 endif()
 

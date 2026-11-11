@@ -9,7 +9,7 @@ projection_model: opencv_fisheye
 output_size: 512
 extent_m: 10.0
 vehicle_geometry_file: vehicles/2023_hyundai_ioniq5.yaml
-publish_hz: 5.0
+publish_hz: 10.0
 max_age_s: 0.5
 sync_slop_s: 0.06
 pose_compensation:
