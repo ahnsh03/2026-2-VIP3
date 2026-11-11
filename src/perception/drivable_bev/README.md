@@ -5,7 +5,7 @@
 
 ## 현재 4어안 SVM
 
-`fisheye_svm.launch`는 `/cam_{view}/image_jpeg/compressed` 네 입력으로 10×10m·512×512 미리보기를 만든다. 렌즈는 미보정 초기값이다.
+`fisheye_svm.launch`는 `/cam_{view}/image_jpeg/compressed` 네 입력으로 10×10m·512×512 미리보기를 만든다. `261111_kcity_1280x960_v1`의 렌즈·각도 보정과 페인트 높이 +10mm를 기본 적용한다. 두 정차 자세에서 확인한 preview 프로필이다.
 
 | 출력 | 형식 / 목적 |
 |---|---|

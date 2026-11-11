@@ -4,7 +4,8 @@ from types import SimpleNamespace
 import numpy as np
 
 from drivable_bev.svm_pose import (PoseSample, quaternion_matrix, interpolate_pose,
-                                  ground_plane_from_pose, relative_pose, projection_pose, source_quaternion)
+                                  ground_plane_from_pose, relative_pose, projection_pose, source_quaternion,
+                                  offset_ground_plane)
 from drivable_bev.fisheye_svm import (FisheyeSvm, pixels_to_ground, project_fisheye,
                                      camera_transform, validate_lens, VIEWS)
 from drivable_bev.vehicle_geometry import load_svm_config
@@ -66,6 +67,29 @@ class TestSvmPose(unittest.TestCase):
         plane = ground_plane_from_pose(p, .35, p.rotation @ [0, 0, 1])
         np.testing.assert_allclose([plane['dz_dx'], plane['dz_dy']], [0, 0], atol=1e-10)
 
+    def test_marking_height_offsets_surface_not_vehicle_and_uses_normal_distance(self):
+        p = pose(q=(.04, -.02, .1, 1))
+        road = ground_plane_from_pose(p, .35)
+        marking = offset_ground_plane(road, .01)
+        self.assertEqual(road['dz_dx'], marking['dz_dx'])
+        for x, y in ((4., 2.), (-3., -1.)):
+            z = marking['z_at_origin_m'] + marking['dz_dx']*x + marking['dz_dy']*y
+            self.assertAlmostEqual((p.rotation @ [x, y, z])[2], -.34)
+        for bad in (float('nan'), float('inf'), .36):
+            with self.assertRaises(ValueError):
+                offset_ground_plane(road, bad)
+        c = load_svm_config(Path(__file__).resolve().parents[1] / 'config/fisheye_svm.yaml')
+        c['projection_surface_offset_m'] = 0.
+        road_svm = FisheyeSvm(c)
+        c['projection_surface_offset_m'] = .01
+        paint_svm = FisheyeSvm(c)
+        np.testing.assert_array_equal(road_svm.body_mask, paint_svm.body_mask)
+        self.assertEqual(road_svm.config['ground_z_m'], paint_svm.config['ground_z_m'])
+        frames = {v: SimpleNamespace(stamp=100.) for v in VIEWS}
+        result, _ = projection_pose([pose()], frames, 10.1, {}, .35, .01)
+        self.assertAlmostEqual(result['plane']['z_at_origin_m'],
+                               paint_svm.static_plane['z_at_origin_m'])
+
     def test_relative_pose_maps_same_world_point(self):
         a = pose(position=(12, 20, 5), q=(.01, .02, .1, 1))
         b = pose(position=(12.02, 20.03, 5), q=(.02, .01, .11, 1))
@@ -118,6 +142,7 @@ class TestSvmPose(unittest.TestCase):
     def test_motion_projection_matches_independent_world_coordinates(self):
         c = load_svm_config(Path(__file__).resolve().parents[1] / 'config/fisheye_svm.yaml')
         c['output_size'] = 32
+        c['projection_surface_offset_m'] = 0.
         svm = FisheyeSvm(c)
         reference = pose(position=(10, 30, 2), q=(.01, .02, .3, 1))
         earlier = pose(position=(9.96, 30.01, 2.002), q=(.012, .019, .29, 1))

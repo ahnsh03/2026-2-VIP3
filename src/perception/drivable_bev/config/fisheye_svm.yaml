@@ -1,7 +1,9 @@
-# INITIAL GUESS, NOT MORAI calibration: f=width/FOV_rad, D=0.
-# Vehicle geometry is loaded separately; lens and occlusion still require calibration.
-# Preview only; do not train/evaluate SS-PSD with this output before calibration.
-calibration_status: uncalibrated_equidistant_initialization
+# MORAI 26.R1.H3 / 179 deg / 1280x960: measured parking-paint edge refinement.
+# K/D and correction are effective fitted parameters; nominal mounts stay in the preset.
+# Limited static-pose validation: see calibration/261111_edge_validation.json.
+# Parking paint is ~10 mm above the collision road; vehicle height remains 0.35 m.
+# Preview only: SS-PSD clean BEV and moving/slope validation remain separate work.
+calibration_status: simulator_edge_validated_preview
 source_sensor_preset: config/morai/261110_VIP3_Sensor_26.R1.H3.json
 projection_model: opencv_fisheye
 output_size: 512
@@ -10,8 +12,6 @@ vehicle_geometry_file: vehicles/2023_hyundai_ioniq5.yaml
 publish_hz: 5.0
 max_age_s: 0.5
 sync_slop_s: 0.06
-# This compensates body attitude and inter-camera capture times on a locally level
-# map surface. Road grade is NOT observable from body orientation alone.
 pose_compensation:
   enabled: true
   quaternion_convention: morai_26r1_x_flipped
@@ -21,7 +21,10 @@ pose_compensation:
   max_age_s: 0.5
   max_offset_s: 0.05
   max_tilt_deg: 15.0
-  normal_map: [0.0, 0.0, 1.0]
+  normal_map:
+  - 0.0
+  - 0.0
+  - 1.0
   ground_assumption: locally_level_map_surface_fixed_ride_height
 cameras:
   front:
@@ -39,21 +42,26 @@ cameras:
     - 35.0
     - 0.0
     K:
-    - - 409.71283674159423
-      - 0
-      - 640.0
-    - - 0
-      - 409.71283674159423
-      - 480.0
-    - - 0
-      - 0
-      - 1
+    - - 410.14799489261964
+      - 0.0
+      - 640.9002407379213
+    - - 0.0
+      - 410.14799489261964
+      - 478.14243590662284
+    - - 0.0
+      - 0.0
+      - 1.0
     D:
-    - 0.0
-    - 0.0
-    - 0.0
-    - 0.0
+    - -0.0014919489621596207
+    - 0.00037029599146447186
+    - 0
+    - 0
     max_ray_angle_deg: 89.5
+    correction:
+      rotation_deg:
+      - -0.36860719076868276
+      - 0.12047650276885637
+      - -0.3666631867754932
   rear:
     sensor_id: 2
     topic: /cam_rear/image_jpeg/compressed
@@ -69,21 +77,26 @@ cameras:
     - 35.0
     - 180.0
     K:
-    - - 409.71283674159423
-      - 0
-      - 640.0
-    - - 0
-      - 409.71283674159423
-      - 480.0
-    - - 0
-      - 0
-      - 1
+    - - 410.14799489261964
+      - 0.0
+      - 640.9002407379213
+    - - 0.0
+      - 410.14799489261964
+      - 478.14243590662284
+    - - 0.0
+      - 0.0
+      - 1.0
     D:
-    - 0.0
-    - 0.0
-    - 0.0
-    - 0.0
+    - -0.0014919489621596207
+    - 0.00037029599146447186
+    - 0
+    - 0
     max_ray_angle_deg: 89.5
+    correction:
+      rotation_deg:
+      - 0.10656290478432653
+      - -0.4162741487541981
+      - -0.1282560773243534
   left:
     sensor_id: 3
     topic: /cam_left/image_jpeg/compressed
@@ -99,21 +112,26 @@ cameras:
     - 45.0
     - 90.0
     K:
-    - - 409.71283674159423
-      - 0
-      - 640.0
-    - - 0
-      - 409.71283674159423
-      - 480.0
-    - - 0
-      - 0
-      - 1
+    - - 410.14799489261964
+      - 0.0
+      - 640.9002407379213
+    - - 0.0
+      - 410.14799489261964
+      - 478.14243590662284
+    - - 0.0
+      - 0.0
+      - 1.0
     D:
-    - 0.0
-    - 0.0
-    - 0.0
-    - 0.0
+    - -0.0014919489621596207
+    - 0.00037029599146447186
+    - 0
+    - 0
     max_ray_angle_deg: 89.5
+    correction:
+      rotation_deg:
+      - 0.17683943386451367
+      - 0.08721085126269851
+      - 0.11460430207953605
   right:
     sensor_id: 4
     topic: /cam_right/image_jpeg/compressed
@@ -129,18 +147,26 @@ cameras:
     - 45.0
     - 270.0
     K:
-    - - 409.71283674159423
-      - 0
-      - 640.0
-    - - 0
-      - 409.71283674159423
-      - 480.0
-    - - 0
-      - 0
-      - 1
+    - - 410.14799489261964
+      - 0.0
+      - 640.9002407379213
+    - - 0.0
+      - 410.14799489261964
+      - 478.14243590662284
+    - - 0.0
+      - 0.0
+      - 1.0
     D:
-    - 0.0
-    - 0.0
-    - 0.0
-    - 0.0
+    - -0.0014919489621596207
+    - 0.00037029599146447186
+    - 0
+    - 0
     max_ray_angle_deg: 89.5
+    correction:
+      rotation_deg:
+      - -0.5351959479360942
+      - -0.3484712715149377
+      - -0.6399665492563339
+calibration_profile: 261111_kcity_1280x960_v1
+calibration_evidence_file: calibration/261111_edge_validation.json
+projection_surface_offset_m: 0.01

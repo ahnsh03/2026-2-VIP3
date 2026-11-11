@@ -42,8 +42,10 @@ class SvmNode:
         self.last_key = None
         self.saved = False
         self.save_dir = rospy.get_param("~save_dir", "")
-        self.lens_label = ('LENS FIT' if self.config.get('calibration_status') == 'ground_anchor_validated'
-                           else 'LENS UNVERIFIED')
+        self.lens_label = {
+            'ground_anchor_validated': 'LENS FIT',
+            'simulator_edge_validated_preview': 'EDGE FIT | PREVIEW',
+        }.get(self.config.get('calibration_status'), 'LENS UNVERIFIED')
         self.max_age = float(self.config["max_age_s"])
         self.slop = float(self.config["sync_slop_s"])
         self.preview = rospy.Publisher("/perception/svm/preview/compressed", CompressedImage, queue_size=1)
@@ -57,7 +59,8 @@ class SvmNode:
             self.subscribers.append(rospy.Subscriber(self.pose_config.get('topic', '/tf'),
                                                     TFMessage, self.receive_pose, queue_size=20))
         self.timer = rospy.Timer(rospy.Duration(1.0 / self.config["publish_hz"]), self.tick)
-        rospy.logwarn("SVM PREVIEW: lens K/D, local ground plane and occlusion require calibration; not a parking input")
+        rospy.logwarn("SVM PREVIEW: profile=%s; verify all overlaps, slopes and moving poses before parking use",
+                      self.config.get('calibration_profile', 'unspecified'))
         rospy.loginfo("SVM geometry: ground z=%.4fm, center x=%.4fm, body mask=%s; source=%s",
                       self.config['ground_z_m'], self.config['center_x_m'], self.config['vehicle_mask'],
                       self.config.get('ground_plane', {}).get('source', 'historical_config'))
@@ -106,6 +109,8 @@ class SvmNode:
         self.status.publish(String(data=json.dumps(dict(
             input_valid=valid, pose_status=reason, pose_compensated=(valid and reason == "pose compensated"),
             calibration_status=self.config.get('calibration_status', 'unverified'),
+            calibration_profile=self.config.get('calibration_profile', 'unspecified'),
+            projection_surface_offset_m=self.config.get('projection_surface_offset_m', 0.),
             ground_assumption=self.pose_config.get('ground_assumption', 'static configuration'),
             stamp=stamp, ground_plane=self.svm.active_plane))))
 
@@ -158,7 +163,8 @@ class SvmNode:
         self.pose_status = 'disabled'
         if self.pose_config.get('enabled', False):
             compensation, self.pose_status = projection_pose(
-                poses, frames, time.monotonic(), self.pose_config, -self.config['ground_z_m'])
+                poses, frames, time.monotonic(), self.pose_config, -self.config['ground_z_m'],
+                float(self.config.get('projection_surface_offset_m', 0.)))
         if compensation is None:
             self.svm.set_projection()
         else:
