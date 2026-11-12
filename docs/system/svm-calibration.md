@@ -41,6 +41,10 @@
 
 [측정값·입력 해시·검사 범위](../../src/vip3_perception/config/calibration/261112_validation.json), [팀 작업 노트](../notes/261112-svm-calibration.md), [실행 명령](../commands.md#svm-calibration). 이전 v1 결과는 Git 이력과 날짜가 붙은 기존 evidence JSON에 보존한다. 현행 프로필은 clean BEV/SS-PSD 학습 입력 검증 완료를 뜻하지 않는다.
 
+## 현재 작업 방향과 인수인계
+
+다른 정차 위치의 원인 분리에서 경사면에 대한 수평 지면 fallback과 방향별 렌즈 잔여 오차를 확인했다. **평탄한 정차 구역의 고정 지면 SVM을 먼저 검증한 뒤 필요한 동적 보정을 판단한다.** 자동 영상 지면 추정은 현재 활성화된 실험 모듈이며 프로젝트 필수 구성으로 확정하지 않는다. 담당별 후속 작업·진단 표·원본 위치는 [팀 인수인계](../notes/261112-svm-handoff.md)에 있다.
+
 ## 수동 대응점으로 별도 후보 만들기
 
 `tools/svm/calibrate.py`는 공유 focal·k1/k2와 카메라별 작은 각도 오프셋을 추정하는 별도 도구다. 현재 v2의 다중 위치 렌즈 피팅과 영상 지면 추정은 이 도구의 합격 조건을 통과했다는 의미가 아니다. 현행 v2는 위 제한을 표시한 preview로 배포한다.
