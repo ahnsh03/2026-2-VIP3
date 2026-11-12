@@ -32,9 +32,10 @@ export MORAI_BRIDGE_PORT=9090
 ./scripts/docker_ros_up.sh status
 ```
 
-새 터미널에서는 호스트의 어느 디렉터리에서든 다음으로 입장한다. ROS·워크스페이스 환경은 interactive bash에 자동 적용된다. 빌드 직후 이미 열려 있던 셸은 `source /root/ws/devel/setup.bash`를 실행한다.
+이미 생성된 컨테이너는 호스트의 어느 디렉터리에서든 아래처럼 시작하고 입장한다. `docker start`는 기존 포트 매핑을 유지한다. ROS·워크스페이스 환경은 interactive bash에 자동 적용된다. 빌드 직후 이미 열려 있던 셸은 `source /root/ws/devel/setup.bash`를 실행한다.
 
 ```bash
+docker start vip3-parking-ros
 docker exec -it vip3-parking-ros bash
 ```
 
@@ -64,6 +65,13 @@ python3 tools/export_local_morai_presets.py --port 19090 --output-dir ../data/lo
 
 생성 파일은 `261110_VIP3_Sensor_26.R1.H3_local19090.json`, `261110_VIP3_Network_26.R1.H3_local19090.json`이다. 컨테이너 안에서 생성한다면 `--output-dir /data/local_morai`를 쓴다. 셸의 환경변수만 바꿔서는 Docker 포트 매핑이 바뀌지 않는다.
 
+19090 예외 설정에서 팀 기본으로 돌아갈 때는 VIP3 노드를 종료하고 호스트에서 아래를 실행한다. MORAI도 공유 정본의 9090 Sensor/Network JSON으로 맞춘다.
+
+```bash
+export MORAI_BRIDGE_PORT=9090
+./scripts/docker_ros_up.sh up
+```
+
 <a id="bridge"></a>
 ## 2. MORAI 연결과 진단
 
@@ -74,6 +82,8 @@ python3 tools/export_local_morai_presets.py --port 19090 --output-dir ../data/lo
 ```
 
 MORAI에서 `R_KR_PR_K-city_2025`, `2023_Hyundai_ioniq5`를 선택한다. [Sensor JSON](../config/morai/261110_VIP3_Sensor_26.R1.H3.json)과 [Network JSON](../config/morai/261110_VIP3_Network_26.R1.H3.json)을 Import하고, 네트워크·카메라 ROS **Connect → Play**를 누른다. 기본 접속은 Windows `127.0.0.1:9090`이다. 위 예외 PC는 두 로컬 19090 프리셋을 사용한다.
+
+**bridge가 먼저 실행된 뒤 Connect한다.** 서버가 꺼진 상태에서 먼저 Connect했거나 bridge를 재시작했다면 MORAI의 연결을 Disconnect → Connect한다. 카메라 4개와 Network Settings의 Ego-0 연결은 별도이므로 둘 다 확인한다.
 
 기본 **5초마다** 카메라·상태의 수신율, 마지막 수신 이후 시간, `OK/MISSING/STALE` 진단이 출력된다. 측정 hz는 설정 hz와 다를 수 있다. 진단 주기는 시작할 때 변경한다.
 
@@ -96,6 +106,17 @@ rostopic echo -n 1 /Ego_topic
 ```
 
 호스트 저장소 루트에서는 `./scripts/docker_ros_up.sh check`로 포트 매핑·도달 상태를, `./scripts/docker_ros_up.sh verify 15`로 수신을 확인한다. `MISSING`이면 MORAI의 네트워크·각 카메라 Connect/Play, 프리셋 토픽과 포트부터 확인한다.
+
+수신 상태별로 다음을 확인한다. 9090이 rosbridge 기본 접속 포트이며 네 카메라와 차량 네트워크는 같은 포트를 사용하고 토픽 이름으로 구분한다.
+
+| 관측 | 확인·조치 |
+|---|---|
+| 컨테이너 정지 또는 19090 매핑인데 MORAI는 9090 | 컨테이너 상태·포트를 확인하고 위 환경 구성대로 일치시킴 |
+| 클라이언트 0, 모든 토픽 MISSING | bridge listen·Windows 접속 경로, MORAI의 Connect/Play 확인 |
+| 카메라 4개는 OK, `/Ego_topic` 발행자 없음 | Network Settings의 Ego-0 ROS 주소·토픽과 Disconnect → Connect 확인 |
+| 토픽은 있지만 수신 0 또는 STALE | Play/일시정지·해당 송신 항목 확인 |
+
+2026-11-12 한 PC에서 기본 9090, 카메라 약 10Hz·1280×960, 차량 상태 약 44.5Hz(설정 50Hz)를 확인했다. [측정 원본과 해결 과정](notes/261112-integration.md). 다른 PC의 포트 예약 여부·수신율은 별도 확인한다.
 
 직접 launch를 사용할 때 아래는 **스크립트 대신** 실행한다. 같은 포트에 bridge를 두 번 띄우지 않는다.
 
@@ -200,7 +221,7 @@ roslaunch vip3_data record.launch \
   scenario:=slot002_front controller:=manual weather:=sunny sim_hour:=11
 ```
 
-Ctrl+C로 정상 종료해 bag과 메타데이터를 마감한다. 출력은 `/data/rosbags/raw/<run_id>/bags/*.bag`과 같은 run의 metadata·summary다. 기본 여유 공간 기준 10GiB, 파일 분할 4GiB다. 평가용 object/collision도 담으려면 위 명령의 `profile:=parking_gt`를 선택하고 인지 입력과 분리한다.
+Ctrl+C로 정상 종료해 bag과 메타데이터를 마감한다. 출력은 `/data/rosbags/raw/<run_id>/bags/*.bag`과 같은 run의 `metadata.yaml`이다. 수신 통계와 bag SHA-256은 이 metadata 안에 기록된다. 기본 여유 공간 기준 10GiB, 파일 분할 4GiB다. 평가용 object/collision도 담으려면 위 명령의 `profile:=parking_gt`를 선택하고 인지 입력과 분리한다.
 
 ```bash
 python3 src/vip3_data/scripts/audit_bag.py \
@@ -243,14 +264,14 @@ roslaunch vip3_data snapshot.launch \
   profile:=parking_core map:=R_KR_PR_K-city_2025 max_frames:=30
 ```
 
-`parking_core`는 5Hz latest-timer snapshot이며 정확한 네 영상 동기화를 보장하지 않는다. 현 센서셋에 없는 LiDAR/GPS/IMU를 기다리는 다른 프로파일을 기본으로 쓰지 않는다.
+`parking_core`는 5Hz latest-timer snapshot이며 정확한 네 영상 동기화를 보장하지 않는다. 출력은 `/data/datasets/<run_id>/`의 `meta.yaml`, `manifest.jsonl`, `summary.json`, 채널별 파일이다. 기존 run ID를 재사용하면 파일을 덮어쓸 수 있으므로 새 ID를 사용한다. 현재 제공하는 snapshot 프로파일은 `dry_run`, `parking_core` 두 개다.
 
 <a id="packages"></a>
 ## 5. 주차: 상태·기어·GT·평가 — 강도균·김동현
 
 ### 상태 관측
 
-패키지 통합 이전 checkout을 사용했다면 컨테이너에서 `./scripts/build_ws.sh` 후 `source devel/setup.bash`를 한 번 실행한다. 상태·기어·GT·평가 코드는 `vip3_parking`에 모였으며 `/vehicle/*`, `/vip3_gear/set_gear` 이름은 유지한다.
+패키지 통합 이전 checkout을 사용했다면 먼저 [이전 구조 갱신 절차](#setup)에 따라 `./scripts/build_ws.sh --clean -j2 -l2` 후 새 셸을 사용한다. 상태·기어·GT·평가 코드는 `vip3_parking`에 모였으며 `/vehicle/*`, `/vip3_gear/set_gear` 이름은 유지한다.
 
 ```bash
 # 컨테이너: 관측만, External 모드 전환 없음
@@ -366,3 +387,5 @@ python3 scripts/verify_morai_topics.py --list  # ROS master 없이 계약만 확
 종료 방법:
 확인한 조건 / 남은 제약:
 ```
+
+실행법은 이 문서에 유지하고, 각 작업의 결과·실패·다음 할 일은 [팀 작업 노트](notes/README.md)에 남긴다.

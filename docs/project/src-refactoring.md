@@ -75,3 +75,5 @@ SS-PSD를 구현할 때 `src/vip3_perception/detection/`, `scripts/slot_detector
 새 build/devel/install 경로의 catkin 설치와 단위 테스트 97개를 통과했다. 저장된 4카메라 영상과 변화하는 25개 자세(워밍업 포함)를 이전 코드와 비교해 remap·가중치·mask·출력 픽셀 차이가 모두 0이었다. 보정 YAML·센서 JSON·차량 그림·GT 원본 바이트를 보존했다.
 
 별도 ROS master에서 새 설치 경로의 launch로 snapshot 3묶음과 bag 기록→검사→재생→SVM 표시를 확인했다. JPEG·source stamp·bag 해시, 재생 종료 시 시계 복원, 영상 중단/잘못된 JPEG/TF 중단·시각 리셋 처리가 통과했다. 모의 송신과 기존 캡처를 사용한 회귀 검사이며 새로운 MORAI 주행·캘리브레이션 정확도 평가는 아니다.
+
+작업별 결과와 인수인계는 [팀 작업 노트](../notes/README.md)에 남긴다. 이 구조 문서는 최신 코드 경계를 유지한다.
