@@ -42,7 +42,6 @@ MORAI 연구원이 제공한 [parking_space_set.json](../../src/vip3_parking/dat
 | 작은 제공 주차 GT·출처 | repo `src/vip3_parking/data/katri/` | 팀 Git, 원본 불변 |
 | bag | `$VIP3_DATA/rosbags/raw/<run_id>/` | `bags/`, `metadata.yaml`(수신 통계·SHA 포함); Git 제외 |
 | 캡처·학습 데이터·실험 산출물 | `$VIP3_DATA` | 호스트 `../data`, 컨테이너 `/data` |
-| 개인 포트 변경본 | `../data/local_morai/` | 도구로 생성; 공유 정본은 9090 |
 | 논문 PDF·개인 상세 분석·이전 문서 | repo 밖 `../docs/` | 팀 문서에는 결론·필요 출처만 |
 | 외부 모델 소스 | `../external/parking/` | 원격 URL·커밋 기록; repo에 중첩 복사하지 않음 |
 

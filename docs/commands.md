@@ -52,25 +52,17 @@ source /root/ws/devel/setup.bash
 
 SVM은 `vip3_perception svm.launch`, 수집은 `vip3_data record.launch`, 재생은 `vip3_data replay.launch`, snapshot은 `vip3_data snapshot.launch`로 변경됐다. 토픽과 기존 ROS 노드·서비스 이름은 유지한다.
 
-### 9090이 예약된 PC만: 19090
+### 팀 공통 연결 설정
 
-팀 정본은 9090을 유지한다. 포트 예외는 **호스트에서 컨테이너 생성 전에** 설정하고 MORAI에 로컬 프리셋을 Import한다. 기존 컨테이너의 포트를 바꾸는 `up`은 컨테이너를 재생성할 수 있으므로 실행 중인 작업을 먼저 끝낸다.
+**MORAI 센서·네트워크, Docker 포트 매핑, rosbridge는 모두 9090을 사용한다.** `config/morai/`의 공유 Sensor/Network JSON을 그대로 Import한다.
 
-```bash
-export VIP3_CONTAINER_NAME=vip3-parking-ros
-export MORAI_BRIDGE_PORT=19090
-python3 tools/export_local_morai_presets.py --port 19090 --output-dir ../data/local_morai
-./scripts/docker_ros_up.sh up
-```
+| 설정 위치 | 값 |
+|---|---|
+| MORAI 카메라 4개와 Network Settings의 Ego-0 | ROS, IP `127.0.0.1`, Port `9090` |
+| Docker | 호스트 `127.0.0.1:9090` → 컨테이너 `9090` |
+| rosbridge | 컨테이너에서 `0.0.0.0:9090` 대기 |
 
-생성 파일은 `261110_VIP3_Sensor_26.R1.H3_local19090.json`, `261110_VIP3_Network_26.R1.H3_local19090.json`이다. 컨테이너 안에서 생성한다면 `--output-dir /data/local_morai`를 쓴다. 셸의 환경변수만 바꿔서는 Docker 포트 매핑이 바뀌지 않는다.
-
-19090 예외 설정에서 팀 기본으로 돌아갈 때는 VIP3 노드를 종료하고 호스트에서 아래를 실행한다. MORAI도 공유 정본의 9090 Sensor/Network JSON으로 맞춘다.
-
-```bash
-export MORAI_BRIDGE_PORT=9090
-./scripts/docker_ros_up.sh up
-```
+연결이 안 되면 아래 진단 순서대로 확인하고, 해결되지 않으면 오류와 로그를 안승현에게 공유한다.
 
 <a id="bridge"></a>
 ## 2. MORAI 연결과 진단
@@ -81,7 +73,7 @@ export MORAI_BRIDGE_PORT=9090
 ./scripts/rosbridge.sh
 ```
 
-MORAI에서 `R_KR_PR_K-city_2025`, `2023_Hyundai_ioniq5`를 선택한다. [Sensor JSON](../config/morai/261110_VIP3_Sensor_26.R1.H3.json)과 [Network JSON](../config/morai/261110_VIP3_Network_26.R1.H3.json)을 Import하고, 네트워크·카메라 ROS **Connect → Play**를 누른다. 기본 접속은 Windows `127.0.0.1:9090`이다. 위 예외 PC는 두 로컬 19090 프리셋을 사용한다.
+MORAI에서 `R_KR_PR_K-city_2025`, `2023_Hyundai_ioniq5`를 선택한다. [Sensor JSON](../config/morai/261110_VIP3_Sensor_26.R1.H3.json)과 [Network JSON](../config/morai/261110_VIP3_Network_26.R1.H3.json)을 Import하고, 네트워크·카메라 ROS **Connect → Play**를 누른다. 접속 주소는 Windows `127.0.0.1:9090`이다.
 
 **bridge가 먼저 실행된 뒤 Connect한다.** 서버가 꺼진 상태에서 먼저 Connect했거나 bridge를 재시작했다면 MORAI의 연결을 Disconnect → Connect한다. 카메라 4개와 Network Settings의 Ego-0 연결은 별도이므로 둘 다 확인한다.
 
@@ -111,7 +103,7 @@ rostopic echo -n 1 /Ego_topic
 
 | 관측 | 확인·조치 |
 |---|---|
-| 컨테이너 정지 또는 19090 매핑인데 MORAI는 9090 | 컨테이너 상태·포트를 확인하고 위 환경 구성대로 일치시킴 |
+| 컨테이너 정지 또는 포트 매핑 불일치 | 컨테이너 시작과 호스트·컨테이너의 9090 매핑 확인 |
 | 클라이언트 0, 모든 토픽 MISSING | bridge listen·Windows 접속 경로, MORAI의 Connect/Play 확인 |
 | 카메라 4개는 OK, `/Ego_topic` 발행자 없음 | Network Settings의 Ego-0 ROS 주소·토픽과 Disconnect → Connect 확인 |
 | 토픽은 있지만 수신 0 또는 STALE | Play/일시정지·해당 송신 항목 확인 |
@@ -121,7 +113,7 @@ rostopic echo -n 1 /Ego_topic
 직접 launch를 사용할 때 아래는 **스크립트 대신** 실행한다. 같은 포트에 bridge를 두 번 띄우지 않는다.
 
 ```bash
-roslaunch vip3_bringup morai_rosbridge.launch port:="$MORAI_BRIDGE_PORT" monitor_interval:=5
+roslaunch vip3_bringup morai_rosbridge.launch port:=9090 monitor_interval:=5
 ```
 
 <a id="svm"></a>
