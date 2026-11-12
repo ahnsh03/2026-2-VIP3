@@ -5,9 +5,9 @@
 ```text
 MORAI 26.R1.H3 (K-City 2025, Ioniq5)
   └─ ROS WebSocket → rosbridge (기본 9090)
-       ├─ 4 × CompressedImage → fisheye_svm → 진단 panel/preview/valid_mask/status
+       ├─ 4 × CompressedImage → vip3_perception/svm → 진단 panel/preview/valid_mask/status
        ├─ EgoVehicleStatus → vip3_parking → state/odom
-       ├─ 카메라·ego·TF → data_collection → bag / 재생
+       ├─ 카메라·ego·TF → vip3_data → bag / 재생
        └─ event service ↔ vip3_gear
 
 연결할 경로: clean BEV → SS-PSD → 주차 목표 → 경로·추종 → /ctrl_cmd
@@ -51,3 +51,5 @@ MORAI가 `map→base_link` TF를 보내므로 상태 노드의 `publish_map_tf` 
 - `/ctrl_cmd`는 제어기 한 개만 발행한다. 기어 요청은 `/vip3_gear/set_gear`로 모으고 실제 응답을 확인한다.
 - 기어 노드는 기본적으로 시작 시 External 모드 전환을 요청한다. 관측만 할 때는 기어 노드를 끄거나 `set_external_on_start:=false`를 쓴다.
 - 입력 만료·검출 실패·서비스 실패 시 정지하는 로직은 주차 제어기에 구현할 항목이다. 현재 bridge·SVM만으로 자율주차가 완성된 상태는 아니다.
+
+SVM과 SS-PSD는 `vip3_perception`의 별도 노드로 구성한다. 현재는 SVM만 구현됐으며, clean BEV·검출 노드와 메시지는 다음 단계다. 수집은 `vip3_data`, 상태·GT·평가와 이후 제어는 `vip3_parking`이 담당한다. [src 구조](../project/src-refactoring.md)

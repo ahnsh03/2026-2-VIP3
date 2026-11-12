@@ -22,5 +22,24 @@ fi
 # bash -u: noetic setup 을 source 할 때 ROS_MASTER_URI 가 비어 있을 수 있다
 export ROS_MASTER_URI="${ROS_MASTER_URI:-http://127.0.0.1:11311}"
 source /opt/ros/noetic/setup.bash
+# Package renames leave generated Python wrappers and CMake caches behind.
+# Keep the named Docker volume roots; clear only this workspace's build output.
+if [[ "${1:-}" == "--clean" ]]; then
+  shift
+  python3 - <<'PY'
+from pathlib import Path
+import shutil
+for name in ('build', 'devel', 'install'):
+    root = Path(name)
+    if root.is_symlink():
+        raise SystemExit('refusing to clean symlink: ' + name)
+    if root.is_dir():
+        for item in root.iterdir():
+            if item.is_dir() and not item.is_symlink():
+                shutil.rmtree(str(item))
+            else:
+                item.unlink()
+PY
+fi
 catkin_make "$@"
 echo "[build_ws] done. source devel/setup.bash"

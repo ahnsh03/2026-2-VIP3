@@ -4,9 +4,9 @@
 
 - MORAI Import: [센서](../../config/morai/261110_VIP3_Sensor_26.R1.H3.json), [네트워크](../../config/morai/261110_VIP3_Network_26.R1.H3.json)
 - 토픽·프레임 계약: [topics.yaml](../../config/ros/topics.yaml)
-- 합성 설정: [fisheye_svm.yaml](../../src/perception/drivable_bev/config/fisheye_svm.yaml)
-- 차량 치수·지면: [2023_hyundai_ioniq5.yaml](../../src/perception/drivable_bev/config/vehicles/2023_hyundai_ioniq5.yaml)
-- 차량 그림: [ioniq5_top_view.png](../../src/perception/drivable_bev/config/vehicles/ioniq5_top_view.png)
+- 합성 설정: [svm.yaml](../../src/vip3_perception/config/svm.yaml)
+- 차량 치수·지면: [2023_hyundai_ioniq5.yaml](../../src/vip3_perception/config/vehicles/2023_hyundai_ioniq5.yaml)
+- 차량 그림: [ioniq5_top_view.png](../../src/vip3_perception/assets/ioniq5_top_view.png)
 
 프리셋 이름은 **`YYMMDD_VIP3_Sensor/Network_모라이버전.json`**을 따른다. `261110`은 현재 export 날짜다. 새 버전으로 바꾸면 참조 경로도 갱신하고 이전 실행 프리셋은 Git 이력에만 남긴다. PC별 주소·포트 변경본은 로컬 `data/local_morai/`에 생성한다.
 

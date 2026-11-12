@@ -5,7 +5,7 @@
          ./scripts/wait_morai_topic.sh /Ego_topic 120
 
        이 런치는 "센서가 붙어 있다"를 전제로 좌표계와 차량 상태만 세운다.
-       인지·BEV 는 별도 런치다 (drivable_bev/launch/fisheye_svm.launch). -->
+       인지·BEV 는 별도 런치다 (vip3_perception/launch/svm.launch). -->
 
   <arg name="static_tf" default="true"/>
   <arg name="vehicle_state" default="true"/>

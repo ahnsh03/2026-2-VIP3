@@ -20,7 +20,6 @@ RUN printf 'Acquire::Retries "5";\nAcquire::http::Pipeline-Depth "0";\n' \
       build-essential cmake git ca-certificates iproute2 procps \
       python3-numpy python3-scipy python3-opencv python3-yaml \
       python3-nose python3-psutil python3-ujson python3-pil \
-      python3-h5py python3-pyproj python3-shapely \
       ros-noetic-catkin ros-noetic-message-generation \
       ros-noetic-rosbridge-server ros-noetic-rosbag \
       ros-noetic-tf2-ros ros-noetic-tf2-geometry-msgs \

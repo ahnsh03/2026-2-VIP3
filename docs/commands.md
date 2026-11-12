@@ -1,6 +1,6 @@
 # 실행 명령 모음
 
-기준일 **2026-11-11**. 팀원이 구현한 실행법은 이 문서에 모은다. **주차 기본 컨테이너는 `vip3-parking-ros`, 이미지 `vip3/parking-ros:noetic`, ROS Noetic**이다. 기본 이미지에는 PyTorch/CUDA가 없다.
+기준일 **2026-11-12**. 팀원이 구현한 실행법은 이 문서에 모은다. **주차 기본 컨테이너는 `vip3-parking-ros`, 이미지 `vip3/parking-ros:noetic`, ROS Noetic**이다. 기본 이미지에는 PyTorch/CUDA가 없다.
 
 | 목적 | 바로가기 |
 |---|---|
@@ -8,8 +8,7 @@
 | 매번 연결·센서 hz 확인 | [bridge](#bridge) |
 | SVM 표시·마스크 검사·저장 | [SVM](#svm) |
 | 수집·bag 감사·재생 | [데이터](#collection) |
-| 상태·기어·지도·평가 | [개발 패키지](#packages) |
-| 과거 TwinLite·핀홀·Capture 도구 | [선택 실행](#legacy) |
+| 상태·기어·GT·평가 | [개발 패키지](#packages) |
 | SS-PSD 외부 코드 | [인지 연결 준비](#ss-psd) |
 | 종료·점검·추가 양식 | [운영](#operations), [작성 규칙](#contributing) |
 
@@ -40,6 +39,17 @@ docker exec -it vip3-parking-ros bash
 ```
 
 repo는 `/root/ws`, 호스트의 형제 `../data`는 `/data`로 연결된다. 소스 변경은 즉시 보이며 메시지·패키지·설치 항목 변경 후에는 다시 `build-ws`한다. Dockerfile/의존성을 바꾼 경우에만 이미지를 다시 빌드한다.
+
+### 이전 패키지 구조에서 갱신할 때
+
+실행 중인 VIP3 노드를 종료한 뒤 **컨테이너**에서 한 번 실행한다. `--clean`은 이 워크스페이스의 생성된 build/devel/install 내용만 정리하며 소스·데이터에는 손대지 않는다. 이후 새 셸을 사용한다.
+
+```bash
+./scripts/build_ws.sh --clean -j2 -l2
+source /root/ws/devel/setup.bash
+```
+
+SVM은 `vip3_perception svm.launch`, 수집은 `vip3_data record.launch`, 재생은 `vip3_data replay.launch`, snapshot은 `vip3_data snapshot.launch`로 변경됐다. 토픽과 기존 ROS 노드·서비스 이름은 유지한다.
 
 ### 9090이 예약된 PC만: 19090
 
@@ -99,7 +109,7 @@ roslaunch vip3_bringup morai_rosbridge.launch port:="$MORAI_BRIDGE_PORT" monitor
 **터미널 B / 컨테이너**, 4카메라 수신 후:
 
 ```bash
-roslaunch drivable_bev fisheye_svm.launch
+roslaunch vip3_perception svm.launch
 ```
 
 **터미널 C / 컨테이너** — WSLg/X 표시 환경에서:
@@ -111,14 +121,14 @@ vip3-ros-gui rqt-image /perception/svm/preview/compressed
 rqt_image_view --clear-config /perception/svm/valid_mask _image_transport:=raw
 ```
 
-기본 출력 상한은 **10Hz**다. 필요하면 `roslaunch drivable_bev fisheye_svm.launch publish_hz:=5`로 낮춘다. 센서 JSON이나 보정값을 바꿀 필요는 없다.
+기본 출력 상한은 **10Hz**다. 필요하면 `roslaunch vip3_perception svm.launch publish_hz:=5`로 낮춘다. 센서 JSON이나 보정값을 바꿀 필요는 없다.
 
 `panel`은 네 원본과 SVM·격자를 합친 화면이다. 검은 화면이면 bridge 진단, JPEG 해상도/frame, 네 영상의 시각차를 먼저 확인한다. 헤드리스 환경에서는 아래 저장 결과로 확인한다.
 
 **기존 SVM을 Ctrl+C로 끝낸 뒤** 대체 실행한다. 같은 이름의 SVM 노드를 중복 실행하지 않는다.
 
 ```bash
-roslaunch drivable_bev fisheye_svm.launch \
+roslaunch vip3_perception svm.launch \
   vehicle_overlay:=false vehicle_mask:=false \
   save_dir:=/data/svm_checks/no_mask_01
 ```
@@ -156,9 +166,9 @@ status의 `timing`에서 `input_age_ms`, `maps_ms`, `processing_ms`, `received_t
 앞에서 저장한 묶음을 **새 출력 경로**로 재생한다. 첫 명령은 저장된 평면·카메라 상대 자세를 그대로 적용하고, 두 번째는 정적 투영과 비교한다.
 
 ```bash
-python3 tools/replay_fisheye_svm.py /data/svm_checks/no_mask_01 \
+python3 tools/svm/replay.py /data/svm_checks/no_mask_01 \
   --output-dir /data/svm_checks/replay_01
-python3 tools/replay_fisheye_svm.py /data/svm_checks/no_mask_01 --static \
+python3 tools/svm/replay.py /data/svm_checks/no_mask_01 --static \
   --output-dir /data/svm_checks/static_01
 ```
 
@@ -169,12 +179,12 @@ python3 tools/replay_fisheye_svm.py /data/svm_checks/no_mask_01 --static \
 실측 대응점 JSON을 준비한 뒤 후보를 추정한다. **아래 observations.json은 직접 작성해야 하는 입력**이며 형식·분할 규칙은 보정 문서를 따른다.
 
 ```bash
-python3 tools/calibrate_fisheye_svm.py \
+python3 tools/svm/calibrate.py \
   --observations /data/calibration/observations.json \
   --output /data/calibration/candidate.yaml \
   --report /data/calibration/report.json
 # 후보 파일이 생성된 경우 기존 SVM을 Ctrl+C로 종료한 뒤 비교 실행
-roslaunch drivable_bev fisheye_svm.launch config:=/data/calibration/candidate.yaml
+roslaunch vip3_perception svm.launch config:=/data/calibration/candidate.yaml
 ```
 
 원본 설정과 기존 결과는 덮어쓰지 않는다. 기준 미달이면 report만 생성하고 종료 코드 2를 반환한다. 통과 후보도 다른 위치에서 검증한 뒤 정본에 반영한다.
@@ -185,7 +195,7 @@ roslaunch drivable_bev fisheye_svm.launch config:=/data/calibration/candidate.ya
 bridge·MORAI 연결 후 **컨테이너**에서 실행한다. `scenario`와 `controller`는 녹화 필수 인자다. 날씨·시뮬 시간은 실제 설정을 적는다. run ID를 생략하면 자동으로 만들어 화면에 표시한다.
 
 ```bash
-roslaunch data_collection bag_recorder.launch \
+roslaunch vip3_data record.launch \
   profile:=parking_raw map_slug:=kcity2025 \
   scenario:=slot002_front controller:=manual weather:=sunny sim_hour:=11
 ```
@@ -193,12 +203,18 @@ roslaunch data_collection bag_recorder.launch \
 Ctrl+C로 정상 종료해 bag과 메타데이터를 마감한다. 출력은 `/data/rosbags/raw/<run_id>/bags/*.bag`과 같은 run의 metadata·summary다. 기본 여유 공간 기준 10GiB, 파일 분할 4GiB다. 평가용 object/collision도 담으려면 위 명령의 `profile:=parking_gt`를 선택하고 인지 입력과 분리한다.
 
 ```bash
-python3 src/data_collection/scripts/audit_rosbag_run.py \
+python3 src/vip3_data/scripts/audit_bag.py \
   /data/rosbags/raw/<run_id> --strict \
   --json-out /data/analysis/<run_id>-audit.json
 ```
 
 기본 camera rate 점검 기준은 8Hz다. run 전체·개별 파일 모두 검사 가능하며 rate·header 역행·bag/header 시차를 확인한다. 이 감사기는 JPEG 디코드 성공이나 네 RGB 카메라 사이의 묶음 시각차까지 검사하지 않는다. 그 부분은 SVM 재생 화면과 `capture.json`의 `span_ms`로 추가 확인한다.
+
+불량 run은 녹화를 종료한 뒤 사유와 함께 `rejected/`로 옮긴다. 원본 bag은 삭제하지 않는다.
+
+```bash
+rosrun vip3_data reject_bag.py --run-id <run_id> --reason "camera dropout"
+```
 
 ### 재생
 
@@ -206,10 +222,10 @@ python3 src/data_collection/scripts/audit_rosbag_run.py \
 
 ```bash
 # 터미널 A: /use_sim_time을 설정하고 일시정지 상태로 준비
-roslaunch data_collection bag_replay.launch \
+roslaunch vip3_data replay.launch \
   bag_path:=/data/rosbags/raw/<run_id> required_profile:=parking_raw
 # 터미널 B: SVM 등 소비자 준비
-roslaunch drivable_bev fisheye_svm.launch
+roslaunch vip3_perception svm.launch
 # 터미널 C: 소비자가 준비된 뒤 재생 시작
 rosservice call /vip3_bag_replay/start
 ```
@@ -220,10 +236,10 @@ GT 포함 bag은 명시적으로 `allow_simulator_gt:=true`를 추가한다. Ctr
 
 ```bash
 # ego만 보는 짧은 연결 확인
-roslaunch data_collection sync_collector.launch \
+roslaunch vip3_data snapshot.launch \
   profile:=dry_run map:=R_KR_PR_K-city_2025 max_frames:=20
 # 4어안+ego, 평가용 objects/collision 포함
-roslaunch data_collection sync_collector.launch \
+roslaunch vip3_data snapshot.launch \
   profile:=parking_core map:=R_KR_PR_K-city_2025 max_frames:=30
 ```
 
@@ -293,99 +309,10 @@ rossrv show vip3_msgs/SetGear
 rosmsg show morai_msgs/CtrlCmd
 ```
 
-<a id="legacy"></a>
-## 6. 기존 구현의 선택 실행
-
-아래는 이전 프로젝트에서 이식한 기능이다. **현재 주차 기본 실행에 필요하지 않으며 179° 어안용 SS-PSD 경로와 구분한다.** 존재하는 코드를 찾을 수 있게 명령을 유지하되, GPU 의존성·구형 데이터·핀홀 설정은 별도로 준비해야 한다.
-
-### TwinLite ROS 추론·시각화
-
-ROS와 PyTorch, 해당 upstream 소스·checkpoint가 있는 **별도 추론 환경**에서 실행한다. 기본 주차 컨테이너에는 모델 의존성이 없다. 환경 구성 참고는 [legacy Dockerfile](../docker/ros-noetic/Dockerfile.legacy-twinlite)이며 현재 장비에서 재검증해야 한다.
-
-```bash
-# 한 뷰 또는 네 뷰 중 하나 선택
-roslaunch camera_semantic_perception single_view.launch view:=front device:=cuda
-roslaunch camera_semantic_perception four_view.launch device:=cuda
-roslaunch camera_semantic_perception four_view_with_visualizer.launch device:=cuda
-# 추론과 별도로 시각화만
-roslaunch camera_semantic_perception single_view_visualizer.launch view:=front
-roslaunch camera_semantic_perception four_view_visualizer.launch
-# 공통 진입점: 위 래퍼와 중복 실행하지 않는다
-roslaunch camera_semantic_perception semantic_inference.launch views:=front device:=cuda
-roslaunch camera_semantic_perception semantic_visualizer.launch views:=front
-```
-
-기본 checkpoint는 `weights/twinlite/v5_binary_lane/best_mean.pt`다. `checkpoint:=...`로 변경한다. 도로·차선 segmentation 출력이며 주차 슬롯 검출 메시지가 아니다.
-
-### 핀홀 BEV 코어
-
-현재 어안 프리셋에 사용하지 않는다. **검증한 핀홀 보정 파일·그와 일치하는 센서 JSON**이 있어야 한다. 테스트 fixture를 실행 정본으로 사용하지 않는다.
-
-```bash
-roslaunch drivable_bev rgb_bev.launch camera_config:=<핀홀-보정.yaml>
-roslaunch drivable_bev camera_bev.launch \
-  camera_config:=<핀홀-보정.yaml> sensor_set_path:=<핀홀-센서.json>
-roslaunch drivable_bev camera_bev_fusion.launch camera_config:=<핀홀-보정.yaml>
-roslaunch drivable_bev camera_bev_visualizer.launch camera_config:=<핀홀-보정.yaml>
-# 위 투영·융합·시각화와 TwinLite를 한 번에 켜는 대안
-roslaunch drivable_bev four_view_bev.launch \
-  camera_config:=<핀홀-보정.yaml> sensor_set_path:=<핀홀-센서.json>
-```
-
-### 구형 Capture·semantic-mask 데이터
-
-현재 4어안 수집에는 적용하지 않는다. `capture_sync`가 기대하는 **기존 v1 카메라 ID·해상도와 GPS/IMU 파일 구성**을 갖춘 과거 run용이다. Capture publish 성공은 파일 저장 성공을 뜻하지 않아 동기화 전 `--dry-run` 검사가 필요하다.
-
-```bash
-# 컨테이너, MORAI Capture Mode 설정 후
-roslaunch data_collection capture_collector.launch capture_hz:=1.0 run_id:=<run_id>
-# 호스트 저장소 루트, 과거 Capture run을 검사·변환할 때
-python3 scripts/sync_capture_data.py --run-id <run_id> --dry-run
-python3 scripts/sync_capture_data.py --run-id <run_id> --jobs 4
-python3 scripts/audit_semantic_capture.py --run-id <run_id>
-python3 scripts/curate_perception_frames.py --run-id <run_id>
-python3 scripts/bake_perception_masks.py --run-id <run_id> --stage all \
-  --policy config/perception/target_policy_v1_katri_4view.json
-python3 scripts/build_perception_dataset.py \
-  --train-run <train_run> --val-run <val_run> --test-run <test_run>
-```
-
-이 결과는 semantic mask이며 SS-PSD 방향 접점·슬롯 라벨이 아니다.
-
-### TwinLite 학습·평가
-
-NVIDIA GPU Docker 환경과 upstream `../external/baselines/TwinLiteNetPlus`(커밋 `90f1b8695ae311d5123b05f8534b2e11e42499d2`), 위 dataset version이 있어야 한다. 별도 **학습 컨테이너**이며 ROS 주차 컨테이너와 다르다.
-
-```bash
-# 호스트 저장소 루트
-./scripts/docker_train_up.sh build
-./scripts/docker_train_up.sh up
-./scripts/docker_train_up.sh shell
-# 이후 학습 컨테이너 /root/ws
-python3 scripts/smoke_twinlite_data_loss.py --dataset-version <dataset> --batch-size 2
-python3 scripts/train_twinlite_tiny.py --dataset-version <dataset> \
-  --selection-file config/perception/twinlite_tiny_overfit_samples.json --batch-size 2
-python3 scripts/train_twinlite.py --dataset-version <dataset> --batch-size 2 --num-workers 0
-python3 scripts/evaluate_twinlite.py --dataset-version <dataset> --split test \
-  --checkpoint <checkpoint.pt> --output-dir artifacts/perception_eval/<run>
-python3 scripts/render_twinlite_predictions.py --dataset-version <dataset> --split test \
-  --checkpoint <checkpoint.pt> --output-dir artifacts/perception_eval/<run>/overlays
-```
-
-tiny selection 파일의 프레임이 해당 dataset에 있는지 먼저 확인한다. 학습 컨테이너의 `/data`는 읽기 전용, 학습 산출물은 Git 제외 경로 `artifacts/`에 쓴다. 분리 실행이 필요하면 호스트에서 다음을 사용한다.
-
-```bash
-./scripts/docker_training_job.sh start <job> -- python3 scripts/train_twinlite.py \
-  --dataset-version <dataset> --batch-size 2 --num-workers 0
-./scripts/docker_training_job.sh status <job>
-./scripts/docker_training_job.sh logs <job> 50
-./scripts/docker_training_job.sh list
-```
-
 <a id="ss-psd"></a>
-## 7. SS-PSD 연결 준비 — 하수영
+## 6. SS-PSD 연결 준비 — 하수영
 
-현재 팀 ROS launch는 없다. 공식 clone은 `../external/parking/CRPS-D`이며 주차 컨테이너에 자동 마운트되지 않는다. 별도 Python/PyTorch 환경에서 공식 requirements·공개 가중치를 준비한다. 확인한 upstream에는 다음 수정이 필요하다.
+SS-PSD는 `vip3_perception` 안의 별도 검출 노드로 연결할 예정이며, 현재 구현된 ROS launch는 없다. SVM은 PyTorch 없이 독립 실행한다. 공식 clone은 `../external/parking/CRPS-D`이며 주차 컨테이너에 자동 마운트되지 않는다. 별도 Python/PyTorch 환경에서 공식 requirements·공개 가중치를 준비한다. 확인한 upstream에는 다음 수정이 필요하다.
 
 - `inference.py`의 `detect_image()`가 `/data/cylin/zzh/DMPR/VAE/output/`의 JPG를 읽고 `test/`에 저장한다. 입력 경로를 자기 데이터로 바꾸고 출력 폴더를 만든다. `--image_directory` 옵션은 없다.
 - `inference.py`는 `cuda:4`, `ps_evaluate.py`는 `cuda:2`를 고정 사용한다. 단일 GPU에서는 코드의 device 선택을 고쳐야 한다. 아래는 먼저 배관을 확인하기 위한 **CPU 옵션**이며 GPU 성능 측정 명령이 아니다.
@@ -401,7 +328,7 @@ python ps_evaluate.py --detector_weights <공개-가중치> --disable_cuda
 위는 upstream CLI로, 팀 환경에서 성공 확인한 ROS 실행법을 뜻하지 않는다. `python train.py` 기본 설정은 6/8GB VRAM에 맞춘 지도 추가 학습 명령이 아니므로, 학습 경로와 batch·라벨 형식을 검증한 뒤 이 절에 확정 명령을 추가한다. [베이스라인 범위](project/baseline.md)
 
 <a id="operations"></a>
-## 8. 종료와 정적 점검
+## 7. 종료와 정적 점검
 
 종료 순서는 제어·수집 → SVM·상태·뷰어 → bridge다. 각 실행 터미널에서 Ctrl+C로 끝내고 `exit`로 셸을 닫는다. 사용 중인 다른 프로젝트 컨테이너나 전체 ROS 프로세스를 일괄 종료하지 않는다.
 
@@ -425,7 +352,7 @@ python3 scripts/verify_morai_topics.py --list  # ROS master 없이 계약만 확
 ```
 
 <a id="contributing"></a>
-## 9. 팀원이 명령을 추가하는 양식
+## 8. 팀원이 명령을 추가하는 양식
 
 해당 파트 절에 아래 내용을 채우고, 입력 bag/설정 버전과 함께 검증한다. 여러 대안은 동시 실행인지 하나만 선택하는지 표시한다. 새 패키지가 없는데 예정 launch를 만들어 넣지 않는다.
 

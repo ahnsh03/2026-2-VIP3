@@ -5,8 +5,8 @@
 | 담당 | 책임과 인수인계 | 주 작업 경로 |
 |---|---|---|
 | **강도균** | 제공 GT로 경로 생성·추종·정차 개발. 이후 인지 목표를 같은 계약으로 연결 | `src/vip3_parking/`의 GT·평가, 이후 경로·추종 구현 |
-| **김동현** | ROS bridge, 수신·시각 진단, bag 수집·재생, 상태 전달 | `src/data_collection/`, 연결용 `scripts/`, `src/vip3_parking/scripts/` 상태·기어 배선 |
-| **하수영** | SVM 보정·합성, SS-PSD 공개 모델 적용, 좌표 변환, 라벨 규칙·소규모 학습 | `src/perception/`, 인지용 `scripts/`, 선택 모델·가중치 명세 |
+| **김동현** | ROS bridge, 수신·시각 진단, bag 수집·재생, 상태 전달 | `src/vip3_bringup/`, `src/vip3_data/`, 연결용 `scripts/`, `src/vip3_parking/scripts/` 상태·기어 배선 |
+| **하수영** | SVM 보정·합성, SS-PSD 공개 모델 적용, 좌표 변환, 라벨 규칙·소규모 학습 | `src/vip3_perception/`, 인지용 `scripts/`, 선택 모델·가중치 명세 |
 | **안승현** | 센서셋 최종 관리, MORAI 환경·좌표 검증, 파트 간 질의·통합 조율 | `config/morai/`, `config/ros/`, `docker/`, 공용 bringup·GT 좌표 기준 |
 | **장원태** | 발표자료 제작·발표, 전체 진행 관리·질의 대응 지원 | 발표 자료, 이 문서의 진행 결과 요약 |
 

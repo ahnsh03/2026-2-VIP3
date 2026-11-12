@@ -1,0 +1,23 @@
+<launch>
+  <!-- ROS 토픽 스냅샷 수집기. 연결 확인과 가벼운 기록용.
+       카메라는 CompressedImage 바이트를 그대로 .jpg 로 저장하므로 손실이 있다.
+       진단용 snapshot이며 슬롯 학습 라벨을 자동 생성하지 않는다. -->
+  <arg name="profile" default="dry_run"/>   <!-- dry_run | parking_core -->
+  <arg name="run_id" default=""/>
+  <arg name="data_root" default=""/>
+  <arg name="max_frames" default="0"/>
+  <arg name="collect_hz" default="0"/>      <!-- 0 = 프로파일 값 사용 -->
+  <arg name="map" default="R_KR_PR_K-city_2025"/>
+  <arg name="vehicle" default="2023_Hyundai_ioniq5"/>
+
+  <node pkg="vip3_data" type="snapshot_node.py"
+        name="vip3_sync_collector" output="screen" required="true">
+    <param name="profile" value="$(arg profile)"/>
+    <param name="run_id" value="$(arg run_id)"/>
+    <param name="data_root" value="$(arg data_root)"/>
+    <param name="max_frames" value="$(arg max_frames)"/>
+    <param name="collect_hz" value="$(arg collect_hz)"/>
+    <param name="map" value="$(arg map)"/>
+    <param name="vehicle" value="$(arg vehicle)"/>
+  </node>
+</launch>

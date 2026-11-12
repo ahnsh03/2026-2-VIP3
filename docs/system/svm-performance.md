@@ -26,16 +26,16 @@
 
 ROS 검사는 별도 master에서 저장 영상을 JPEG 10Hz로 보내고 합성 TF를 공급했다. preview/compressed, panel/compressed, raw panel, mask, status를 모두 구독했다. 각 조건 10초 중 초기 2초를 제외해 기존 40프레임, 최적화 80프레임을 측정했다. 네 영상의 source stamp는 같은 값이므로 실제 MORAI의 카메라별 시차 분포를 대신하지 않는다. MORAI 렌더링·WebSocket·Windows/WSLg·rqt 표시 지연은 포함하지 않는다. 최적화 버전의 5Hz 설정도 검사했지만 입력과 처리 시점에 따라 오래된 묶음을 고를 수 있어 10Hz 기본값으로 비교했다.
 
-검사 요약은 [성능 기록](../../src/perception/drivable_bev/config/validation/261111_performance.json)에 있다. 상세 로그·원본·실험 스크립트는 관리자 로컬 `docs/experiments/261111-svm-performance/`, `data/sensor_checks/261111_svm_performance/`에 보관한다.
+검사 요약은 [성능 기록](../../src/vip3_perception/config/validation/261111_performance.json)에 있다. 상세 로그·원본·실험 스크립트는 관리자 로컬 `docs/experiments/261111-svm-performance/`, `data/sensor_checks/261111_svm_performance/`에 보관한다.
 
 ## 실행·지연 해석
 
 기존 실행 명령으로 새 설정이 적용된다. 느린 PC에서 처리 시간이 지속적으로 100ms를 넘으면 출력률을 낮춰 비교할 수 있다.
 
 ```bash
-roslaunch drivable_bev fisheye_svm.launch
+roslaunch vip3_perception svm.launch
 # 설정 파일을 수정하지 않는 대안
-roslaunch drivable_bev fisheye_svm.launch publish_hz:=5
+roslaunch vip3_perception svm.launch publish_hz:=5
 rostopic echo /perception/svm/status
 ```
 
@@ -59,7 +59,7 @@ rostopic echo /perception/svm/status
 컨테이너 `/root/ws`에서 실행한다. 기본값은 합성 영상이므로 개인 캡처 없이도 실행할 수 있다. 출력 파일은 기존 측정과 겹치지 않게 지정한다.
 
 ```bash
-python3 tools/benchmark_fisheye_svm.py --frames 50 \
+python3 tools/svm/benchmark.py --frames 50 \
   --output /data/svm_checks/benchmark_new.json
 ```
 
@@ -68,10 +68,12 @@ python3 tools/benchmark_fisheye_svm.py --frames 50 \
 ```bash
 git show 460a0f5:src/perception/drivable_bev/src/drivable_bev/fisheye_svm.py \
   > /tmp/vip3_svm_reference.py
-python3 tools/benchmark_fisheye_svm.py \
+python3 tools/svm/benchmark.py \
   --reference-module /tmp/vip3_svm_reference.py \
   --capture-dir /data/sensor_checks/261111_edge_calibration_result/after \
   --output /data/svm_checks/benchmark_comparison.json
 ```
 
 위 capture 경로는 관리자 로컬 자료다. 팀원은 본인이 저장한 front/rear/left/right PNG 폴더를 지정하거나 `--capture-dir`를 생략한다. remap 0.001px, weight 10⁻⁵, mask 변경 0, 출력 채널 차이 1 이하의 허용 기준을 넘으면 종료 코드 2다. 이번 측정의 출력 채널 차이는 0이었다. 벤치마크는 CPU 계산 검사이며 캘리브레이션의 물리 정확도를 새로 입증하는 검사는 아니다.
+
+2026-11-12 패키지 정리 후에도 단일 작업자·선택 JPEG 디코딩·투영표 재사용을 유지했다. 같은 캡처와 변화하는 자세를 이전 `a6f02f4` 코어와 비교해 투영표·가중치·mask·출력 픽셀이 모두 동일했다. 이번 변경은 추가 속도 개선을 주장하는 변경이 아니다. [현재 코드 구조](../project/src-refactoring.md)
