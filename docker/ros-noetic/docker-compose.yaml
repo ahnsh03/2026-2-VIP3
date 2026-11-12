@@ -1,5 +1,5 @@
 # Proposed runtime name; this file alone does not create a container.
-# Team default: 9090. A reserved-port PC can export MORAI_BRIDGE_PORT=19090.
+# Team connection: use 9090 for MORAI, Docker publication and rosbridge.
 name: vip3-parking
 services:
   vip3-ros-noetic:

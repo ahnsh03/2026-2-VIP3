@@ -43,9 +43,9 @@ SVM·데이터 회귀의 상세 로그와 원본은 **안승현 로컬, 아직 �
 
 ## 발생한 문제와 해결
 
-처음에는 VIP3 컨테이너가 정지되어 있었고 Docker 매핑도 이전 19090이었다. 현재 Windows에서 9090 bind와 WebSocket 접속을 확인한 뒤 컨테이너를 9090으로 맞췄다. 카메라만 재연결됐을 때는 네 영상이 들어와도 `/Ego_topic`의 발행자가 없었다. MORAI 로그의 닫힌 WebSocket 송신 오류를 확인하고 **Network Settings의 Ego-0 연결을 별도로 Disconnect → Connect**한 뒤 전체 검사가 통과했다.
+처음에는 VIP3 컨테이너가 정지되어 있었고 Docker 매핑도 팀 정본의 9090과 일치하지 않았다. 현재 Windows에서 9090 bind와 WebSocket 접속을 확인한 뒤 컨테이너를 9090으로 맞췄다. 카메라만 재연결됐을 때는 네 영상이 들어와도 `/Ego_topic`의 발행자가 없었다. MORAI 로그의 닫힌 WebSocket 송신 오류를 확인하고 **Network Settings의 Ego-0 연결을 별도로 Disconnect → Connect**한 뒤 전체 검사가 통과했다.
 
-이는 해당 PC·측정 시점의 확인이다. Windows 포트 예약 상태와 수신율은 다른 PC·실행 때 다시 확인한다. 항상 19090이 필요하거나, 항상 50Hz가 나온다는 결론은 아니다.
+팀 연결 기준은 9090이다. 위 수신율은 해당 PC·측정 시점의 결과이며, 다른 PC에서 항상 50Hz가 나온다는 뜻은 아니다. 연결 문제는 [공통 진단 순서](../commands.md#bridge)를 따라 확인한다.
 
 ## 남은 작업과 인수인계
 

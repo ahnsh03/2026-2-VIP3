@@ -8,7 +8,7 @@
 - 차량 치수·지면: [2023_hyundai_ioniq5.yaml](../../src/vip3_perception/config/vehicles/2023_hyundai_ioniq5.yaml)
 - 차량 그림: [ioniq5_top_view.png](../../src/vip3_perception/assets/ioniq5_top_view.png)
 
-프리셋 이름은 **`YYMMDD_VIP3_Sensor/Network_모라이버전.json`**을 따른다. `261110`은 현재 export 날짜다. 새 버전으로 바꾸면 참조 경로도 갱신하고 이전 실행 프리셋은 Git 이력에만 남긴다. PC별 주소·포트 변경본은 로컬 `data/local_morai/`에 생성한다.
+프리셋 이름은 **`YYMMDD_VIP3_Sensor/Network_모라이버전.json`**을 따른다. `261110`은 현재 export 날짜다. 새 버전으로 바꾸면 참조 경로도 갱신하고 이전 실행 프리셋은 Git 이력에만 남긴다. 팀원은 공유 Sensor/Network JSON을 사용하며 접속 주소는 `127.0.0.1:9090`으로 통일한다.
 
 ## 카메라 배치
 

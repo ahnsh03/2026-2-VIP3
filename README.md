@@ -29,7 +29,7 @@ docker exec -it vip3-parking-ros bash
 ./scripts/rosbridge.sh
 ```
 
-MORAI Import/Connect/Play 이후 별도 터미널에서 SVM을 실행한다. 자세한 순서와 19090 예외는 실행 문서를 따른다.
+MORAI Import/Connect/Play 이후 별도 터미널에서 SVM을 실행한다. MORAI 센서·네트워크와 Docker·rosbridge의 포트는 모두 **9090**으로 맞춘다. 자세한 순서는 실행 문서를 따른다.
 
 ## 현재 구현
 

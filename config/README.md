@@ -27,4 +27,4 @@ config/
 
 새 export 이름은 **`YYMMDD_VIP3_Sensor/Network_모라이버전.json`**으로 한다. 날짜는 export 날짜를 사용하고, 이름만 바꿀 때 새 날짜를 만들지 않는다. 새 정본을 적용하면 `topics.yaml`의 presets, SVM의 `source_sensor_preset`, 카메라 TF, 수집 조건을 함께 갱신하고 설정 검사를 실행한다. 이전 정본은 Git 이력에만 남긴다.
 
-개인 포트 변경본은 `../data/local_morai/`, 원본 export와 제공 이미지 원본은 `../data/reference/`에 보존한다. 상세 분석·캡처 보고서는 repo 밖 `../docs/`에 두고 팀 문서에는 재현에 필요한 결론만 남긴다. 파일 분류 기준은 [데이터 문서](../docs/system/data.md)를 따른다.
+팀은 `config/morai/`의 공유 프리셋과 **9090**을 사용한다. 원본 export와 제공 이미지 원본은 `../data/reference/`에 보존한다. 상세 분석·캡처 보고서는 repo 밖 `../docs/`에 두고 팀 문서에는 재현에 필요한 결론만 남긴다. 파일 분류 기준은 [데이터 문서](../docs/system/data.md)를 따른다.
