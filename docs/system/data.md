@@ -22,7 +22,7 @@ MORAI 연구원이 제공한 [parking_space_set.json](../../src/vip3_parking/dat
 
 ## 수집과 라벨링
 
-1. 현재 4어안·ego를 `parking_raw` bag으로 수집하고 센서셋·네트워크셋·SVM 설정 버전을 함께 보관한다.
+1. 현재 4어안·ego를 `parking_raw` bag으로 수집한다. metadata는 프리셋 경로·Git 상태·bridge 설정을 기록하지만 설정 파일이나 SVM 보정을 자동 복사하지 않는다. 사용한 센서셋·네트워크셋·SVM/차량 YAML과 변경분은 별도로 보관하고 노트에 커밋·버전·필요한 해시를 남긴다.
 2. 실제 수신율, header 시간 유무, 네 뷰 시각차, JPEG 손상·누락을 확인하고 같은 bag으로 재생한다.
 3. 보정된 clean BEV를 추출한다. 원본과 run/frame 대응, valid mask, 픽셀→m 변환을 보존한다. 현재 export는 진단용이며 학습 데이터 변환기는 추가 구현 대상이다.
 4. 하수영이 접점 종류·방향·입구 pairing·가림 처리 규칙을 먼저 고정한 뒤 보이는 주차선에 직접 주석한다. 작은 검증 묶음부터 일관성을 확인한다.
@@ -30,25 +30,29 @@ MORAI 연구원이 제공한 [parking_space_set.json](../../src/vip3_parking/dat
 
 `parking_raw`도 `/Ego_topic`의 **시뮬레이터 GT 자세**를 포함한다. 현재 범위는 주차칸 인지의 센서화이며 센서 기반 자기위치추정까지 완성했다는 뜻은 아니다. bag 프로파일의 `simulator_gt` 플래그는 주로 object/collision/semantic 채널을 통제하는 코드상 구분이다.
 
-`parking_gt`는 object/collision을 추가한 평가용이고, `parking_core` snapshot에도 object/collision이 포함된다. 인지 입력과 분리한다. 기존 Capture→semantic-mask 파이프라인은 구형 카메라 ID/해상도·GPS/IMU를 가정하여 현재 4어안에 그대로 적용할 수 없다.
+`parking_gt`는 object/collision을 추가한 평가용이고, `parking_core` snapshot에도 object/collision이 포함된다. 인지 입력과 분리한다. 기존 Capture→semantic-mask 파이프라인은 리팩토링에서 제거했다. 현재 수집은 `vip3_data`의 bag 기록·검사·재생과 snapshot을 사용하며, SS-PSD 라벨 변환 경로는 추가 구현 대상이다.
 
 ## 저장 위치
 
 | 자료 | 위치 | 관리 |
 |---|---|---|
-| 실행 프리셋·토픽·차량 이미지·보정 설정 | repo `config/`, 패키지 `config/` | 팀 Git |
+| 실행 프리셋·토픽·보정 설정 | repo `config/`, 패키지 `config/` | 팀 Git |
+| 차량 그림 | `src/vip3_perception/assets/` | 팀 Git |
+| 팀 작업 이력·작은 결과·발표 근거 | `docs/notes/`, `docs/notes/evidence/` | 팀 Git; 개인 연구 보관과 구분 |
 | 작은 제공 주차 GT·출처 | repo `src/vip3_parking/data/katri/` | 팀 Git, 원본 불변 |
-| bag | `$VIP3_DATA/rosbags/raw/<run_id>/` | `bags/`, metadata·summary; Git 제외 |
+| bag | `$VIP3_DATA/rosbags/raw/<run_id>/` | `bags/`, `metadata.yaml`(수신 통계·SHA 포함); Git 제외 |
 | 캡처·학습 데이터·실험 산출물 | `$VIP3_DATA` | 호스트 `../data`, 컨테이너 `/data` |
 | 개인 포트 변경본 | `../data/local_morai/` | 도구로 생성; 공유 정본은 9090 |
 | 논문 PDF·개인 상세 분석·이전 문서 | repo 밖 `../docs/` | 팀 문서에는 결론·필요 출처만 |
 | 외부 모델 소스 | `../external/parking/` | 원격 URL·커밋 기록; repo에 중첩 복사하지 않음 |
 
-raw run은 덮어쓰지 않는다. 분석 결과는 원본 run 밖의 별도 디렉터리에 쓴다. 팀에 필요한 실험은 재현 명령·설정·run ID·결과 표를 공유하고, 원본 대용량 자료는 별도 전달한다.
+bag의 기록 시각은 수신 시각이며 메시지 내부 source stamp는 유지한다. snapshot은 `$VIP3_DATA/datasets/<run_id>/`에 `meta.yaml`, `manifest.jsonl`, `summary.json`과 채널 파일을 저장한다.
+
+raw bag run은 덮어쓰지 않는다. snapshot도 새 run ID를 사용한다. 현재 snapshot writer는 기존 폴더를 재사용할 수 있어 중복 ID 방지 기능으로 오인하지 않는다. 분석 결과는 원본 run 밖의 별도 디렉터리에 쓴다. 팀에 필요한 실험은 재현 명령·설정·run ID·결과 표를 공유하고, 원본 대용량 자료는 별도 전달한다.
 
 ## 평가 구현과 한계
 
-[evaluation.py](../../src/vip3_parking/src/vip3_parking/evaluation.py)는 ROS 없는 평가 함수다. `evaluate_parking()`에 최종 pose, 목표 polygon, 시간, 충돌 수를 전달한다. 후륜축 pose이면 `ref_to_center_m=1.5275`를 명시한다. 기본값 0은 차량 중심 pose일 때만 맞다.
+[evaluation.py](../../src/vip3_parking/src/vip3_parking/evaluation.py)는 ROS 없는 평가 함수다. `evaluate_parking()`에 최종 `car_pose=(x, y, heading_deg)`, 목표 칸 딕셔너리 `target_space`, 시간, 충돌 수를 전달한다. GT 레코드의 `points`가 있으면 그 좌표로 형상을 계산하며, 없으면 `center_point/angle/length/width`를 사용한다. 후륜축 pose이면 `ref_to_center_m=1.5275`를 명시한다. 기본값 0은 차량 중심 pose일 때만 맞다. ROS 상태의 yaw(rad)는 deg로 변환해 전달한다.
 
 주 지표는 `success_in_slot`(차량 외곽이 칸 안 + 무충돌), 횡·종·방향 오차, 최소 경계 여유, 소요 시간이다. `success_tsr`는 코드에 남아 있는 느슨한 보조 기준이며 최종 성공률과 혼용하지 않는다. 현재 함수는 polygon을 최소 외접 직사각형으로 평가하고 points 기반 방향은 180° 대칭으로 처리한다. **비직사각형 칸의 정확한 포함 판정·전방 진입 여부·최종 정지 속도는 별도로 확인**한다.
 

@@ -6,6 +6,7 @@
 MORAI 26.R1.H3 (K-City 2025, Ioniq5)
   └─ ROS WebSocket → rosbridge (기본 9090)
        ├─ 4 × CompressedImage → vip3_perception/svm → 진단 panel/preview/valid_mask/status
+       ├─ /tf (map→base_link) → vip3_perception/svm → 자세·촬영 시차 보상
        ├─ EgoVehicleStatus → vip3_parking → state/odom
        ├─ 카메라·ego·TF → vip3_data → bag / 재생
        └─ event service ↔ vip3_gear
@@ -41,7 +42,7 @@ MORAI 26.R1.H3 (K-City 2025, Ioniq5)
 
 메시지는 `morai_msgs` 26.R1, 커밋 `4c9be6f`를 사용한다. `vip3_msgs`는 상태와 기어 서비스만 제공한다. 명령 필드는 `rosmsg show morai_msgs/CtrlCmd`로 확인한다.
 
-MORAI가 `map→base_link` TF를 보내므로 상태 노드의 `publish_map_tf` 기본값은 false다. 카메라 TF도 MORAI 출력과 수동 static TF를 중복 발행하지 않는다. SVM은 자체 설정으로 투영하므로 미리보기만 켤 때 bringup·static TF는 필요 없다.
+MORAI가 `map→base_link` TF를 보내므로 상태 노드의 `publish_map_tf` 기본값은 false다. 카메라 TF도 MORAI 출력과 수동 static TF를 중복 발행하지 않는다. SVM은 자체 카메라 설정과 MORAI `/tf`를 사용하므로 미리보기만 켤 때 bringup·static TF는 필요 없다. ego TF가 없거나 오래되면 정적 투영으로 돌아간다. `/Ego_topic`은 상태 노드·수집의 입력이며 SVM이 직접 구독하지 않는다.
 
 ## 시간과 제어 책임
 

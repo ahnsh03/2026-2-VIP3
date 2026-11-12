@@ -1,41 +1,14 @@
 # vip3_msgs
 
-VIP3 팀 내부 ROS 메시지·서비스. **최소 집합만 둔다.**
+파트 간에 공유하는 ROS 메시지·서비스다. 외부 `morai_msgs`는 `src/morai_msgs`의 26.R1 커밋 `4c9be6f`를 사용하며 이 패키지에서 재정의하지 않는다.
 
-## 1. 규칙
-
-- 표준 메시지로 표현되는 것은 커스텀 타입을 만들지 않는다.
-  `/vehicle/odom` 은 `nav_msgs/Odometry`, `/vehicle/gear` 는 `std_msgs/Int32` 다.
-- MORAI 메시지(`morai_msgs`)는 submodule(`src/morai_msgs`, 26.R1 @ 4c9be6f)이다.
-  이 패키지로 복사하거나 재정의하지 않는다.
-- ROS1 은 타입의 **MD5** 로 publisher/subscriber 호환을 판단한다. 이미 쓰이고 있는
-  타입의 필드를 바꾸면(순서 변경·타입 변경·이름 변경 포함) 상대 노드가 조용히 연결되지
-  않는다. 필드를 **추가**하는 것도 MD5 를 바꾼다.
-- 그래서 정보가 더 필요하면 기존 타입을 고치지 말고 **새 타입을 추가**하고,
-  바꿔야 한다면 그 타입을 쓰는 모든 노드를 같이 다시 빌드한다.
-
-## 2. 현재 타입
-
-| 타입 | 쓰는 곳 | 왜 커스텀인가 |
+| 타입 | 현재 생산자·소비자 | 의미 |
 |---|---|---|
-| `msg/VehicleState.msg` | `vip3_parking` → `/vehicle/state` | `valid` 플래그 + `source` 출처 + 2D 상태(x, y, yaw, speed, acceleration, yaw_rate)를 한 메시지로 묶은 것. `nav_msgs/Odometry` 에는 "이 값 믿어도 되나"를 나타내는 필드가 없어서 stale/무효 구분이 불가능하다. 자세한 pose/twist 가 필요하면 `/vehicle/odom` 을 쓴다. |
-| `srv/SetGear.srv` | `vip3_parking/gear_node.py` | 기어 변경은 스택에서 가장 위험한 쓰기다. 동기 응답(성공/실패 + 실제 기어)이 필요한데 `std_srvs` 에 정수 요청 서비스가 없다. 토픽으로 하면 늦게 연결된 publisher 의 첫 메시지가 조용히 버려진다(후진 명령 유실 = 주차 실패). |
+| [VehicleState.msg](msg/VehicleState.msg) | `vip3_parking` → `/vehicle/state` | header, 출처·유효성, x/y/yaw/speed/acceleration/yaw_rate |
+| [SetGear.srv](srv/SetGear.srv) | `vip3_parking`의 `/vip3_gear/set_gear` | 기어 요청과 성공 여부·응답 기어·메시지 |
 
-`VehicleState.source` 의 `SOURCE_EGO_STATUS=2` 가 **VIP3 의 기본값**이다
-(ASMC 에서는 개발 전용이었다). `SOURCE_GPS_IMU=1` 은 보조 경로다.
+현재 상태 노드는 `/Ego_topic`을 사용하므로 `SOURCE_EGO_STATUS=2`를 발행한다. `SOURCE_GPS_IMU=1`은 메시지 상수로 남아 있지만 **해당 상태 변환 노드는 제거됐으며 현재 구현된 보조 입력이 아니다.** `valid`로 유효성을 구분하고 상세 pose/twist는 표준 `nav_msgs/Odometry`인 `/vehicle/odom`에서 받는다. 기어 상태 `/vehicle/gear`는 `std_msgs/Int32`다.
 
-## 3. 안 가져온 것
+SS-PSD 슬롯·주차 목표용 커스텀 메시지는 아직 없다. 생산자와 소비자가 계약을 정할 때 표준 타입으로 충분한지 먼저 확인한다. 기존 타입의 필드 변경은 ROS1 MD5를 바꾸므로 모든 관련 노드를 함께 갱신·재빌드하고 [작업 노트](../../docs/notes/README.md)에 인수인계를 남긴다.
 
-ASMC `asmc_msgs` 의 나머지 24개 타입(Trajectory / BehaviorCommand / FrenetFeedback /
-DetectedObject / Lane* / DrivableArea* / CompetitionCheckpoint / MissionZone …)은
-**주행 대회용**이라 가져오지 않았다. 필요해지면 그때 쓰는 쪽에서 추가한다.
-
-`GearState.msg` 도 만들지 않았다. 기어는 정수 하나라 `std_msgs/Int32` 로 충분하다.
-
-## 4. 빌드
-
-```bash
-catkin_make --pkg vip3_msgs      # 또는 워크스페이스 전체 빌드
-rosmsg show vip3_msgs/VehicleState
-rossrv show vip3_msgs/SetGear
-```
+단위·좌표는 [시스템 계약](../../docs/system/design.md), 빌드·조회·실행 명령은 [commands.md](../../docs/commands.md#packages)를 따른다.

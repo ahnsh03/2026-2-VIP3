@@ -1,0 +1,46 @@
+{
+  "front": {
+    "decoded": true,
+    "shape": [
+      960,
+      1280,
+      3
+    ],
+    "frame_id": "cam_front",
+    "jpeg_bytes": 139365,
+    "stamp": 1794445458.692
+  },
+  "rear": {
+    "decoded": true,
+    "shape": [
+      960,
+      1280,
+      3
+    ],
+    "frame_id": "cam_rear",
+    "jpeg_bytes": 178605,
+    "stamp": 1794445458.825
+  },
+  "left": {
+    "decoded": true,
+    "shape": [
+      960,
+      1280,
+      3
+    ],
+    "frame_id": "cam_left",
+    "jpeg_bytes": 111519,
+    "stamp": 1794445458.892
+  },
+  "right": {
+    "decoded": true,
+    "shape": [
+      960,
+      1280,
+      3
+    ],
+    "frame_id": "cam_right",
+    "jpeg_bytes": 179128,
+    "stamp": 1794445458.959
+  }
+}
