@@ -7,10 +7,9 @@ config/
 ├── morai/
 │   ├── 261110_VIP3_Sensor_26.R1.H3.json
 │   └── 261110_VIP3_Network_26.R1.H3.json
-├── ros/
-│   ├── topics.yaml
-│   └── rosbridge.env
-└── perception/     # 기존 TwinLite 데이터 정책; SS-PSD 라벨 설정 아님
+└── ros/
+    ├── topics.yaml
+    └── rosbridge.env
 ```
 
 | 자료 | 정본 |
@@ -18,10 +17,11 @@ config/
 | MORAI Import 센서·네트워크 | `morai/`, ROS 9090 |
 | 토픽·프레임·센서 계약 | `ros/topics.yaml` |
 | bridge 접속·진단 주기 | `ros/rosbridge.env` |
-| SVM 보정·합성 | `src/perception/drivable_bev/config/fisheye_svm.yaml` |
-| 차량 제원·탑뷰 이미지 | 같은 패키지 `config/vehicles/` |
+| SVM 보정·합성 | `src/vip3_perception/config/svm.yaml` |
+| 차량 제원 | `src/vip3_perception/config/vehicles/` |
+| 차량 탑뷰 이미지 | `src/vip3_perception/assets/` |
 | 제공 주차 GT | `src/vip3_parking/data/katri/` |
-| 수집·재생 프로파일 | `src/data_collection/config/` |
+| 수집·재생 프로파일 | `src/vip3_data/config/` |
 
 패키지 전용 설정은 해당 패키지에 두고 루트에 사본을 만들지 않는다.
 

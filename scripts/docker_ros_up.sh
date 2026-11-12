@@ -6,7 +6,6 @@ SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 COMPOSE_FILE="$REPO_ROOT/docker/ros-noetic/docker-compose.yaml"
 HOSTNET_FILE="$REPO_ROOT/docker/ros-noetic/docker-compose.hostnet.yaml"
-RTX50_FILE="$REPO_ROOT/docker/ros-noetic/docker-compose.rtx50.yaml"
 export VIP3_CONTAINER_NAME="${VIP3_CONTAINER_NAME:-vip3-parking-ros}"
 export VIP3_IMAGE="${VIP3_IMAGE:-vip3/parking-ros:noetic}"
 CONTAINER="$VIP3_CONTAINER_NAME"
@@ -18,7 +17,6 @@ mkdir -p "$VIP3_DATA"
 
 COMPOSE=(docker compose -f "$COMPOSE_FILE")
 COMPOSE_HOSTNET=(docker compose -f "$COMPOSE_FILE" -f "$HOSTNET_FILE")
-COMPOSE_RTX50=(docker compose -f "$COMPOSE_FILE" -f "$RTX50_FILE")
 
 die() { echo "[FAIL] $*" >&2; exit 1; }
 
@@ -103,17 +101,13 @@ case "$cmd" in
   up-hostnet)
             "${COMPOSE_HOSTNET[@]}" up -d --force-recreate; show_status; next_steps ;;
   rebuild)  "${COMPOSE[@]}" build --no-cache ;;
-  build-rtx50)
-            docker build -t vip3/ros-noetic:dev -f "$REPO_ROOT/docker/ros-noetic/Dockerfile.legacy-twinlite" "$REPO_ROOT/docker/ros-noetic"
-            "${COMPOSE_RTX50[@]}" build ;;
-  up-rtx50) "${COMPOSE_RTX50[@]}" up -d --force-recreate; show_status; next_steps ;;
   status)   show_status ;;
   check)    check_bridge_port ;;
   verify)   verify_topics "${2:-15}" ;;
   shell)    require_running; docker exec -it "$CONTAINER" bash ;;
   build-ws) require_running; docker exec -it "$CONTAINER" bash -lc './scripts/build_ws.sh -j2 -l2' ;;
   bridge)   require_running; docker exec -it "$CONTAINER" bash -lc './scripts/rosbridge.sh' ;;
-  svm)      require_running; docker exec -it "$CONTAINER" bash -lc 'source devel/setup.bash && exec roslaunch drivable_bev fisheye_svm.launch' ;;
+  svm)      require_running; docker exec -it "$CONTAINER" bash -lc 'source devel/setup.bash && exec roslaunch vip3_perception svm.launch' ;;
   view)     require_running; docker exec -it "$CONTAINER" vip3-ros-gui rqt-image /perception/svm/panel ;;
   stop)     "${COMPOSE[@]}" stop ;;
   help|-h|--help)
@@ -124,7 +118,7 @@ case "$cmd" in
     ;;
   down)     "${COMPOSE[@]}" down ;;
   *)
-    echo "사용법: $0 {build|up|up-hostnet|rebuild|build-rtx50|up-rtx50|status|check|verify [초]|shell|down|config}"
+    echo "사용법: $0 {build|up|up-hostnet|rebuild|status|check|verify [초]|shell|down|config}"
     exit 2
     ;;
 esac

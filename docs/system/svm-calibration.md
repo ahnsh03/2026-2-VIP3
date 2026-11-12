@@ -23,13 +23,13 @@
 
 ### MORAI 26.R1.H3 quaternion 확인
 
-이번 라이브 TF의 후방·좌우 카메라 회전은 UI의 nominal mount와 각각 약 70°·62.8° 차이가 났다. quaternion **x 성분만 부호 전환**하면 네 카메라 모두 0.000008° 이내로 일치했다. [측정값](../../src/perception/drivable_bev/config/calibration/261111_validation.json)에 원본 TF와 비교 결과를 남겼다.
+이번 라이브 TF의 후방·좌우 카메라 회전은 UI의 nominal mount와 각각 약 70°·62.8° 차이가 났다. quaternion **x 성분만 부호 전환**하면 네 카메라 모두 0.000008° 이내로 일치했다. [측정값](../../src/vip3_perception/config/calibration/261111_validation.json)에 원본 TF와 비교 결과를 남겼다.
 
 현재 SVM 설정은 `quaternion_convention: morai_26r1_x_flipped` 어댑터를 적용한다. 같은 MORAI 직렬화 경로를 사용하는 ego TF에도 적용하고, 설치 맵의 주차선 투영으로 대조했다. `/tf` 자체를 수정하거나 재발행하지 않는다. **일반 ROS·다른 simulator/bridge에서는 `ros_xyzw`를 사용하고 다시 확인한다.** MORAI 전체 버전에 대한 공식 사양으로 일반화하지 않는다.
 
 ## 렌즈·카메라 정합 추정
 
-`tools/calibrate_fisheye_svm.py`는 네 카메라의 공유 focal scale, k1/k2와 각 카메라의 작은 Roll/Pitch/Yaw 오프셋을 함께 추정한다. principal point, k3/k4, 위치·높이는 고정한다. nominal `rotation_deg`와 `translation_m`은 유지하고 설치 보정만 `correction`에 저장한다.
+`tools/svm/calibrate.py`는 네 카메라의 공유 focal scale, k1/k2와 각 카메라의 작은 Roll/Pitch/Yaw 오프셋을 함께 추정한다. principal point, k3/k4, 위치·높이는 고정한다. nominal `rotation_deg`와 `translation_m`은 유지하고 설치 보정만 `correction`에 저장한다.
 
 관측 JSON의 `observations` 배열에는 다음 형식의 점을 넣는다. 숫자는 **형식 예시**이며 실측값으로 바꿔야 한다.
 
@@ -74,7 +74,7 @@
 
 마지막 세 행은 **선에 수직인 방향**만 측정한다. 선을 따라 미끄러지는 오차나 2D 주차 목표 오차를 보증하지 않는다. 자동 추출한 선 위 표본들은 서로 상관돼 있으며 독립 측량점 수가 아니다. 두 번째 자세의 후방 단독 선 오차는 1.16→1.40cm로 소폭 증가했지만, 전방·좌측·우측과 측정된 세 겹침 쌍은 개선됐다.
 
-현재 공유 K는 `fx=fy=410.1480, cx=640.9002, cy=478.1424`, D는 `[-0.00149195, 0.00037030, 0, 0]`이다. 카메라 correction은 최대 약 0.64°다. [실행 설정](../../src/perception/drivable_bev/config/fisheye_svm.yaml)과 [입력 해시·카메라별 수치·한계](../../src/perception/drivable_bev/config/calibration/261111_edge_validation.json)에 정확한 값을 기록했다. 원본 영상·설치 mesh·후보 비교 스크립트는 로컬 실험 자료에 보관한다. GT 주차칸 JSON을 런타임 인지 입력으로 사용하지 않는다.
+현재 공유 K는 `fx=fy=410.1480, cx=640.9002, cy=478.1424`, D는 `[-0.00149195, 0.00037030, 0, 0]`이다. 카메라 correction은 최대 약 0.64°다. [실행 설정](../../src/vip3_perception/config/svm.yaml)과 [입력 해시·카메라별 수치·한계](../../src/vip3_perception/config/calibration/261111_edge_validation.json)에 정확한 값을 기록했다. 원본 영상·설치 mesh·후보 비교 스크립트는 로컬 실험 자료에 보관한다. GT 주차칸 JSON을 런타임 인지 입력으로 사용하지 않는다.
 
 투영면 오프셋은 해당 영역의 도로/페인트 3D 높이 차이 약 1cm에 근거한다. 노면 높이를 바꾸거나 차량 그림을 늘려 정합을 맞추지 않았다. 초기 K/D만 바꾸는 후보보다 각도와 투영면을 함께 보정한 결과가 좋았으므로, 이번 오차를 렌즈 왜곡 하나로 단정하지 않는다.
 

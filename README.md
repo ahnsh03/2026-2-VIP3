@@ -33,18 +33,17 @@ MORAI Import/Connect/Play 이후 별도 터미널에서 SVM을 실행한다. 자
 
 4어안 수신, SVM 미리보기·차량 그림, bridge 상태 로그, bag 수집·재생, 차량 상태·기어 노드, 제공 GT 검사, 주차 평가 함수가 있다. **렌즈·지면 정합, clean BEV, SS-PSD ROS 노드, 주차 경로·추종 통합은 남은 작업**이다.
 
-제공 [주차 GT 31개](src/vip3_parking/data/katri/README.md)는 제어 선행 개발과 평가에 사용한다. 최종 인지 입력을 GT로 대신하지 않는다. 이전 TwinLite·핀홀 BEV 코드는 선택 도구로 남아 있으며 현재 베이스라인과 구분한다.
+제공 [주차 GT 31개](src/vip3_parking/data/katri/README.md)는 제어 선행 개발과 평가에 사용한다. 최종 인지 입력을 GT로 대신하지 않는다. 현재 베이스라인에 쓰지 않는 TwinLite·핀홀 BEV·Capture 변환 코드는 제거했으며 Git 이력에서 확인할 수 있다.
 
 ## 저장소 구조
 
 ```text
 docs/       계획·역할·베이스라인·시스템·실행법
 config/     MORAI import와 ROS 공통 설정
-docker/     주차 ROS 환경, 별도 legacy/학습 환경
-scripts/    실행·수집·학습 진입점
-tools/      설정 검사와 오프라인 도구
-src/        ROS 패키지·인지 코어·평가 함수
-weights/    기존 TwinLite 선택 체크포인트
+docker/     가벼운 주차 ROS 환경
+scripts/    컨테이너·워크스페이스·bridge 실행
+tools/      설정 검사·GT 확인, svm/ 보정·재생·벤치마크
+src/        6개 ROS 패키지: bringup·data·perception·parking·공용 메시지
 ```
 
 대용량 데이터·bag은 저장소 밖 `../data`(컨테이너 `/data`), 개인 연구·실험 기록은 `../docs`, 외부 소스는 `../external`에 둔다. 팀원이 실행할 때 필요한 설정·차량 이미지·작은 제공 GT는 저장소에 포함한다.

@@ -1,0 +1,20 @@
+extends: _base_raw
+description: "K-City 2025 주차: 4어안 + ego GT 자세, 추가 object/collision 채널 제외"
+required_topics:
+  - /cam_front/image_jpeg/compressed
+  - /cam_left/image_jpeg/compressed
+  - /cam_right/image_jpeg/compressed
+  - /cam_rear/image_jpeg/compressed
+  - /Ego_topic
+optional_topics:
+  - /tf
+  - /tf_static
+  - /ctrl_cmd
+  - /vehicle/gear
+expected_types:
+  /cam_front/image_jpeg/compressed: sensor_msgs/CompressedImage
+  /cam_left/image_jpeg/compressed: sensor_msgs/CompressedImage
+  /cam_right/image_jpeg/compressed: sensor_msgs/CompressedImage
+  /cam_rear/image_jpeg/compressed: sensor_msgs/CompressedImage
+  /Ego_topic: morai_msgs/EgoVehicleStatus
+  /ctrl_cmd: morai_msgs/CtrlCmd

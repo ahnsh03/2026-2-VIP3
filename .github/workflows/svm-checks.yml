@@ -23,11 +23,14 @@ jobs:
           python tools/check_node_imports.py
       - name: Verify lens, coordinate, timing and calibration math
         env:
-          PYTHONPATH: src/perception/drivable_bev/src:src/perception/camera_semantic_perception/src
+          PYTHONPATH: src/vip3_perception/src
         run: |
-          python -m unittest discover -s src/perception/drivable_bev/test -p 'test_fisheye_svm.py'
-          python -m unittest discover -s src/perception/drivable_bev/test -p 'test_svm*.py'
+          python -m unittest discover -s src/vip3_perception/test
       - name: Verify parking state, GT preservation, coordinates and evaluation
         env:
           PYTHONPATH: src/vip3_parking/src
         run: python -m unittest discover -s src/vip3_parking/test
+      - name: Verify collection profiles and metadata
+        env:
+          PYTHONPATH: src/vip3_data/src
+        run: python -m unittest discover -s src/vip3_data/test

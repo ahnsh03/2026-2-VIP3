@@ -23,7 +23,7 @@ def main():
         versions.append(match.group(2))
     assert versions[0] == versions[1], 'Sensor/Network MORAI versions must match; export dates may differ'
     preset = json.loads((root / contract['presets']['sensors']).read_text())
-    svm_path = root / 'src/perception/drivable_bev/config/fisheye_svm.yaml'
+    svm_path = root / 'src/vip3_perception/config/svm.yaml'
     svm = yaml.safe_load(svm_path.read_text())
     assert svm['source_sensor_preset'] == contract['presets']['sensors']
     vehicle_path = (svm_path.parent / svm['vehicle_geometry_file']).resolve()

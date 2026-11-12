@@ -42,7 +42,7 @@ presets:
 frames:
   world: map
   base: base_link          # MORAI 26.R1.H3 asset: rear-axle midpoint
-  vehicle_geometry_file: src/perception/drivable_bev/config/vehicles/2023_hyundai_ioniq5.yaml
+  vehicle_geometry_file: src/vip3_perception/config/vehicles/2023_hyundai_ioniq5.yaml
   # Ground height and footprint are derived from this file, not duplicated here.
 
 # Active preset: four fisheye cameras only. IDs differ from v1.
@@ -139,27 +139,10 @@ network:
     map_spec: {name: /Service_MoraiMapSpec, type: morai_msgs/MoraiMapSpecSrv}
 
 perception_topics:
-  # camera_semantic_perception 출력. {view} = front|left|right|rear
-  drivable_probability: "/perception/camera/{view}/drivable/probability"
-  lane_probability: "/perception/camera/{view}/lane/probability"
-  road_marking_class_id: "/perception/camera/{view}/road_marking/class_id"
-  road_marking_confidence: "/perception/camera/{view}/road_marking/confidence"
-  camera_diagnostics: /perception/camera/diagnostics
-  debug_panel: "/perception/camera/{view}/debug/panel/compressed"
-  debug_mosaic: /perception/camera/debug/mosaic/compressed
-  # drivable_bev 출력
-  bev_view_drivable: "/perception/bev/debug/{view}/drivable_probability"
-  bev_fused_drivable: /perception/bev/camera/drivable_probability
-  bev_fused_marking: /perception/bev/camera/road_marking/class_id
-  bev_diagnostics: /perception/bev/diagnostics
-
-bev_grid:
-  # 주차용 근거리 격자. ASMC 주행용은 x[-5,20] y[-8,8] res 0.10 이었다.
-  frame_id: base_link
-  x_min_m: -10.0
-  x_max_m: 10.0
-  y_min_m: -8.0
-  y_max_m: 8.0
-  resolution_m: 0.05     # 15 cm 주차선이 3 셀. 0.10 이면 선을 못 본다
-  max_ground_range_m: 25.0
-  min_camera_depth_m: 0.10
+  # 현재 발행되는 SVM 진단 출력. clean BEV와 SS-PSD 출력은 별도 구현 대상.
+  preview: /perception/svm/preview/compressed
+  panel: /perception/svm/panel
+  panel_compressed: /perception/svm/panel/compressed
+  valid_mask: /perception/svm/valid_mask
+  status: /perception/svm/status
+# BEV 크기·차량 중심·보정의 정본: src/vip3_perception/config/svm.yaml

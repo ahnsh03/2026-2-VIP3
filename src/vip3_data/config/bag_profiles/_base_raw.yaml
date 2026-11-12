@@ -1,0 +1,12 @@
+# 모든 raw bag 프로파일의 공통부. 직접 쓰지 말고 extends 로 상속한다.
+kind: raw
+transport: rosbridge
+timestamp_mode: receive
+sensor_set: config/morai/261110_VIP3_Sensor_26.R1.H3.json
+network_set: config/morai/261110_VIP3_Network_26.R1.H3.json
+map: R_KR_PR_K-city_2025
+morai_msgs_branch: "26.R1 @ 4c9be6f"
+compression: none
+simulator_gt: false
+timestamp_provenance:
+  all: rosbridge_receive_time   # rosbag record time; source header stamps remain inside each message
