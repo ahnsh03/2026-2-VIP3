@@ -95,7 +95,7 @@ def draw_grid(image, size, extent, center_x):
 def decorate(projection, svm, overlay, compensated, lens_label, show_vehicle_mask, grid=False):
     image = draw_grid(projection, svm.size, svm.extent, svm.center_x) if grid else projection
     image = overlay.apply(image) if overlay else image.copy()
-    cv2.putText(image, 'SVM PREVIEW | ' + ('POSE OK' if compensated else 'STATIC'),
+    cv2.putText(image, 'SVM PREVIEW | ' + ('POSE USED' if compensated else 'STATIC'),
                 (8, svm.size - 12), cv2.FONT_HERSHEY_SIMPLEX, .55, (0, 180, 255), 1, cv2.LINE_AA)
     cv2.putText(image, lens_label, (8, svm.size - 52),
                 cv2.FONT_HERSHEY_SIMPLEX, .48, (0, 180, 255), 1, cv2.LINE_AA)

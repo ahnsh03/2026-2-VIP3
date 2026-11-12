@@ -16,6 +16,7 @@ from std_msgs.msg import String
 from tf2_msgs.msg import TFMessage
 
 from vip3_perception.svm.pose import PoseSample, projection_pose, source_quaternion
+from vip3_perception.svm.ground import GroundRefiner
 
 from vip3_perception.svm.projection import FisheyeSvm
 from vip3_perception.svm.frames import VIEWS, select_frames
@@ -43,6 +44,7 @@ class SvmNode:
         self.stopping = threading.Event()
         self.poses = deque(maxlen=200)
         self.pose_config = self.config.get('pose_compensation', {})
+        self.ground = GroundRefiner(self.config.get('ground_refinement', {}))
         self.pose_status = 'disabled'
         self.last_key = None
         self.saved = False
@@ -50,6 +52,7 @@ class SvmNode:
         self.lens_label = {
             'ground_anchor_validated': 'LENS FIT',
             'simulator_edge_validated_preview': 'EDGE FIT | PREVIEW',
+            'simulator_multiview_preview': 'EGO CAL | PREVIEW',
         }.get(self.config.get('calibration_status'), 'LENS UNVERIFIED')
         self.max_age = float(self.config["max_age_s"])
         self.slop = float(self.config["sync_slop_s"])
@@ -159,6 +162,7 @@ class SvmNode:
             calibration_status=self.config.get('calibration_status', 'unverified'),
             calibration_profile=self.config.get('calibration_profile', 'unspecified'),
             projection_surface_offset_m=self.config.get('projection_surface_offset_m', 0.),
+            ground_refinement=self.ground.status,
             ground_assumption=self.pose_config.get('ground_assumption', 'static configuration'),
             stamp=stamp, ground_plane=self.svm.active_plane, timing=timing))))
 
@@ -185,6 +189,7 @@ class SvmNode:
         pub.publish(msg)
 
     def invalidate(self, reason):
+        self.ground.reset()
         stamp = rospy.Time.now()
         if any(p.get_num_connections() for p in (self.panel, self.panel_raw, self.preview)):
             panel = np.zeros((580, 1180, 3), np.uint8)
@@ -199,8 +204,13 @@ class SvmNode:
         self.last_key = None
 
     def decorate(self, projection, compensated, grid=False):
-        return decorate(projection, self.svm, self.vehicle_overlay, compensated,
-                        self.lens_label, self.show_vehicle_mask, grid)
+        image = decorate(projection, self.svm, self.vehicle_overlay, compensated,
+                         self.lens_label, self.show_vehicle_mask, grid)
+        if self.ground.enabled:
+            label = 'GROUND ' + ('VISION' if self.ground.status['source'].startswith('vision') else 'ASSUMED')
+            cv2.putText(image, label, (10, self.svm.size-65), cv2.FONT_HERSHEY_SIMPLEX,
+                        .45, (0, 200, 255), 1, cv2.LINE_AA)
+        return image
 
     def tick(self):
         started = time.perf_counter()
@@ -247,11 +257,18 @@ class SvmNode:
         timing['pose_ms'] = (time.perf_counter()-pose_started)*1000
         maps_started = time.perf_counter()
         if compensation is None:
+            self.ground.plane_for(None, time.monotonic())
             rebuilt = self.svm.set_projection()
         else:
-            rebuilt = self.svm.set_projection(compensation['plane'], compensation['motion'])
+            plane = self.ground.plane_for(compensation, time.monotonic())
+            rebuilt = self.svm.set_projection(plane, compensation['motion'])
         timing['maps_ms'] = (time.perf_counter()-maps_started)*1000
         timing['maps_rebuilt'] = rebuilt
+        ground_started = time.perf_counter()
+        refined = self.ground.refine(self.svm, images, compensation, time.monotonic())
+        if refined is not None:
+            timing['maps_rebuilt'] |= self.svm.set_projection(refined, compensation['motion'])
+        timing['ground_refinement_ms'] = (time.perf_counter()-ground_started)*1000
         saving = bool(self.save_dir and not self.saved)
         want_preview = saving or bool(self.preview.get_num_connections())
         want_panel = saving or bool(self.panel.get_num_connections() or self.panel_raw.get_num_connections())
@@ -325,6 +342,7 @@ class SvmNode:
                   'display_vehicle_mask': self.show_vehicle_mask,
                   'vehicle_overlay': self.vehicle_overlay.metadata if self.vehicle_overlay else None,
                   'pose_status': self.pose_status, 'ground_plane': self.svm.active_plane,
+                  'ground_refinement': self.ground.status,
                   'poses': [dict(stamp=p.stamp, position=p.position.tolist(),
                                  quaternion_xyzw=p.quaternion.tolist()) for p in poses],
                   'render_ms': timing['processing_ms'], 'timing': timing,

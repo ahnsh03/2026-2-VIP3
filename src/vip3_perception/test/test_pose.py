@@ -21,6 +21,23 @@ def pose(stamp=100., arrival=10., position=(0, 0, 0), q=(0, 0, 0, 1)):
 
 
 class TestSvmPose(unittest.TestCase):
+    def test_ego_euler_serialization_is_not_the_sensor_quaternion_adapter(self):
+        from scipy.spatial.transform import Rotation
+        for roll, pitch, yaw in ((0, 0, 0), (0, 0, 179), (3, -4, 87),
+                                 (-7, 2, -45), (1.5, -.8, 135)):
+            raw = Rotation.from_euler('zxy', [yaw, -pitch, roll], degrees=True).as_quat()
+            physical = Rotation.from_euler('xyz', [roll, pitch, yaw], degrees=True)
+            expected = physical.as_matrix() if hasattr(physical, 'as_matrix') else physical.as_dcm()
+            for sign in (1, -1):
+                actual = source_quaternion(sign*raw, 'morai_26r1_ego_euler')
+                np.testing.assert_allclose(quaternion_matrix(actual), expected, atol=1e-12)
+            if roll or pitch:
+                wrong = quaternion_matrix(source_quaternion(raw, 'morai_26r1_x_flipped'))
+                self.assertGreater(np.max(abs(wrong-expected)), .01)
+        raw = Rotation.from_euler('zxy', [0, 90, 0], degrees=True).as_quat()
+        with self.assertRaises(ValueError):
+            source_quaternion(raw, 'morai_26r1_ego_euler')
+
     def test_measured_morai_quaternions_recover_mounts_without_changing_ros(self):
         from vip3_perception.svm.lens import optical_rotation
         measured = [([0, .3007057607, 0, .9537169337], [0, 35, 0]),
