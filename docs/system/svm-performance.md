@@ -55,7 +55,7 @@ rostopic echo /perception/svm/status
 
 `timing.clock`은 `local_monotonic_receive`다. 서로 다른 시계인 MORAI 헤더 시각과 PC 시각을 빼서 네트워크 지연이라고 표시하지 않는다. status 전송·GUI 화면 표시·`save_dir` 최초 PNG 파일 저장 시간은 위 처리 시간에 포함하지 않는다. 최초 저장은 일회성 디스크 지연을 일으킬 수 있다. 입력 무효 상태에서는 `timing: null`이다.
 
-화면이 여전히 늦으면 입력 카메라 Hz, `input_age_ms`, `processing_ms`, raw panel 구독과 GUI 순서로 구간을 확인한다. 최종 MORAI 라이브 확인은 시뮬레이터를 다시 연결한 뒤 필요하다.
+화면이 여전히 늦으면 입력 카메라 Hz, `input_age_ms`, `processing_ms`, raw panel 구독과 GUI 순서로 구간을 확인한다. 11/12 저녁 실제 MORAI 관측은 아래 후속 기록을 참고한다.
 
 ## 코어 성능 재현
 
@@ -84,3 +84,9 @@ python3 tools/svm/benchmark.py \
 ## 2026-11-12 지면 추정 추가 후
 
 새 프로필은 1초마다 지면을 검사한다. 실제 ROS 노드에 정차 JPEG·TF를 재생한 70프레임에서 `processing_ms` 중앙값 **26.2ms**, 95백분위 **55.9ms**였다. 정차 중에는 투영표를 대부분 재사용하므로 위의 변하는 자세 성능과 직접 비교하지 않는다. 새 프로필의 MORAI 실시간 전체 지연·팀원 노트북·주행 성능은 미측정이다. 지면 추정/추가 map 갱신은 `ground_refinement_ms`와 총 처리 시간에 포함된다. [측정 근거](../../src/vip3_perception/config/calibration/261112_validation.json)
+
+## 2026-11-12 실제 MORAI 연결 후
+
+동일 PC에서 1280×960 카메라 4개를 약 10Hz로 받고 rqt로 표시했다. 두 번째 25초 구간의 panel은 **8.84Hz**, 유효 220프레임의 처리 시간 중앙값 **89.7ms**, P95 **123.1ms**였다. 로컬 수신→publish는 중앙값 189.9ms/P95 329.9ms이며 렌더링·수신 전 네트워크·GUI 표시 시간은 포함하지 않는다. 상태 222개 중 2개는 처리 중 입력 만료였다.
+
+정차 중에도 실제 TF가 미세하게 변해 유효 프레임 모두 투영표를 갱신했고, maps 중앙값은 59.7ms였다. 위 저장 재생의 26.2ms와 조건이 다르다. 10Hz 입력을 항상 10Hz로 처리하거나 모든 순간에 저지연을 유지한다고 주장하지 않는다. [시계열 요약·관측 조건](../notes/261112-svm-live.md)

@@ -37,7 +37,7 @@
 
 ![같은 정차 영상의 v1과 v2 비교](../notes/evidence/261112-svm-comparison.jpg)
 
-원본 센서 JPEG와 TF를 별도 토픽으로 재생해 실제 ROS 노드의 정상 처리, TF 중단 fallback, 영상 중단 mask 무효화, 시각 리셋 복구를 확인했다. 저장 투영의 재생 픽셀도 동일하다. **실제 MORAI의 새 프로필 라이브 정합 확인은 미완료**다. 검증 도중 기존 bridge가 종료되어 9090으로 재시작했으며 카메라·네트워크 재연결을 기다리는 상태였다.
+원본 센서 JPEG와 TF를 별도 토픽으로 재생해 실제 ROS 노드의 정상 처리, TF 중단 fallback, 영상 중단 mask 무효화, 시각 리셋 복구를 확인했다. 저장 투영의 재생 픽셀도 동일하다. **11/12 저녁 실제 MORAI 재연결 후 새 프로필·자세·영상 지면 적용과 약 9Hz 출력을 확인했다.** 왼쪽 아래 주차선과 장애인 표식의 잔여 오차는 라이브에서도 보인다. 현재 위치의 보정 적용 확인이며 다른 위치·주행 정확도 합격 판정은 아니다. [라이브 측정과 화면](../notes/261112-svm-live.md).
 
 [측정값·입력 해시·검사 범위](../../src/vip3_perception/config/calibration/261112_validation.json), [팀 작업 노트](../notes/261112-svm-calibration.md), [실행 명령](../commands.md#svm-calibration). 이전 v1 결과는 Git 이력과 날짜가 붙은 기존 evidence JSON에 보존한다. 현행 프로필은 clean BEV/SS-PSD 학습 입력 검증 완료를 뜻하지 않는다.
 

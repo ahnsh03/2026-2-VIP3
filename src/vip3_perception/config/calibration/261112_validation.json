@@ -29,7 +29,7 @@
     "Five captured image sets; no blind new-location or moving-slope sequence qualification.",
     "Ground plane cannot represent nonplanar road or vertical objects; repeated texture can produce false correspondences.",
     "Ground support may fail and fall back to assumed level map / fixed ride height.",
-    "Live validation of new profile pending MORAI reconnection after ROS master stopped."
+    "Initial test preceded MORAI reconnection. Later live activation, residual seams and latency are recorded in live_followup; multi-location/moving accuracy remains unqualified."
   ],
   "captures": {
     "261111_edge_retry_01": {
@@ -1661,5 +1661,6 @@
       "node imports"
     ],
     "passed": true
-  }
+  },
+  "live_followup": "docs/notes/evidence/261112-svm-live.json"
 }
