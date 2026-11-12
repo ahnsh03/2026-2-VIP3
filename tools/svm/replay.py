@@ -27,6 +27,11 @@ def main():
         parser.error('use a new output directory to preserve measurements')
     captured_config = load_svm_config(args.capture_dir / 'config.yaml')
     config = load_svm_config(args.config) if args.config else captured_config
+    old_convention = captured_config.get('pose_compensation', {}).get('quaternion_convention', 'ros_xyzw')
+    new_convention = config.get('pose_compensation', {}).get('quaternion_convention', 'ros_xyzw')
+    if args.config and not args.static and old_convention != new_convention:
+        parser.error('pose convention differs from capture; record new inputs with the new profile. '
+                     '--static only compares lenses without pose compensation')
     svm = FisheyeSvm(config)
     report = json.loads((args.capture_dir / 'capture.json').read_text())
     state = report.get('projection_state')
@@ -34,9 +39,11 @@ def main():
         if state is None:
             parser.error('capture predates pose metadata; explicitly use --static')
         motion = {v: (np.array(m['rotation']), np.array(m['translation'])) for v, m in state['motion'].items()}
-        # The saved plane already includes the original surface offset. A new
-        # profile changes that offset exactly once while retaining captured pose.
-        delta = (float(config.get('projection_surface_offset_m', 0.))
+        # Assumed planes include the old paint offset. Observed planes already
+        # describe the visible surface and must not receive another offset.
+        observed_ground = report.get('ground_refinement', {}).get('source', '').startswith('vision')
+        delta = (0. if observed_ground else
+                 float(config.get('projection_surface_offset_m', 0.))
                  - float(captured_config.get('projection_surface_offset_m', 0.)))
         svm.set_projection(offset_ground_plane(state['plane'], delta), motion)
     images = {v: cv2.imread(str(args.capture_dir / (v+'.png'))) for v in VIEWS}
@@ -53,6 +60,7 @@ def main():
         source=str(args.capture_dir), static=args.static, plane=svm.active_plane,
         calibration_status=config['calibration_status'],
         calibration_profile=config.get('calibration_profile', 'unspecified'),
+        ground_refinement=report.get('ground_refinement') if not args.static else None,
         projection_surface_offset_m=config.get('projection_surface_offset_m', 0.)), indent=2)+'\n')
 
 

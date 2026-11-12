@@ -1,5 +1,7 @@
 # SVM 지연과 연산 성능
 
+아래 비교 표는 **2026-11-11 최적화 당시**의 기록이다. 현행 프로필은 `261112_kcity_ego_ground_v2`이며 새 지면 추정 비용은 별도로 측정했다.
+
 2026-11-11 최적화. 캘리브레이션 프로필 `261111_kcity_1280x960_v1`, 4×1280×960 입력, 512²·10m 출력을 유지한다. 기본 출력 상한은 센서와 같은 **10Hz**다. GPU·CUDA·추가 학습은 사용하지 않는다.
 
 ## 바뀐 처리
@@ -45,6 +47,7 @@ rostopic echo /perception/svm/status
 |---|---|
 | `input_age_ms` | 선택한 네 프레임 중 가장 오래된 프레임의 로컬 수신→선택 대기 |
 | `decode_ms`, `pose_ms`, `maps_ms`, `warp_ms` | 선택 JPEG 디코딩, 자세 계산, 투영표 갱신, 합성 |
+| `ground_refinement_ms` | 영상 지면 추정과 채택 시 추가 투영표 갱신. 기본 1Hz 검사 |
 | `maps_rebuilt` | 동일 변환 재사용 여부. 자세 양자화는 하지 않음 |
 | `display_ms`, `publish_ms` | 그림·패널 생성, 필요한 JPEG 인코딩과 publish 호출 |
 | `processing_ms` | 선택부터 영상/마스크 publish 호출 완료까지 |
@@ -77,3 +80,7 @@ python3 tools/svm/benchmark.py \
 위 capture 경로는 관리자 로컬 자료다. 팀원은 본인이 저장한 front/rear/left/right PNG 폴더를 지정하거나 `--capture-dir`를 생략한다. remap 0.001px, weight 10⁻⁵, mask 변경 0, 출력 채널 차이 1 이하의 허용 기준을 넘으면 종료 코드 2다. 이번 측정의 출력 채널 차이는 0이었다. 벤치마크는 CPU 계산 검사이며 캘리브레이션의 물리 정확도를 새로 입증하는 검사는 아니다.
 
 2026-11-12 패키지 정리 후에도 단일 작업자·선택 JPEG 디코딩·투영표 재사용을 유지했다. 같은 캡처와 변화하는 자세를 이전 `a6f02f4` 코어와 비교해 투영표·가중치·mask·출력 픽셀이 모두 동일했다. 이번 변경은 추가 속도 개선을 주장하는 변경이 아니다. [현재 코드 구조](../project/src-refactoring.md)
+
+## 2026-11-12 지면 추정 추가 후
+
+새 프로필은 1초마다 지면을 검사한다. 실제 ROS 노드에 정차 JPEG·TF를 재생한 70프레임에서 `processing_ms` 중앙값 **26.2ms**, 95백분위 **55.9ms**였다. 정차 중에는 투영표를 대부분 재사용하므로 위의 변하는 자세 성능과 직접 비교하지 않는다. 새 프로필의 MORAI 실시간 전체 지연·팀원 노트북·주행 성능은 미측정이다. 지면 추정/추가 map 갱신은 `ground_refinement_ms`와 총 처리 시간에 포함된다. [측정 근거](../../src/vip3_perception/config/calibration/261112_validation.json)

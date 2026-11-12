@@ -24,6 +24,7 @@ vip3_perception/
 │       ├── frames.py          # 시각 정렬·선택 JPEG 디코딩
 │       ├── lens.py            # 어안 렌즈와 광학 좌표
 │       ├── projection.py      # 지면 투영·합성
+│       ├── ground.py          # 영상 겹침 기반 로컬 지면 추정
 │       ├── pose.py            # 자세 보간·촬영 시차 보상
 │       ├── calibration.py     # 대응점 기반 보정
 │       ├── vehicle_geometry.py

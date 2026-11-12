@@ -10,16 +10,32 @@ import numpy as np
 
 
 def source_quaternion(quaternion_xyzw, convention='ros_xyzw'):
-    """MORAI 26.R1.H3 adapter, independently checked against four nominal mounts.
+    """Decode the explicitly selected source; ego and sensor TF differ in 26.R1.
 
-    This is NOT a generic ROS/Unity conversion. Keep standard ROS untouched.
-    Evidence and the source TF samples are recorded in the calibration report.
+    Standard ROS is unchanged. The historical x-sign adapter describes the
+    zero-roll sensor mounts, not the ego TF publisher's Euler serialization.
     """
     q = np.asarray(quaternion_xyzw, dtype=float).copy()
     if q.shape != (4,):
         raise ValueError('source quaternion must contain xyzw')
     if convention == 'morai_26r1_x_flipped':
         q[0] *= -1
+    elif convention == 'morai_26r1_ego_euler':
+        # Ego TF encodes Unity Euler(-pitch, roll, heading), whose matrix is
+        # Ry(roll) Rx(-pitch) Rz(heading). Decode that Z-X-Y sequence before
+        # constructing the physical Rz(heading) Ry(pitch) Rx(roll) rotation.
+        # Camera-local TF uses different Euler fields; do not apply this there.
+        source = quaternion_matrix(q)
+        pitch = math.asin(float(np.clip(source[1, 2], -1., 1.)))
+        if abs(math.cos(pitch)) < 1e-6:
+            raise ValueError('MORAI ego Euler pitch is singular')
+        roll = math.atan2(source[0, 2], source[2, 2])
+        yaw = math.atan2(source[1, 0], source[1, 1])
+        cr, sr = math.cos(roll/2), math.sin(roll/2)
+        cp, sp = math.cos(pitch/2), math.sin(pitch/2)
+        cy, sy = math.cos(yaw/2), math.sin(yaw/2)
+        q = np.array([sr*cp*cy-cr*sp*sy, cr*sp*cy+sr*cp*sy,
+                      cr*cp*sy-sr*sp*cy, cr*cp*cy+sr*sp*sy])
     elif convention != 'ros_xyzw':
         raise ValueError('unknown quaternion convention')
     quaternion_matrix(q)
