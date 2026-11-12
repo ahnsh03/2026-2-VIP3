@@ -1,0 +1,271 @@
+{
+  "date": "2026-11-12",
+  "code_commit": "64e2702da581c48dcc950503b36b16fdf61e79e1",
+  "profile": "261112_kcity_ego_ground_v2",
+  "port": 9090,
+  "configuration_sha256": "e45295cb3c8c0da78749ef3b1e08a0a0ad72e236a43e690521783a414b1a6af1",
+  "runtime_matches_source": true,
+  "scope": "Actual MORAI live inputs at one nearly stationary pose; no parameter tuning, vehicle control, or new calibration fit.",
+  "runs": {
+    "live_validation_01": {
+      "duration_s": 25.04718275599589,
+      "rates": {
+        "status": {
+          "count": 228,
+          "hz": 9.086854345445465,
+          "last_age_s": 0.05670430199825205
+        },
+        "cam_left": {
+          "count": 250,
+          "hz": 9.975735485738143,
+          "last_age_s": 0.02060599299875321
+        },
+        "tf": {
+          "count": 1118,
+          "hz": 44.76307502997374,
+          "last_age_s": 0.0037369299971032888
+        },
+        "cam_front": {
+          "count": 250,
+          "hz": 9.99252258290954,
+          "last_age_s": 0.037926751996565145
+        },
+        "panel": {
+          "count": 226,
+          "hz": 9.042613547470575,
+          "last_age_s": 0.056503471998439636
+        },
+        "ego": {
+          "count": 1116,
+          "hz": 44.758882589242674,
+          "last_age_s": 0.020482462998188566
+        },
+        "cam_rear": {
+          "count": 249,
+          "hz": 9.974805706134287,
+          "last_age_s": 0.03956150999874808
+        },
+        "cam_right": {
+          "count": 249,
+          "hz": 9.986388069445244,
+          "last_age_s": 0.02967722400353523
+        }
+      },
+      "dimensions": {
+        "cam_left": [
+          1280,
+          960
+        ],
+        "cam_front": [
+          1280,
+          960
+        ],
+        "cam_rear": [
+          1280,
+          960
+        ],
+        "cam_right": [
+          1280,
+          960
+        ]
+      },
+      "status_count": 228,
+      "input_valid_count": 223,
+      "pose_compensated_count": 223,
+      "visual_ground_count": 213,
+      "timing": {
+        "processing_ms": {
+          "n": 223,
+          "median": 90.5973639964941,
+          "p95": 130.92031260093785,
+          "max": 185.47257899626857
+        },
+        "received_to_publish_ms": {
+          "n": 223,
+          "median": 203.77911799732829,
+          "p95": 275.99180829638493,
+          "max": 497.17266299558105
+        },
+        "input_age_ms": {
+          "n": 223,
+          "median": 109.54142300033709,
+          "p95": 183.71786849529587,
+          "max": 406.1903269976028
+        },
+        "maps_ms": {
+          "n": 223,
+          "median": 60.15642500278773,
+          "p95": 70.87886050139785,
+          "max": 84.89597000152571
+        },
+        "ground_refinement_ms": {
+          "n": 223,
+          "median": 0.004973000613972545,
+          "p95": 36.793326096812955,
+          "max": 91.7018280015327
+        }
+      },
+      "ego": {
+        "position": [
+          -117.32984924316406,
+          -477.0809326171875,
+          28.59691619873047
+        ],
+        "velocity": [
+          -3.378277142473962e-06,
+          7.258965979417553e-06,
+          -1.3979907635075502e-05
+        ],
+        "heading": 89.8890380859375
+      },
+      "pose_status_counts": {
+        "pose compensated": 223,
+        "input replaced/expired during processing": 1,
+        "unsynchronized": 4
+      },
+      "maps_rebuilt_count": 223,
+      "sha256": {
+        "report.json": "558b2bf55551447f1888bd6c6fd19d5b973c3918872d80b8952b1118b725a6a8",
+        "status_series.json": "6f2812ddd45f518cb485f0459b1a38a78e0fab79e3f5fd8e8bc4a5141555c281",
+        "live_panel.jpg": "89345c362d9f41792b59750ad790b571b1590673276bb85012be4a6089f5e854"
+      }
+    },
+    "live_validation_02": {
+      "duration_s": 25.04715152100107,
+      "rates": {
+        "status": {
+          "count": 222,
+          "hz": 8.878065541257326,
+          "last_age_s": 0.14899397100089118
+        },
+        "panel": {
+          "count": 221,
+          "hz": 8.841139854375148,
+          "last_age_s": 0.14913259600143647
+        },
+        "cam_front": {
+          "count": 250,
+          "hz": 9.98205605479098,
+          "last_age_s": 0.045479970998712815
+        },
+        "cam_rear": {
+          "count": 250,
+          "hz": 9.998365076177135,
+          "last_age_s": 0.07764061899797525
+        },
+        "cam_left": {
+          "count": 250,
+          "hz": 9.99204557489534,
+          "last_age_s": 0.04320350399939343
+        },
+        "tf": {
+          "count": 1116,
+          "hz": 44.74918974971916,
+          "last_age_s": 0.03917005200491985
+        },
+        "ego": {
+          "count": 1116,
+          "hz": 44.749117480594265,
+          "last_age_s": 0.03838537800038466
+        },
+        "cam_right": {
+          "count": 250,
+          "hz": 10.007946405908243,
+          "last_age_s": 0.02409196500229882
+        }
+      },
+      "dimensions": {
+        "cam_front": [
+          1280,
+          960
+        ],
+        "cam_rear": [
+          1280,
+          960
+        ],
+        "cam_left": [
+          1280,
+          960
+        ],
+        "cam_right": [
+          1280,
+          960
+        ]
+      },
+      "status_count": 222,
+      "input_valid_count": 220,
+      "pose_compensated_count": 220,
+      "visual_ground_count": 220,
+      "timing": {
+        "processing_ms": {
+          "n": 220,
+          "median": 89.6988459971908,
+          "p95": 123.12597864947747,
+          "max": 200.31100299820537
+        },
+        "received_to_publish_ms": {
+          "n": 220,
+          "median": 189.918978499918,
+          "p95": 329.91796020141885,
+          "max": 499.0548339992529
+        },
+        "input_age_ms": {
+          "n": 220,
+          "median": 97.35762149648508,
+          "p95": 217.62008550067546,
+          "max": 406.9042279952555
+        },
+        "maps_ms": {
+          "n": 220,
+          "median": 59.68156299786642,
+          "p95": 66.48658054764383,
+          "max": 78.345891997742
+        },
+        "ground_refinement_ms": {
+          "n": 220,
+          "median": 0.005116999091114849,
+          "p95": 35.034171801089535,
+          "max": 96.36796799895819
+        }
+      },
+      "ego": {
+        "position": [
+          -117.32975006103516,
+          -477.0809326171875,
+          28.59691619873047
+        ],
+        "velocity": [
+          -1.328892153651395e-06,
+          -2.018798795688781e-06,
+          1.727874951029662e-05
+        ],
+        "heading": 89.89315795898438
+      },
+      "pose_status_counts": {
+        "pose compensated": 220,
+        "input replaced/expired during processing": 2
+      },
+      "maps_rebuilt_count": 220,
+      "sha256": {
+        "report.json": "3d470f4d9992cd9cde3816eedc8b01f52df5f28a2c1ea0b746e19ebf32bdaa05",
+        "status_series.json": "3cd17b28f143ed2615773aca028ab7e4d8a1781a1095a43e4e5b3acfab688337",
+        "live_panel.jpg": "8c3c2714412acff77c8310a06e5cd246caf032ae5e1bf45083e40bbd0113cc90"
+      }
+    }
+  },
+  "conclusions": [
+    "All four cameras receive 1280x960 at about 10Hz; Ego and TF at about 44.75Hz.",
+    "Second 25s window with rqt: 220/222 status samples have valid input, pose compensation and visual ground. Two samples expired during processing.",
+    "Output panel about 8.84Hz; processing median 89.70ms / p95 123.13ms. Local receive-to-publish median 189.92ms / p95 329.92ms excludes simulator render, network-before-arrival and GUI display.",
+    "All 220 valid frames rebuilt maps; stationary saved replay timing is not representative of live changing TF.",
+    "Residual misalignment remains visible at lower-left parking lines and accessibility marking. Live activation confirmed; calibration accuracy not qualified."
+  ],
+  "artifacts": {
+    "owner": "An Seunghyun local workspace",
+    "monitor": "docs/experiments/261112-svm-recalibration/live_monitor.py",
+    "raw_capture": "data/sensor_checks/261112_reconnected_01",
+    "raw_monitor": "data/sensor_checks/261112_recalibration/live_validation_01 and live_validation_02",
+    "initial_save": "live_v2 is first startup image set before ego TF; not representative of the subsequent compensated runtime",
+    "note": "capture.py saves raw selected images and an assumed-plane offline projection; use runtime-panel.jpg/runtime.json for observed runtime, not its svm_projection.png as visual-ground output."
+  }
+}
