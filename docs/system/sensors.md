@@ -10,6 +10,8 @@
 
 프리셋 이름은 **`YYMMDD_VIP3_Sensor/Network_모라이버전.json`**을 따른다. `261110`은 현재 export 날짜다. 새 버전으로 바꾸면 참조 경로도 갱신하고 이전 실행 프리셋은 Git 이력에만 남긴다. 팀원은 공유 Sensor/Network JSON을 사용하며 접속 주소는 `127.0.0.1:9090`으로 통일한다.
 
+추가된 [261112 export](../../config/morai/261112_VIP3_Sensor_26.R1.H3.json)는 LiDAR 검토용이며 현재 실행 정본이 아니다. 카메라 설정은 같고, LiDAR의 토픽/TF/수집 연결은 미검증이다. [검토 범위](../notes/261112-svm-handoff.md#추가된-센서-export).
+
 ## 카메라 배치
 
 공통: **FishEyeCamera, 1280×960, Horizontal FOV 179°, 10Hz, JPEG 품질 90**. 현재 센서셋에는 LiDAR·GPS·IMU가 없다. 아래 위치는 지면이 아니라 `base_link` 기준이며, 회전은 MORAI UI의 Roll/Pitch/Yaw(deg)다.
