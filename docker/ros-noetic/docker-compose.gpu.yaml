@@ -1,0 +1,11 @@
+# Optional NVIDIA GPU access. Combine with docker-compose.yaml when the host
+# Docker daemon can see an NVIDIA GPU; the default compose remains CPU-only.
+services:
+  vip3-ros-noetic:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

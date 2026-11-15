@@ -9,7 +9,7 @@
 | SVM 표시·마스크 검사·저장 | [SVM](#svm) |
 | 수집·bag 감사·재생 | [데이터](#collection) |
 | 상태·기어·GT·평가 | [개발 패키지](#packages) |
-| SS-PSD 외부 코드 | [인지 연결 준비](#ss-psd) |
+| GCN 주차칸 추론 | [GCN](#gcn) |
 | 종료·점검·추가 양식 | [운영](#operations), [작성 규칙](#contributing) |
 
 `호스트`는 WSL/리눅스 터미널, `컨테이너`는 `docker exec`로 들어간 터미널이다. 호스트의 `./scripts/...`·`python3 tools/...`는 **저장소 루트 `2026-2-VIP3`**에서 실행한다. 상위 프로젝트 폴더에는 이 파일들이 없다. 컨테이너 입장 시 작업 위치는 `/root/ws`이므로 다시 `cd`할 필요 없다. `<...>`는 실제 값으로 바꿀 자리이며 그대로 실행하지 않는다.
@@ -162,7 +162,7 @@ roslaunch vip3_perception svm.launch \
 | `svm_unmasked.png` | `vehicle_mask:=false`에서만 저장하는 마스크 해제 투영 |
 | `valid_mask.png`, `config.yaml`, `capture.json` | 유효 영역·설정·영상 시각·보간 자세·투영 상태 |
 
-기본 `261112_kcity_ego_ground_v2`는 **일부 정차 자세에서 검증한 preview**이며 clean BEV 학습/인지 토픽은 아직 없다. 마스크를 꺼도 차체 영역이 관측 가능한 지면으로 바뀌지 않는다. 기본 차량 그림을 다시 보려면 첫 명령으로 재시작한다.
+기본 `261112_kcity_ego_ground_v2`는 **일부 정차 자세에서 검증한 preview**다. clean BEV 토픽은 인지 입력 배선용이며 학습 적합성이나 보정 정확도를 보증하지 않는다. 마스크를 꺼도 차체 영역이 관측 가능한 지면으로 바뀌지 않는다. 기본 차량 그림을 다시 보려면 첫 명령으로 재시작한다.
 
 호스트 저장소 루트에서도 `./scripts/docker_ros_up.sh bridge`, `svm`, `view`를 **각 터미널에서 하나씩** 실행할 수 있다.
 
@@ -328,23 +328,43 @@ rossrv show vip3_msgs/SetGear
 rosmsg show morai_msgs/CtrlCmd
 ```
 
-<a id="ss-psd"></a>
-## 6. SS-PSD 연결 준비 — 하수영
+<a id="gcn"></a>
+## 6. GCN 주차칸 추론 — 하수영
 
-SS-PSD는 `vip3_perception` 안의 별도 검출 노드로 연결할 예정이며, 현재 구현된 ROS launch는 없다. SVM은 PyTorch 없이 독립 실행한다. 공식 clone은 `../external/parking/CRPS-D`이며 주차 컨테이너에 자동 마운트되지 않는다. 별도 Python/PyTorch 환경에서 공식 requirements·공개 가중치를 준비한다. 확인한 upstream에는 다음 수정이 필요하다.
-
-- `inference.py`의 `detect_image()`가 `/data/cylin/zzh/DMPR/VAE/output/`의 JPG를 읽고 `test/`에 저장한다. 입력 경로를 자기 데이터로 바꾸고 출력 폴더를 만든다. `--image_directory` 옵션은 없다.
-- `inference.py`는 `cuda:4`, `ps_evaluate.py`는 `cuda:2`를 고정 사용한다. 단일 GPU에서는 코드의 device 선택을 고쳐야 한다. 아래는 먼저 배관을 확인하기 위한 **CPU 옵션**이며 GPU 성능 측정 명령이 아니다.
-- 평가·학습 데이터 경로는 `yaml/data_root.yaml`에 있다. 라벨과 이미지 구성을 맞춘 뒤 실행한다.
+`vip3_perception`의 동기 SVM과 `svm_unsynced.launch` 모두 `/perception/svm/clean_bev/compressed`로 투영을 발행한다. unsynced 모드는 카메라별 최신 프레임의 시각 차를 무시하므로 화면·배선 확인 용도로만 쓴다. GCN 노드는 이 입력을 받아 `/perception/gcn/slots` JSON 및 `/perception/gcn/overlay/compressed`를 발행한다. upstream clone은 `../external/parking/gcn-parking-slot`에 두며 수정하지 않는다. Compose가 이를 `/root/external/parking/gcn-parking-slot`에 읽기 전용으로 마운트한다. 이미 만든 컨테이너에 새 mount를 적용하려면 호스트에서 `./scripts/docker_ros_up.sh up`을 다시 실행한다. 기본 checkpoint는 clone에 있는 `weights/checkpoint_epoch_200.pth`다. 기본 ROS Noetic 이미지에는 PyTorch와 GCN 추가 라이브러리가 없으므로 먼저 GCN 의존성을 설치한 호환 ROS/Python 환경을 준비한다.
 
 ```bash
-# 외부 CRPS-D 저장소 루트에서, 의존성/입력/가중치를 준비한 뒤
-python inference.py --mode image --detector_weights <공개-가중치> --inference_slot --disable_cuda
-python evaluate.py --detector_weights <공개-가중치> --disable_cuda
-python ps_evaluate.py --detector_weights <공개-가중치> --disable_cuda
+# 저장소 루트에서 catkin 변경 반영 (필요 시)
+./scripts/docker_ros_up.sh build-ws
+
+# 터미널 A / 컨테이너: unsynced SVM. MORAI에는 위에서 안내한 640x480 Sensor JSON 사용
+roslaunch vip3_perception svm_unsynced.launch
+
+# 터미널 B / 컨테이너: GCN. 이 launch process의 Python에는 torch와 upstream requirements가 필요
+roslaunch vip3_perception gcn_slot_detector.launch \
+  checkpoint:=/root/external/parking/gcn-parking-slot/weights/checkpoint_epoch_200.pth
+
+# 터미널 C / 컨테이너 GUI: 슬롯 선분이 그려진 overlay 보기
+vip3-ros-gui rqt-image /perception/gcn/overlay/compressed
 ```
 
-위는 upstream CLI로, 팀 환경에서 성공 확인한 ROS 실행법을 뜻하지 않는다. `python train.py` 기본 설정은 6/8GB VRAM에 맞춘 지도 추가 학습 명령이 아니므로, 학습 경로와 batch·라벨 형식을 검증한 뒤 이 절에 확정 명령을 추가한다. [베이스라인 범위](project/baseline.md)
+먼저 컨테이너에서 `rostopic hz /perception/svm/clean_bev/compressed`로 입력을 확인한다. CUDA가 있으면 자동 선택되고 없으면 CPU다. 결과는 `rostopic echo -n 1 /perception/gcn/slots`로 확인할 수 있다. GUI 대신 이 명령으로도 입력 토픽을 볼 수 있다: `vip3-ros-gui rqt-image /perception/svm/clean_bev/compressed`. upstream 추론 입력은 512×512 BGR→float [0,1]이며 결과 슬롯은 BEV 픽셀·`base_link` 미터 좌표를 JSON으로 제공한다. 배선과 시각화 확인은 실제 MORAI 성능 검증을 뜻하지 않는다. [베이스라인 범위](project/baseline.md)
+
+### NVIDIA GPU 사용
+
+기본 컨테이너는 GPU를 할당하지 않는다. WSL2에서는 먼저 Windows NVIDIA 드라이버와 WSL GPU 지원을 확인하고, WSL 터미널에서 `nvidia-smi`가 동작해야 한다. 이후 저장소 루트에서 GPU override와 함께 컨테이너를 재생성한다. 이 과정에서 기존 컨테이너에 `pip`로 설치한 라이브러리는 사라지므로 CUDA PyTorch와 GCN 의존성을 새 컨테이너에 다시 설치한다.
+
+```bash
+docker compose -f docker/ros-noetic/docker-compose.yaml \
+  -f docker/ros-noetic/docker-compose.gpu.yaml \
+  up -d --no-build --force-recreate
+
+# 컨테이너 안에서 GPU 전달 확인
+nvidia-smi
+python3 -c 'import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))'
+```
+
+컨테이너에는 CPU용 대신 CUDA용 PyTorch wheel을 설치한다. 예를 들어 Python 3.8 환경의 torch 2.4.1은 torchvision 0.19.1과 CUDA 12.1 wheel 조합을 사용한다. [PyTorch 설치표](https://pytorch.org/get-started/previous-versions/). WSL2에는 Linux NVIDIA 드라이버를 설치하지 않고 Windows 드라이버를 사용한다. [NVIDIA CUDA on WSL 안내](https://docs.nvidia.com/cuda/wsl-user-guide/)
 
 <a id="operations"></a>
 ## 7. 종료와 정적 점검

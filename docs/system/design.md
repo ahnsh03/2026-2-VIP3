@@ -11,7 +11,7 @@ MORAI 26.R1.H3 (K-City 2025, Ioniq5)
        ├─ 카메라·ego·TF → vip3_data → bag / 재생
        └─ event service ↔ vip3_gear
 
-연결할 경로: clean BEV → SS-PSD → 주차 목표 → 경로·추종 → /ctrl_cmd
+연결 경로: clean BEV → GCN → 주차 목표 → 경로·추종 → /ctrl_cmd
 개발·평가 경로: vip3_parking의 제공 GT → 목표 어댑터(예정) → 같은 경로·추종
 ```
 
@@ -53,4 +53,4 @@ MORAI가 `map→base_link` TF를 보내므로 상태 노드의 `publish_map_tf` 
 - 기어 노드는 기본적으로 시작 시 External 모드 전환을 요청한다. 관측만 할 때는 기어 노드를 끄거나 `set_external_on_start:=false`를 쓴다.
 - 입력 만료·검출 실패·서비스 실패 시 정지하는 로직은 주차 제어기에 구현할 항목이다. 현재 bridge·SVM만으로 자율주차가 완성된 상태는 아니다.
 
-SVM과 SS-PSD는 `vip3_perception`의 별도 노드로 구성한다. 현재는 SVM만 구현됐으며, clean BEV·검출 노드와 메시지는 다음 단계다. 수집은 `vip3_data`, 상태·GT·평가와 이후 제어는 `vip3_parking`이 담당한다. [src 구조](../project/src-refactoring.md)
+SVM과 GCN은 `vip3_perception`의 별도 노드로 구성한다. SVM clean BEV 토픽을 GCN 노드가 구독해 슬롯 JSON과 시각화 overlay를 발행한다. 수집은 `vip3_data`, 상태·GT·평가와 이후 제어는 `vip3_parking`이 담당한다. [src 구조](../project/src-refactoring.md)

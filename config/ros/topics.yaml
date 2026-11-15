@@ -139,10 +139,13 @@ network:
     map_spec: {name: /Service_MoraiMapSpec, type: morai_msgs/MoraiMapSpecSrv}
 
 perception_topics:
-  # 현재 발행되는 SVM 진단 출력. clean BEV와 SS-PSD 출력은 별도 구현 대상.
+  # SVM 입력/진단 출력과 GCN 주차칸 결과.
+  clean_bev: /perception/svm/clean_bev/compressed
   preview: /perception/svm/preview/compressed
   panel: /perception/svm/panel
   panel_compressed: /perception/svm/panel/compressed
   valid_mask: /perception/svm/valid_mask
   status: /perception/svm/status
+  gcn_slots: /perception/gcn/slots
+  gcn_overlay: /perception/gcn/overlay/compressed
 # BEV 크기·차량 중심·보정의 정본: src/vip3_perception/config/svm.yaml

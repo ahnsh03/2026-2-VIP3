@@ -151,6 +151,8 @@ class UnsyncedSvmNode(SvmNode):
         publish_started = time.perf_counter()
         if want_preview:
             self.send(self.preview, image, stamp)
+        # Keep the GCN input topic available in unsynced preview mode as well.
+        self.send(self.clean_bev, projection, stamp)
         if want_panel:
             self.send(self.panel, panel, stamp)
             self.send_raw_panel(panel, stamp)

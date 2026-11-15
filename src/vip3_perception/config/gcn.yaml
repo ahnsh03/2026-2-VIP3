@@ -1,0 +1,9 @@
+# GCN parking-slot detector adapter. Checkpoint is supplied as a launch argument.
+config_file: ps_gat.yaml
+input_size: 512
+device: auto
+input_topic: /perception/svm/clean_bev/compressed
+output_topic: /perception/gcn/slots
+overlay_topic: /perception/gcn/overlay/compressed
+extent_m: 10.0
+max_input_age_s: 0.5

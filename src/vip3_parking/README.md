@@ -40,4 +40,4 @@ roslaunch vip3_parking vehicle.launch set_external_on_start:=false
 
 ## 정리 범위
 
-기존 `vip3_vehicle_state`, `vip3_hd_map`, `vip3_eval`의 필요한 기능을 합쳤다. 전체 MGeo 도로망·차선·표지·RViz 표시, GPS/IMU 변환, 수동 주차칸 fallback은 제거했다. 삭제 코드는 Git 이력에 남는다. 보정 SVM과 SS-PSD 입력을 이 패키지에 섞지 않는다.
+기존 `vip3_vehicle_state`, `vip3_hd_map`, `vip3_eval`의 필요한 기능을 합쳤다. 전체 MGeo 도로망·차선·표지·RViz 표시, GPS/IMU 변환, 수동 주차칸 fallback은 제거했다. 삭제 코드는 Git 이력에 남는다. 보정 SVM과 GCN 입력을 이 패키지에 섞지 않는다.

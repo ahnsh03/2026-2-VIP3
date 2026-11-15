@@ -8,7 +8,7 @@ src/
 ├── vip3_msgs/                  # 팀 공용 ROS 메시지·서비스
 ├── vip3_bringup/               # bridge·진단·공통 실행·TF
 ├── vip3_data/                  # bag 기록·검사·재생, snapshot
-├── vip3_perception/            # 어안 SVM, 이후 SS-PSD 연결
+├── vip3_perception/            # 어안 SVM, GCN 주차칸 인지
 └── vip3_parking/               # 상태·기어·GT·평가, 이후 경로·추종
 ```
 
@@ -38,13 +38,13 @@ vip3_perception/
 └── test/
 ```
 
-SS-PSD를 구현할 때 `src/vip3_perception/detection/`, `scripts/slot_detector_node.py`, `launch/slot_detector.launch`를 추가한다. **지금은 이 노드·launch가 없으며 clean BEV 인지 토픽도 미구현**이다. 먼저 그림·문구 없는 BEV/valid mask 계약을 정하고 공개 가중치를 연결한다. PyTorch는 검출 모듈에서만 import한다. SVM import가 검출 모델이나 GPU 의존성을 불러오지 않게 유지한다.
+GCN 검출은 `src/vip3_perception/detection/gcn_adapter.py`, `scripts/gcn_slot_detector_node.py`, `launch/gcn_slot_detector.launch`에 둔다. upstream 코드는 `external/parking/gcn-parking-slot`에 유지하고 복사·수정하지 않는다. SVM의 `/perception/svm/clean_bev/compressed` 출력이 그림·진단 표시 전 투영이며 검출 입력이다. 검출 결과는 `/perception/gcn/slots` JSON과 시각 확인용 overlay로 발행한다. PyTorch는 GCN adapter에서만 import해 SVM 단독 실행을 유지한다. checkpoint는 Git에 넣지 않고 launch 인자로 전달한다.
 
-`coordinates.py`는 영상의 픽셀 중심과 차량 기준 미터 좌표를 연결한다. 프레임 이름, 크기·범위·중심, 보정 버전, source stamp를 검출 출력에도 전달해야 한다. 슬롯 메시지는 실제 어댑터 구현과 함께 `vip3_msgs`에 확정한다.
+`coordinates.py`는 영상의 픽셀 중심과 차량 기준 미터 좌표를 연결한다. GCN JSON에는 base_link 프레임, 크기·범위·중심, SVM 보정 프로필, source stamp를 전달한다. 현재 슬롯 전용 메시지 대신 `std_msgs/String`을 사용한다.
 
 ## 수집과 주차
 
-`vip3_data`의 실행 파일은 `record`, `replay`, `snapshot`으로 통일했다. `config/bag_profiles/`에는 `parking_raw`, 평가 채널을 추가하는 `parking_gt`와 공통 기반 설정이 있다. `snapshot_profiles/`는 연결 확인용 `dry_run`, 4카메라용 `parking_core`만 유지한다. bag의 원본 JPEG·source stamp를 보존하며 SS-PSD 라벨/BEV dataset 변환기는 이후 개발한다.
+`vip3_data`의 실행 파일은 `record`, `replay`, `snapshot`으로 통일했다. `config/bag_profiles/`에는 `parking_raw`, 평가 채널을 추가하는 `parking_gt`와 공통 기반 설정이 있다. `snapshot_profiles/`는 연결 확인용 `dry_run`, 4카메라용 `parking_core`만 유지한다. bag의 원본 JPEG·source stamp를 보존하며 GCN 라벨/BEV dataset 변환기는 이후 개발한다.
 
 `vip3_parking`은 `state.py`, `freshness.py`, `gt.py`, `frames.py`, `evaluation.py`와 상태·기어 ROS 노드를 유지한다. 이후 planner/controller를 같은 패키지에 추가한다. GT 31개 원본은 `data/katri/`에 보존한다. GT polygon의 입구 방향과 씬 원점 정합은 별도로 확인해야 한다.
 
@@ -65,7 +65,7 @@ SS-PSD를 구현할 때 `src/vip3_perception/detection/`, `scripts/slot_detector
 ## 담당
 
 - 김동현: `vip3_bringup`, `vip3_data`, 주차 상태·기어 배선.
-- 하수영: `vip3_perception`의 SVM·SS-PSD·BEV 좌표 계약.
+- 하수영: `vip3_perception`의 SVM·GCN·BEV 좌표 계약.
 - 강도균: `vip3_parking`의 GT·경로·추종·평가.
 - 안승현: 센서·차량·좌표 기준, 통합 검증. 장원태: 발표와 결과 정리.
 

@@ -2,7 +2,7 @@
 <package format="2">
   <name>vip3_perception</name>
   <version>0.1.0</version>
-  <description>Parking perception: calibrated four-fisheye SVM and shared BEV coordinates. SS-PSD integration is pending.</description>
+  <description>Four-fisheye SVM BEV and GCN parking-slot detection adapter.</description>
   <maintainer email="AIM2026.003@gmail.com">2026-2-VIP3</maintainer>
   <license>MIT</license>
   <buildtool_depend>catkin</buildtool_depend>

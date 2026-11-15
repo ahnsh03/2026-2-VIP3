@@ -22,6 +22,7 @@ services:
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - ../..:/root/ws:rw
+      - ../../../external/parking/gcn-parking-slot:/root/external/parking/gcn-parking-slot:ro
       - ${VIP3_DATA:-../../../data}:/data:rw
       # Keep root-owned catkin outputs out of the shared Git working tree.
       - build_cache:/root/ws/build

@@ -29,6 +29,13 @@ class SvmNode:
         self.config = rospy.get_param("~svm")
         self.svm = FisheyeSvm(self.config)
         self.config = self.svm.config
+        rospy.set_param('/perception/svm/bev_size', int(self.svm.size))
+        rospy.set_param('/perception/svm/extent_m', float(self.config['extent_m']))
+        rospy.set_param('/perception/svm/center_x_m', float(self.config['center_x_m']))
+        rospy.set_param('/perception/svm/calibration_profile',
+                        str(self.config.get('calibration_profile', 'unspecified')))
+        rospy.set_param('/perception/svm/calibration_status',
+                        str(self.config.get('calibration_status', 'unverified')))
         self.show_vehicle_mask = rospy.get_param("~vehicle_mask", True)
         self.vehicle_overlay = None
         if rospy.get_param("~vehicle_overlay", True):
@@ -57,6 +64,7 @@ class SvmNode:
         self.max_age = float(self.config["max_age_s"])
         self.slop = float(self.config["sync_slop_s"])
         self.preview = rospy.Publisher("/perception/svm/preview/compressed", CompressedImage, queue_size=1)
+        self.clean_bev = rospy.Publisher("/perception/svm/clean_bev/compressed", CompressedImage, queue_size=1)
         self.panel = rospy.Publisher("/perception/svm/panel/compressed", CompressedImage, queue_size=1)
         self.panel_raw = rospy.Publisher("/perception/svm/panel", Image, queue_size=1)
         self.mask = rospy.Publisher("/perception/svm/valid_mask", Image, queue_size=1)
@@ -303,6 +311,8 @@ class SvmNode:
         publish_started = time.perf_counter()
         if want_preview:
             self.send(self.preview, image, stamp)
+        # This is the un-decorated SVM projection consumed by parking-slot models.
+        self.send(self.clean_bev, projection, stamp)
         if want_panel:
             self.send(self.panel, panel, stamp)
             self.send_raw_panel(panel, stamp)

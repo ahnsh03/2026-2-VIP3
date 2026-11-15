@@ -63,4 +63,4 @@ y =          5 − (col + 0.5) × 10 / 512
 
 1. [마스크·그림 해제 명령](../commands.md#svm)으로 가까운 선과 카메라 겹침을 확인한다.
 2. 지면 대응점을 별도 train/validation으로 수집해 [보정 명령](../commands.md#svm-calibration)을 실행한다.
-3. 다른 차량 위치에서도 m 단위 오차를 확인한 뒤 SS-PSD용 clean BEV로 연결한다.
+3. 다른 차량 위치에서도 m 단위 오차를 확인한 뒤 GCN용 clean BEV로 연결한다.

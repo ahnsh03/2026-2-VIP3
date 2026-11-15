@@ -1,0 +1,13 @@
+<launch>
+  <arg name="checkpoint" doc="Path to the downloaded GCN checkpoint"/>
+  <arg name="repository" default="$(find vip3_perception)/../../../external/parking/gcn-parking-slot"/>
+  <arg name="config" default="$(find vip3_perception)/config/gcn.yaml"/>
+  <arg name="device" default="auto" doc="auto, cuda, or cpu"/>
+  <node pkg="vip3_perception" type="gcn_slot_detector_node.py" name="gcn_slot_detector" output="screen">
+    <rosparam command="load" file="$(arg config)" param="gcn"/>
+    <param name="repository" value="$(arg repository)"/>
+    <param name="config_file" value="$(arg repository)/config/ps_gat.yaml"/>
+    <param name="checkpoint" value="$(arg checkpoint)"/>
+    <param name="device" value="$(arg device)"/>
+  </node>
+</launch>

@@ -9,6 +9,6 @@
 
 현재 상태 노드는 `/Ego_topic`을 사용하므로 `SOURCE_EGO_STATUS=2`를 발행한다. `SOURCE_GPS_IMU=1`은 메시지 상수로 남아 있지만 **해당 상태 변환 노드는 제거됐으며 현재 구현된 보조 입력이 아니다.** `valid`로 유효성을 구분하고 상세 pose/twist는 표준 `nav_msgs/Odometry`인 `/vehicle/odom`에서 받는다. 기어 상태 `/vehicle/gear`는 `std_msgs/Int32`다.
 
-SS-PSD 슬롯·주차 목표용 커스텀 메시지는 아직 없다. 생산자와 소비자가 계약을 정할 때 표준 타입으로 충분한지 먼저 확인한다. 기존 타입의 필드 변경은 ROS1 MD5를 바꾸므로 모든 관련 노드를 함께 갱신·재빌드하고 [작업 노트](../../docs/notes/README.md)에 인수인계를 남긴다.
+GCN 슬롯 결과는 현재 `/perception/gcn/slots`의 JSON 문자열로 전달하며 전용 슬롯 메시지는 아직 없다. 생산자와 소비자가 계약을 정할 때 표준 타입으로 충분한지 먼저 확인한다. 기존 타입의 필드 변경은 ROS1 MD5를 바꾸므로 모든 관련 노드를 함께 갱신·재빌드하고 [작업 노트](../../docs/notes/README.md)에 인수인계를 남긴다.
 
 단위·좌표는 [시스템 계약](../../docs/system/design.md), 빌드·조회·실행 명령은 [commands.md](../../docs/commands.md#packages)를 따른다.
