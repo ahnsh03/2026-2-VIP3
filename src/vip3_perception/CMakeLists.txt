@@ -12,7 +12,7 @@ if(CATKIN_ENABLE_TESTING)
   catkin_add_nosetests(test/test_coordinates.py)
 endif()
 
-catkin_install_python(PROGRAMS scripts/svm_node.py
+catkin_install_python(PROGRAMS scripts/svm_node.py scripts/svm_unsynced_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 install(DIRECTORY config launch assets
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

@@ -138,6 +138,12 @@ rqt_image_view --clear-config /perception/svm/valid_mask _image_transport:=raw
 
 `panel`은 네 원본과 SVM·격자를 합친 화면이다. 검은 화면이면 bridge 진단, JPEG 해상도/frame, 네 영상의 시각차를 먼저 확인한다. 헤드리스 환경에서는 아래 저장 결과로 확인한다.
 
+카메라별 timestamp 차이와 입력 age(stale) 검사를 무시하고 각 카메라의 마지막 수신 프레임으로 합성하려면 `svm_unsynced.launch`를 사용한다. 기본 설정은 640×480 입력이며, 먼저 MORAI에서 [저해상도 센서셋](../config/morai/261115_VIP3_Sensor_26.R1.H3_640x480.json)을 Import하고 Connect → Play한다. 센서 위치·각도는 기존 1280×960 정본과 같고 출력 해상도만 절반이다. 아직 프레임을 한 번도 받지 못한 카메라는 `NO FRAME` 검은 입력으로 대체한다. 수신이 멈춘 카메라의 오래된 영상도 계속 합성될 수 있어 움직이는 장면에서는 경계 어긋남·이중상 또는 현재와 다른 화면이 나타날 수 있다. 기본 SVM과 같은 출력 토픽을 쓰므로 기존 SVM을 종료한 뒤 실행한다.
+
+```bash
+roslaunch vip3_perception svm_unsynced.launch
+```
+
 **기존 SVM을 Ctrl+C로 끝낸 뒤** 대체 실행한다. 같은 이름의 SVM 노드를 중복 실행하지 않는다.
 
 ```bash

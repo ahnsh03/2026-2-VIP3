@@ -12,6 +12,8 @@
 
 추가된 [261112 export](../../config/morai/261112_VIP3_Sensor_26.R1.H3.json)는 LiDAR 검토용이며 현재 실행 정본이 아니다. 카메라 설정은 같고, LiDAR의 토픽/TF/수집 연결은 미검증이다. [검토 범위](../notes/261112-svm-handoff.md#추가된-센서-export).
 
+unsync SVM 입력 해상도를 낮출 때는 [640×480 센서셋](../../config/morai/261115_VIP3_Sensor_26.R1.H3_640x480.json)을 MORAI에 Import한다. 기존 1280×960 센서와 위치·회전·화각·주기는 같고, 픽셀 수만 1/4이다. unsync launch는 대응되는 [640×480 보정 설정](../../src/vip3_perception/config/svm_640x480.yaml)을 기본 사용한다. 일반 SVM은 기존 1280×960 설정을 계속 쓴다.
+
 ## 카메라 배치
 
 공통: **FishEyeCamera, 1280×960, Horizontal FOV 179°, 10Hz, JPEG 품질 90**. 현재 센서셋에는 LiDAR·GPS·IMU가 없다. 아래 위치는 지면이 아니라 `base_link` 기준이며, 회전은 MORAI UI의 Roll/Pitch/Yaw(deg)다.

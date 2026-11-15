@@ -7,6 +7,7 @@ config/
 ├── morai/
 │   ├── 261110_VIP3_Sensor_26.R1.H3.json  # 현재 실행 정본
 │   ├── 261112_VIP3_Sensor_26.R1.H3.json  # LiDAR 추가 검토용, 미적용
+│   ├── 261115_VIP3_Sensor_26.R1.H3_640x480.json  # unsync SVM 저해상도 입력
 │   └── 261110_VIP3_Network_26.R1.H3.json
 └── ros/
     ├── topics.yaml
@@ -16,6 +17,7 @@ config/
 | 자료 | 정본 |
 |---|---|
 | MORAI Import 센서·네트워크 | `morai/261110_VIP3_Sensor_26.R1.H3.json` + `morai/261110_VIP3_Network_26.R1.H3.json`, ROS 9090 |
+| unsync SVM 저해상도 카메라 | `morai/261115_VIP3_Sensor_26.R1.H3_640x480.json` + `src/vip3_perception/config/svm_640x480.yaml` |
 | 토픽·프레임·센서 계약 | `ros/topics.yaml` |
 | bridge 접속·진단 주기 | `ros/rosbridge.env` |
 | SVM 보정·합성 | `src/vip3_perception/config/svm.yaml` |
@@ -33,3 +35,5 @@ config/
 ## 검토용 export
 
 [261112 센서](morai/261112_VIP3_Sensor_26.R1.H3.json)는 기존 카메라4개와 동일한 설정에 LiDAR1개를 추가한 사용자 export다. 현재 실행 정본으로 선택하지 않았다. `/lidar3D`·`Lidar3D-5`의 실제 수신/TF/수집 계약은 미검증이며, 기본 `topics.yaml`과 SVM은 261110을 참조한다. 팀원은 위 실행 정본을 Import하고, 새 센서는 담당자 검토 후 채택한다. [인수인계](../docs/notes/261112-svm-handoff.md#추가된-센서-export)
+
+[640×480 저해상도 센서](morai/261115_VIP3_Sensor_26.R1.H3_640x480.json)는 unsync SVM 진단용이다. 카메라 위치·회전·화각·주기는 261110 정본과 같고 이미지 해상도는 가로·세로 각각 절반이다. ROS 토픽 계약과 기본 SVM 설정은 바꾸지 않는다.

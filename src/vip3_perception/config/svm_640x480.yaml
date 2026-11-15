@@ -1,0 +1,156 @@
+# MORAI 26.R1.H3 / Ioniq5 / four 179 deg 640x480 cameras.
+# Ego TF Euler decoding differs from camera-local TF. Nominal mounts are fixed.
+# Image-only stereo ground refinement is bounded; ASSUMED means no visual support.
+# Preview calibration: see calibration/261112_validation.json and docs/system/svm-calibration.md.
+calibration_status: simulator_multiview_preview
+source_sensor_preset: config/morai/261115_VIP3_Sensor_26.R1.H3_640x480.json
+projection_model: opencv_fisheye
+output_size: 512
+extent_m: 10.0
+vehicle_geometry_file: vehicles/2023_hyundai_ioniq5.yaml
+publish_hz: 10.0
+max_age_s: 0.5
+sync_slop_s: 0.06
+pose_compensation:
+  enabled: true
+  quaternion_convention: morai_26r1_ego_euler
+  topic: /tf
+  parent_frame: map
+  child_frame: base_link
+  max_age_s: 0.5
+  max_offset_s: 0.05
+  max_tilt_deg: 15.0
+  normal_map:
+  - 0.0
+  - 0.0
+  - 1.0
+  ground_assumption: visual_local_plane_when_supported_else_level_map_fixed_ride_height
+cameras:
+  front:
+    sensor_id: 1
+    topic: /cam_front/image_jpeg/compressed
+    frame_id: cam_front
+    width: 640
+    height: 480
+    translation_m:
+    - 3.85
+    - 0.0
+    - 0.3
+    rotation_deg:
+    - 0.0
+    - 35.0
+    - 0.0
+    K:
+    - - 205.56476107431698
+      - 0.0
+      - 319.4706196429048
+    - - 0.0
+      - 205.56476107431698
+      - 239.69635469046964
+    - - 0.0
+      - 0.0
+      - 1.0
+    D:
+    - -0.00584716683564336
+    - 0.0022705474223450495
+    - 0
+    - 0
+    max_ray_angle_deg: 89.5
+  rear:
+    sensor_id: 2
+    topic: /cam_rear/image_jpeg/compressed
+    frame_id: cam_rear
+    width: 640
+    height: 480
+    translation_m:
+    - -0.8
+    - 0.0
+    - 0.3
+    rotation_deg:
+    - 0.0
+    - 35.0
+    - 180.0
+    K:
+    - - 205.56476107431698
+      - 0.0
+      - 319.4706196429048
+    - - 0.0
+      - 205.56476107431698
+      - 239.69635469046964
+    - - 0.0
+      - 0.0
+      - 1.0
+    D:
+    - -0.00584716683564336
+    - 0.0022705474223450495
+    - 0
+    - 0
+    max_ray_angle_deg: 89.5
+  left:
+    sensor_id: 3
+    topic: /cam_left/image_jpeg/compressed
+    frame_id: cam_left
+    width: 640
+    height: 480
+    translation_m:
+    - 2.1
+    - 1.05
+    - 0.7
+    rotation_deg:
+    - 0.0
+    - 45.0
+    - 90.0
+    K:
+    - - 205.56476107431698
+      - 0.0
+      - 319.4706196429048
+    - - 0.0
+      - 205.56476107431698
+      - 239.69635469046964
+    - - 0.0
+      - 0.0
+      - 1.0
+    D:
+    - -0.00584716683564336
+    - 0.0022705474223450495
+    - 0
+    - 0
+    max_ray_angle_deg: 89.5
+  right:
+    sensor_id: 4
+    topic: /cam_right/image_jpeg/compressed
+    frame_id: cam_right
+    width: 640
+    height: 480
+    translation_m:
+    - 2.1
+    - -1.05
+    - 0.7
+    rotation_deg:
+    - 0.0
+    - 45.0
+    - 270.0
+    K:
+    - - 205.56476107431698
+      - 0.0
+      - 319.4706196429048
+    - - 0.0
+      - 205.56476107431698
+      - 239.69635469046964
+    - - 0.0
+      - 0.0
+      - 1.0
+    D:
+    - -0.00584716683564336
+    - 0.0022705474223450495
+    - 0
+    - 0
+    max_ray_angle_deg: 89.5
+calibration_profile: 261112_kcity_ego_ground_v2
+calibration_evidence_file: calibration/261112_validation.json
+projection_surface_offset_m: 0.01
+ground_refinement:
+  enabled: true
+  interval_s: 1.0
+  max_age_s: 2.0
+  max_distance_m: 1.5
