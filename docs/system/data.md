@@ -30,7 +30,7 @@ MORAI 연구원이 제공한 [parking_space_set.json](../../src/vip3_parking/dat
 
 `parking_raw`도 `/Ego_topic`의 **시뮬레이터 GT 자세**를 포함한다. 현재 범위는 주차칸 인지의 센서화이며 센서 기반 자기위치추정까지 완성했다는 뜻은 아니다. bag 프로파일의 `simulator_gt` 플래그는 주로 object/collision/semantic 채널을 통제하는 코드상 구분이다.
 
-`parking_gt`는 object/collision을 추가한 평가용이고, `parking_core` snapshot에도 object/collision이 포함된다. 인지 입력과 분리한다. 기존 Capture→semantic-mask 파이프라인은 리팩토링에서 제거했다. 현재 수집은 `vip3_data`의 bag 기록·검사·재생과 snapshot을 사용하며, GCN 학습용 라벨 변환 경로는 추가 구현 대상이다.
+`parking_gt`는 object/collision을 추가한 평가용이고, `parking_core` snapshot에도 object/collision이 포함된다. 인지 입력과 분리한다. 기존 Capture→semantic-mask 파이프라인은 리팩토링에서 제거했다. 현재 수집은 `vip3_data`의 bag 기록·검사·재생과 snapshot, 그리고 MORAI Capture Mode 캡처(`capture.launch`, `check_capture.py`)를 사용한다. Capture Mode는 카메라 4대의 Intensity·Semantic·Instance PNG를 MORAI의 SensorData 폴더에 저장하며 저장은 파일 검사로만 확인한다([실행법](../commands.md#collection)). semantic-mask 변환과 GCN 학습용 라벨 변환 경로는 아직 없고 추가 구현 대상이다.
 
 ## 저장 위치
 

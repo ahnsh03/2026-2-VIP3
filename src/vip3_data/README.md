@@ -19,7 +19,7 @@
 
 `config/bag_profiles/`는 기록·재생 계약, `config/snapshot_profiles/`는 `dry_run`(ego만)·`parking_core`(4카메라+ego+평가 채널) 설정이다. snapshot은 정밀 시간 동기화나 GCN 학습 라벨을 보장하지 않는다. `/data/datasets/<run_id>/`에 저장하며 기존 run ID 재사용을 막지 않으므로 새 ID를 사용한다. 원본 bag → 시간 정렬 → 보정 BEV → 직접 point/slot 라벨 변환은 추가 구현 대상이며, 학습 split은 run 단위로 나눈다.
 
-ROS 입출력은 `scripts/`, 프로파일·메타데이터·저장 로직은 `src/vip3_data/`, 검사는 `test/`에 둔다. 구형 Capture·semantic-mask 변환 경로는 제거했다.
+ROS 입출력은 `scripts/`, 프로파일·메타데이터·저장 로직은 `src/vip3_data/`, 검사는 `test/`에 둔다. 구형 Capture→semantic-mask 파이프라인은 제거했고, 새 Capture Mode 수집(`capture.launch`, `check_capture.py`)만 아래에 있다. semantic-mask 변환은 아직 없다.
 
 ## Capture Mode 수집
 
