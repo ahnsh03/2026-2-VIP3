@@ -1,0 +1,32 @@
+<launch>
+  <!-- MORAI Capture Mode 트리거. /SaveSensorData 를 capture_hz 주기로 발행한다.
+       PNG 는 MORAI 가 Windows 쪽 SensorData/CAMERA_<ID>/ 에 쓴다 (프레임당 12파일).
+       카메라 4대 모두 Active List 의 Sensor Capture Mode 버튼이 켜져 있어야 한다.
+
+       주의: success=true 는 publish 성공일 뿐 저장 확인이 아니다.
+       종료 후 반드시: rosrun vip3_data check_capture.py (run_id 와 dry-run 플래그를 지정) -->
+  <arg name="capture_hz" default="0.5"/>  <!-- 실측: 1.0Hz 에서 10프레임 중 3개가 통째로 저장 안 됨(MORAI 가 저장 중 요청을 버림). 0.5Hz 는 10/10 -->
+  <arg name="start_delay_sec" default="2.0"/>
+  <arg name="max_captures" default="0"/>      <!-- 0 = 무제한 -->
+  <arg name="run_id" default=""/>             <!-- 비우면 자동 생성 -->
+  <arg name="data_root" default=""/>          <!-- 비우면 $VIP3_DATA -->
+  <arg name="save_topic" default="/SaveSensorData"/>
+  <arg name="morai_file_dir" default=""/>     <!-- 비우면 MORAI 기본 SensorData 폴더 -->
+  <arg name="image_width" default="1280"/>    <!-- 261115(640x480) 센서셋이면 640 -->
+  <arg name="image_height" default="960"/>    <!-- 261115 센서셋이면 480 -->
+  <arg name="dry_run" default="false"/>       <!-- true: publish 없이 manifest 만 -->
+
+  <node pkg="vip3_data" type="capture_node.py"
+        name="vip3_capture" output="screen" required="true">
+    <param name="capture_hz" value="$(arg capture_hz)"/>
+    <param name="start_delay_sec" value="$(arg start_delay_sec)"/>
+    <param name="max_captures" value="$(arg max_captures)"/>
+    <param name="run_id" value="$(arg run_id)"/>
+    <param name="data_root" value="$(arg data_root)"/>
+    <param name="save_topic" value="$(arg save_topic)"/>
+    <param name="morai_file_dir" value="$(arg morai_file_dir)"/>
+    <param name="image_width" value="$(arg image_width)"/>
+    <param name="image_height" value="$(arg image_height)"/>
+    <param name="dry_run" value="$(arg dry_run)"/>
+  </node>
+</launch>

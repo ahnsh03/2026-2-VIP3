@@ -6,9 +6,11 @@ catkin_package()
 if(CATKIN_ENABLE_TESTING)
   catkin_add_nosetests(test/test_bag_support.py)
   catkin_add_nosetests(test/test_profiles.py)
+  catkin_add_nosetests(test/test_capture.py)
 endif()
 catkin_install_python(PROGRAMS
   scripts/record_node.py scripts/replay_node.py scripts/snapshot_node.py
   scripts/audit_bag.py scripts/reject_bag.py
+  scripts/capture_node.py scripts/check_capture.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 install(DIRECTORY config launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
