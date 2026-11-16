@@ -9,7 +9,7 @@
 | `replay.launch` | `/use_sim_time`, 준비 후 `/vip3_bag_replay/start`로 시작, 평가 GT 명시 허용 |
 | `snapshot.launch` | 최신 메시지를 주기적으로 저장하는 간단한 연결·영상 확인 |
 | `capture.launch` | MORAI Capture Mode 트리거. `/SaveSensorData`를 `capture_hz` 주기로 발행 |
-| `scripts/check_capture.py` | 저장된 PNG 검사(프레임당 12파일, 1280×960). `--dry-run`은 검사 전용 |
+| `scripts/check_capture.py` | 저장된 PNG 검사(프레임당 12파일, 1280×960). 검사 전용(`--dry-run`은 받지만 동작은 같다) |
 | `scripts/audit_bag.py` | 수신율·header 시각의 단조성·채널별 시간 통계 검사 |
 | `scripts/reject_bag.py` | 불량 run을 사유와 함께 rejected로 분류 |
 
@@ -27,7 +27,7 @@ ROS 입출력은 `scripts/`, 프로파일·메타데이터·저장 로직은 `sr
 
 ```bash
 roslaunch vip3_data capture.launch capture_hz:=0.5 run_id:=park_001
-python3 src/vip3_data/scripts/check_capture.py --run-id park_001 --dry-run
+python3 src/vip3_data/scripts/check_capture.py --run-id park_001
 ```
 
 `/SaveSensorData`(`is_custom_file_name: true`, `file_dir: ''`)를 발행하면 MORAI가 Windows의 `C:\MoraiLauncher_Win\MoraiLauncher_Win\SensorData\CAMERA_<ID>\<이름>_{Intensity,Semantic,Instance}.png`에 저장한다(WSL: `/mnt/c/MoraiLauncher_Win/MoraiLauncher_Win/SensorData`, 4×3=12파일, Depth 없음). 경로는 `$VIP3_MORAI_SENSOR_ROOT`나 `--sensor-root`로 바꾼다. 스페이스바 수동 캡처는 `...\MoraiLauncher_Win_Data\SaveFile\SensorData`에 UTC 시각 이름으로 저장되므로 이 경로와 무관하다.

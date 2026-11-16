@@ -272,12 +272,12 @@ MORAI 캡처 기능으로 카메라 4대(1 front, 2 rear, 3 left, 4 right, 센�
 # 컨테이너: /SaveSensorData를 0.5Hz로 20회 발행 (기본 capture_hz는 0.5)
 roslaunch vip3_data capture.launch capture_hz:=0.5 max_captures:=20 run_id:=<run_id>
 # 호스트 저장소 루트: 저장된 파일 검사 (필수)
-python3 src/vip3_data/scripts/check_capture.py --run-id <run_id> --dry-run
+python3 src/vip3_data/scripts/check_capture.py --run-id <run_id>
 ```
 
 PNG는 MORAI가 `<MORAI>/MoraiLauncher_Win/SensorData/CAMERA_<ID>/<이름>_{Intensity,Semantic,Instance}.png`에 쓴다(WSL: `/mnt/c/MoraiLauncher_Win/MoraiLauncher_Win/SensorData`, 프레임당 12파일, Depth 없음). 스페이스바 캡처는 다른 위치(`.../MoraiLauncher_Win_Data/SaveFile/SensorData`)에 UTC 시각 이름으로 저장되므로 이 검사와 무관하다. `$VIP3_DATA/capture_runs/<run_id>/`에는 `meta.json`·`capture_manifest.jsonl`·`summary.json`만 남는다.
 
-manifest의 `success=true`는 publish가 리턴했다는 뜻일 뿐 저장 확인이 아니다. `check_capture.py`는 프레임당 12파일의 존재·크기·PNG 헤더·해상도를 검사하고 문제가 있으면 종료 코드 1을 반환한다. 종료 직후에는 마지막 프레임이 덜 쓰였을 수 있어 몇 초 뒤 검사하거나 `--skip-last 1`을 쓴다. 640×480 센서셋(261115)은 `image_width:=640 image_height:=480`을 함께 준다. 정지 상태 실측은 0.5Hz 누락 없음, 0.7Hz 10프레임 중 1개, 1.0Hz 10프레임 중 3개 누락이다. 차량이 움직일 때는 확인하지 않았다. 근거는 [작업 노트](notes/w12-donghyun.md)에 있다.
+manifest의 `success=true`는 publish가 리턴했다는 뜻일 뿐 저장 확인이 아니다. `check_capture.py`는 프레임당 12파일의 존재·크기·PNG 헤더·해상도를 검사하고 문제가 있으면 종료 코드 1을 반환한다. 이 스크립트는 검사만 하며 파일을 복사·삭제하지 않는다(`--dry-run` 옵션은 받지만 동작은 같다). 종료 직후에는 마지막 프레임이 덜 쓰였을 수 있어 몇 초 뒤 검사하거나 `--skip-last 1`을 쓴다. 640×480 센서셋(261115)은 `image_width:=640 image_height:=480`을 함께 준다. 정지 상태 실측은 0.5Hz 누락 없음, 0.7Hz 10프레임 중 1개, 1.0Hz 10프레임 중 3개 누락이다. 차량이 움직일 때는 확인하지 않았다. 근거는 [작업 노트](notes/w12-donghyun.md)에 있다.
 
 <a id="packages"></a>
 ## 5. 주차: 상태·기어·GT·평가 — 강도균·김동현

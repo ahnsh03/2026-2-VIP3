@@ -5,10 +5,10 @@
 프레임당 12파일(CAMERA_1~4 x Intensity/Semantic/Instance)이 존재하고, 비어 있지 않고,
 1280x960 PNG 인지 본다. manifest 의 success=true 는 publish 성공일 뿐이므로 이 검사가
 유일한 저장 확인이다. 검사만 하고 아무것도 복사/삭제/수정하지 않는다
-(--dry-run 은 그 사실을 명시하는 플래그이며 동작은 같다).
+(--dry-run 은 받기만 하는 호환용 플래그이며 있든 없든 동작은 같다).
 
-  python3 check_capture.py --run-id <run_id> --dry-run
-  python3 check_capture.py --names a_000000 a_000001 --dry-run     # manifest 없이
+  python3 check_capture.py --run-id <run_id>
+  python3 check_capture.py --names a_000000 a_000001     # manifest 없이
 
 종료 코드: 0 전부 정상, 1 누락/불량 있음, 2 입력 오류.
 """

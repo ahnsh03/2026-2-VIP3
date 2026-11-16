@@ -7,7 +7,7 @@
 !! success=true 는 "publish 가 리턴했다"는 뜻일 뿐 PNG 저장 확인이 아니다 !!
 MORAI 는 저장 완료 응답을 주지 않는다. 주행이 끝나면 반드시
 
-    rosrun vip3_data check_capture.py --run-id <run_id> --dry-run
+    rosrun vip3_data check_capture.py --run-id <run_id>
 
 으로 프레임당 12파일(4 카메라 x Intensity/Semantic/Instance)을 검사한다.
 카메라마다 Active List 의 Sensor Capture Mode 버튼이 켜져 있어야 3종이 나온다.
@@ -77,7 +77,7 @@ class CaptureNode(object):
         rospy.loginfo("capture ready: %.2f Hz run=%s dry_run=%s manifest=%s",
                       self.hz, self.run_id, self.dry_run, self.writer.manifest_path)
         rospy.logwarn("success=true 는 publish 성공일 뿐 저장 확인이 아니다. 종료 후 "
-                      "check_capture.py --run-id %s --dry-run 으로 %d파일/프레임을 검사할 것",
+                      "check_capture.py --run-id %s 으로 %d파일/프레임을 검사할 것",
                       self.run_id, FILES_PER_FRAME)
 
     def _wait_for_subscriber(self, timeout_sec):
@@ -140,7 +140,7 @@ class CaptureNode(object):
         rospy.loginfo("capture closed: attempted=%d published=%d failed=%d root=%s",
                       self.writer.attempted, self.writer.published,
                       self.writer.failed, self.writer.root)
-        rospy.logwarn("다음 단계(필수): check_capture.py --run-id %s --dry-run", self.run_id)
+        rospy.logwarn("다음 단계(필수): check_capture.py --run-id %s", self.run_id)
 
 
 def main():

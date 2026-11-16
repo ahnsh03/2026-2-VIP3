@@ -22,7 +22,7 @@
 # 컨테이너
 roslaunch vip3_data capture.launch capture_hz:=0.5 max_captures:=20 run_id:=cap_test_03
 # 호스트 (종료 몇 초 뒤, 또는 --skip-last 1)
-python3 src/vip3_data/scripts/check_capture.py --run-id cap_test_03 --dry-run
+python3 src/vip3_data/scripts/check_capture.py --run-id cap_test_03
 ```
 
 ## 결과와 근거
